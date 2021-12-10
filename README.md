@@ -47,17 +47,34 @@ See Installation instructions for:
 1. If you are building on Ubuntu BioniSet the environment path (optional)
 
   ```
-  export IGN_GAZEBO_RESOURCE_PATH=$IGN_GAZEBO_RESOURCE_PATH:install/share/mbzirc_ign/models:install/share/mbzirc_ign/worlds
   ```
 
 1. Launch simple demo world
 
   ```
-  ign gazebo -v 4 simple_demo.sdf
+  ros2 launch ros_ign_gazebo ign_gazebo.launch.py ign_args:="simple_demo.sdf"
+  ```
+
+  * This is equivalent to:
+
+    ```
+    ign gazebo -v 4 simple_demo.sdf
+    ```
+
+    * You May have to set the environment variables:
+
+      ```
+      export IGN_GAZEBO_RESOURCE_PATH=$IGN_GAZEBO_RESOURCE_PATH:install/share/mbzirc_ign/models:install/share/mbzirc_ign/worlds
+      ```
+
+1. Spawn an UAV
+
+  ```
+  ros2 launch mbzirc_ign spawn.launch.py name:="x3" model:="x3_c2" x:=0 y:=0 z:=0.05
   ```
 
 
-### Installation using Docker
+### Build a Docker image
 
 1. Navigate to the `docker` directory and build the `mbzirc_sim` docker image
 
@@ -65,7 +82,7 @@ See Installation instructions for:
   bash build.bash mbzirc_sim
   ```
 
-#### Run the demo
+#### Launch the Docker container
 
   ```
   bash run.bash mbzirc_sim

@@ -27,20 +27,19 @@
 
     <model name="ground_platform">
       <static>true</static>
-      <pose>0 0 -5 0 0 0</pose>
+      <pose>0 0 -1.5 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry>
             <box>
-              <normal>0 0 1</normal>
-              <size>20 20 2.5</size>
+              <size>20 20 3</size>
             </box>
           </geometry>
         </collision>
         <visual name="visual">
           <geometry>
             <box>
-              <size>20 20 2.5</size>
+              <size>20 20 3</size>
             </box>
           </geometry>
           <material>
@@ -60,13 +59,14 @@
     </model>
 
     <include>
+      <pose>0 0 5 0 0 0</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Fortress heightmap
       </uri>
     </include>
 
     <include>
-      <pose>0 0 -5 0 0 0</pose>
+      <pose>0 0 -1 0 0 0</pose>
       <uri>
         water_plane
       </uri>

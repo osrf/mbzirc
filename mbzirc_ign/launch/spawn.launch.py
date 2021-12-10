@@ -17,10 +17,11 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
-from launch.actions import RegisterEventHandler
+from launch.actions import DeclareLaunchArgument
+                        #, ExecuteProcess, IncludeLaunchDescription
 from launch.actions import OpaqueFunction
-from launch.event_handlers import OnProcessExit
+# from launch.actions import RegisterEventHandler
+# from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
@@ -31,6 +32,12 @@ import xacro
 def launch(context, *args, **kwargs):
   robot_name = LaunchConfiguration('name').perform(context)
   robot_model = LaunchConfiguration('model').perform(context)
+  x_pos = LaunchConfiguration('x').perform(context)
+  y_pos = LaunchConfiguration('y').perform(context)
+  z_pos = LaunchConfiguration('z').perform(context)
+  r_rot = LaunchConfiguration('R').perform(context)
+  p_rot = LaunchConfiguration('P').perform(context)
+  y_rot = LaunchConfiguration('Y').perform(context)
 
   model_file = os.path.join(
       get_package_share_directory('mbzirc_ign'), 'models', robot_model, 'model.sdf')
@@ -44,7 +51,14 @@ def launch(context, *args, **kwargs):
       output='screen',
       arguments=['-string', doc.toxml(),
                  '-name', robot_name,
-                 '-allow_renaming', 'false'],
+                 '-allow_renaming', 'false',
+                 '-x', x_pos,
+                 '-y', y_pos,
+                 '-z', z_pos,
+                 '-R', r_rot,
+                 '-P', p_rot,
+                 '-Y', y_rot,
+                ],
   )
 
   return [ignition_spawn_entity]
@@ -60,6 +74,31 @@ def generate_launch_description():
             'model',
             default_value='',
             description='SDF model to spawn'),
+        DeclareLaunchArgument(
+            'x',
+            default_value='0',
+            description='X position to spawn'),
+        DeclareLaunchArgument(
+            'y',
+            default_value='0',
+            description='y position to spawn'),
+        DeclareLaunchArgument(
+            'z',
+            default_value='0',
+            description='z position to spawn'),
+        DeclareLaunchArgument(
+            'R',
+            default_value='0',
+            description='R rotation to spawn'),
+
+        DeclareLaunchArgument(
+            'P',
+            default_value='0',
+            description='P rotation to spawn'),
+        DeclareLaunchArgument(
+            'Y',
+            default_value='0',
+            description='Y rotation to spawn'),
         # launch setup
         OpaqueFunction(function = launch)
     ])
