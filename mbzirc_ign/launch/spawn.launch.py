@@ -27,7 +27,8 @@ from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
 
-import xacro
+import subprocess
+import codecs
 
 def launch(context, *args, **kwargs):
   robot_name = LaunchConfiguration('name').perform(context)
@@ -40,16 +41,19 @@ def launch(context, *args, **kwargs):
   y_rot = LaunchConfiguration('Y').perform(context)
 
   model_file = os.path.join(
-      get_package_share_directory('mbzirc_ign'), 'models', robot_model, 'model.sdf')
-
+      get_package_share_directory('mbzirc_ign'), 'models', robot_model, 'model.sdf.erb')
   print("spawning model file: " + model_file)
-  doc = xacro.parse(open(model_file))
-  #  xacro.process(doc)
+
+  # run erb
+  process = subprocess.Popen(['erb', 'name=' + robot_name, model_file], stdout=subprocess.PIPE)
+  stdout = process.communicate()[0]
+  str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
+
   ignition_spawn_entity = Node(
       package='ros_ign_gazebo',
       executable='create',
       output='screen',
-      arguments=['-string', doc.toxml(),
+      arguments=['-string', str_output,
                  '-name', robot_name,
                  '-allow_renaming', 'false',
                  '-x', x_pos,
