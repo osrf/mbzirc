@@ -69,6 +69,11 @@ RUN apt update \
   && rosdep update \
   && apt-get clean
 
+# install ROS2
+RUN apt-get update \
+  &&  apt-get install -y ros-galactic-ros-base \
+  && apt-get clean
+
 # install colcon
 RUN apt-get -qq update && apt-get -q -y install \
   python3-vcstool \

@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 
 project(mbzirc_ign)
 
+find_package(ament_cmake REQUIRED)
+
 find_package(ignition-gazebo6 REQUIRED)
 find_package(ignition-common4 REQUIRED COMPONENTS graphics)
 find_package(ignition-fuel_tools7 REQUIRED)
@@ -23,6 +25,9 @@ configure_file(
 install(DIRECTORY
   worlds
   models
+  launch
   ${CMAKE_CURRENT_BINARY_DIR}/hooks
   DESTINATION share/${PROJECT_NAME})
 
+
+ament_package()
