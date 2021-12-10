@@ -125,5 +125,5 @@ RUN /bin/sh -c 'echo ". /opt/ros/galactic/setup.bash" >> ~/.bashrc' \
 RUN mkdir -p /tmp/ign
 
 # Copy entry point script, and set the entrypoint
-COPY mbzirc_sim/run_sim.bash ./
-ENTRYPOINT ["./run_sim.bash"]
+# COPY mbzirc_sim/run_sim.bash ./
+# ENTRYPOINT ["./run_sim.bash"]
