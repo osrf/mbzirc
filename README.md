@@ -1,15 +1,15 @@
 # MBZIRC Maritime Grand Challenge Simulator
 
-This repository contains information on the simulation platform built for the
+This repository contains simulation software created for the
 MBZIRC Maritime Grand Challenge.
 
 ## Installation
 
-
 ### Prerequsite
 
-Platform support for the MBZIRC Maritime Grand Challenge Simulator is
-Ignition Fortress and Galactic on Ubuntu 20.04 (Focal).
+* Platform: Ubuntu 20.04 (Focal)
+* Ignition Fortress
+* ROS2 Galactic
 
 See Installation instructions for:
 
@@ -44,15 +44,10 @@ See Installation instructions for:
   source install/share/setup.bash
   ```
 
-1. If you are building on Ubuntu BioniSet the environment path (optional)
-
-  ```
-  ```
-
 1. Launch simple demo world
 
   ```
-  ros2 launch ros_ign_gazebo ign_gazebo.launch.py ign_args:="simple_demo.sdf"
+  ros2 launch ros_ign_gazebo ign_gazebo.launch.py ign_args:="-v 4 simple_demo.sdf"
   ```
 
   * This is equivalent to:
@@ -79,10 +74,12 @@ See Installation instructions for:
 1. Navigate to the `docker` directory and build the `mbzirc_sim` docker image
 
   ```
+  cd ~/mbzirc_ws/src/mbzirc/docker
   bash build.bash mbzirc_sim
   ```
 
-#### Launch the Docker container
+1.  The process can take a few minutes. Once it is done, you can launch the
+  Docker container:
 
   ```
   bash run.bash mbzirc_sim
