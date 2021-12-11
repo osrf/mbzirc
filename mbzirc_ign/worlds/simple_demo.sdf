@@ -4,6 +4,44 @@
 -->
 <sdf version="1.6">
   <world name="simple_demo">
+    <plugin
+      filename="ignition-gazebo-physics-system"
+      name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-user-commands-system"
+      name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-sensors-system"
+      name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-air-pressure-system"
+      name="ignition::gazebo::systems::AirPressure">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-altimeter-system"
+      name="ignition::gazebo::systems::Altimeter">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-imu-system"
+      name="ignition::gazebo::systems::Imu">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-magnetometer-system"
+      name="ignition::gazebo::systems::Magnetometer">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-particle-emitter2-system"
+      name="ignition::gazebo::systems::ParticleEmitter2">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-scene-broadcaster-system"
+      name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+
     <scene>
       <sky></sky>
       <grid>false</grid>

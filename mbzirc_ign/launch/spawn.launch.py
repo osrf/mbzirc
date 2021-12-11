@@ -20,8 +20,10 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
                         #, ExecuteProcess, IncludeLaunchDescription
 from launch.actions import OpaqueFunction
-# from launch.actions import RegisterEventHandler
-# from launch.event_handlers import OnProcessExit
+from launch.actions import RegisterEventHandler
+from launch.actions import GroupAction
+from launch_ros.actions import PushRosNamespace
+from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
@@ -30,9 +32,8 @@ from launch_ros.actions import Node
 import subprocess
 import codecs
 
-def launch(context, *args, **kwargs):
-  robot_name = LaunchConfiguration('name').perform(context)
-  robot_model = LaunchConfiguration('model').perform(context)
+def spawn_uav(context, model_path, world_name, model_name, link_name):
+
   x_pos = LaunchConfiguration('x').perform(context)
   y_pos = LaunchConfiguration('y').perform(context)
   z_pos = LaunchConfiguration('z').perform(context)
@@ -41,11 +42,11 @@ def launch(context, *args, **kwargs):
   y_rot = LaunchConfiguration('Y').perform(context)
 
   model_file = os.path.join(
-      get_package_share_directory('mbzirc_ign'), 'models', robot_model, 'model.sdf.erb')
+      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
   print("spawning model file: " + model_file)
 
   # run erb
-  process = subprocess.Popen(['erb', 'name=' + robot_name, model_file], stdout=subprocess.PIPE)
+  process = subprocess.Popen(['erb', 'name=' + model_name, model_file], stdout=subprocess.PIPE)
   stdout = process.communicate()[0]
   str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
 
@@ -54,7 +55,7 @@ def launch(context, *args, **kwargs):
       executable='create',
       output='screen',
       arguments=['-string', str_output,
-                 '-name', robot_name,
+                 '-name', model_name,
                  '-allow_renaming', 'false',
                  '-x', x_pos,
                  '-y', y_pos,
@@ -65,7 +66,89 @@ def launch(context, *args, **kwargs):
                 ],
   )
 
-  return [ignition_spawn_entity]
+  sensor_prefix = '/world/' + world_name + '/model/' + model_name + '/link/' + link_name + '/sensor'
+
+  # imu
+  ros2_ign_imu_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[sensor_prefix +  '/imu_sensor/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU'],
+      remappings=[(sensor_prefix + "/imu_sensor/imu", 'imu/data')]
+  )
+
+  # magnetometer
+  ros2_ign_magnetometer_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[sensor_prefix +  '/magnetometer/magnetometer@sensor_msgs/msg/MagneticField@ignition.msgs.Magnetometer'],
+      remappings=[(sensor_prefix + '/magnetometer/magnetometer', 'magnetic_field')]
+  )
+
+  # air pressure
+  ros2_ign_air_pressure_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[sensor_prefix +  '/air_pressure/air_pressure@sensor_msgs/msg/FluidPressure@ignition.msgs.FluidPressure'],
+      remappings=[(sensor_prefix + '/air_pressure/air_pressure', 'air_pressure')]
+  )
+
+  # camera - image transport
+  # ros2_ign_camera_bridge = Node(
+  #     package='ros_ign_image',
+  #     executable='image_bridge',
+  #     output='screen',
+  #     arguments=[sensor_prefix +  '/camera_front/image'],
+  #     remappings=[(sensor_prefix + '/camera_front/image', 'front/image_raw')]
+  # )
+
+  # camera - parameter bridge
+  ros2_ign_camera_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      arguments=[sensor_prefix +  '/camera_front/image@sensor_msgs/msg/Image@ignition.msgs.Image',
+                 sensor_prefix +  '/camera_front/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
+      remappings=[(sensor_prefix + '/camera_front/image', 'front/image_raw'),
+                  (sensor_prefix + '/camera_front/camera_info', 'front/camera_info')]
+  )
+
+  # twist
+  ros2_ign_twist_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=['/model/' + model_name + '/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist'],
+      remappings=[('/model/' + model_name +'/cmd_vel', 'cmd_vel')]
+  )
+
+  group_action = GroupAction([
+        PushRosNamespace(model_name),
+        ros2_ign_imu_bridge,
+        ros2_ign_magnetometer_bridge,
+        ros2_ign_air_pressure_bridge,
+        ros2_ign_camera_bridge,
+        ros2_ign_twist_bridge,
+  ])
+
+  handler = RegisterEventHandler(
+      event_handler=OnProcessExit(
+          target_action=ignition_spawn_entity,
+          on_exit=[group_action],
+      ))
+
+  return [ignition_spawn_entity, handler]
+
+
+def launch(context, *args, **kwargs):
+  robot_name = LaunchConfiguration('name').perform(context)
+  model_path = LaunchConfiguration('model').perform(context)
+  robot_type = LaunchConfiguration('type').perform(context)
+  world_name = LaunchConfiguration('world').perform(context)
+  if robot_type == 'uav':
+      link_name = 'base_link'
+      return spawn_uav(context, model_path, world_name, robot_name, link_name)
 
 def generate_launch_description():
     return LaunchDescription([
@@ -75,9 +158,17 @@ def generate_launch_description():
             default_value='',
             description='Name of robot to spawn'),
         DeclareLaunchArgument(
+            'world',
+            default_value='simple_demo',
+            description='Name of world'),
+        DeclareLaunchArgument(
             'model',
             default_value='',
             description='SDF model to spawn'),
+        DeclareLaunchArgument(
+            'type',
+            default_value='uav',
+            description="type of model to spawn: ['uav', 'usv', 'vessel']"),
         DeclareLaunchArgument(
             'x',
             default_value='0',

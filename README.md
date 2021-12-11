@@ -47,7 +47,7 @@ See Installation instructions for:
 1. Launch simple demo world
 
     ```
-    ros2 launch ros_ign_gazebo ign_gazebo.launch.py ign_args:="-v 4 simple_demo.sdf"
+    ros2 launch ros_ign_gazebo ign_gazebo.launch.py ign_args:="-v 4 -r simple_demo.sdf"
     ```
 
   * This is equivalent to:
@@ -62,12 +62,44 @@ See Installation instructions for:
       export IGN_GAZEBO_RESOURCE_PATH=$IGN_GAZEBO_RESOURCE_PATH:install/share/mbzirc_ign/models:install/share/mbzirc_ign/worlds
       ```
 
-1. Spawn an UAV
+1. In a separate terminal, spawn a UAV
 
     ```
-    ros2 launch mbzirc_ign spawn.launch.py name:="x3" model:="x3_c2" x:=0 y:=0 z:=0.05
+    # remember to source the setup.bash
+    source install/share/setup.bash
+
+    ros2 launch mbzirc_ign spawn.launch.py name:=x3 world:=simple_demo model:=x3_c2 type:=uav x:=1 y:=2 z:=0.05 R:=0 P:=0 Y:=0
     ```
 
+1. In another terminal, you can take a look at the ROS2 topics available
+
+    ```
+    ros2 topic list
+    ```
+
+1. Make sure data are published, e.g. try echoing the IMU topic
+
+    ```
+    ros2 topic echo /x3/imu/data
+    ```
+
+1. Launch `rqt_image_view` to see camera stream from the UAV
+
+    ```
+    ros2 run rqt_image_view rqt_image_view &
+    ```
+
+1. Publish a twist command with linear +z velocity to make the UAV take off
+
+    ```
+    ros2 topic pub --once /x3/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.5}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
+    ```
+
+1. Publish zero velocity twist command to make the UAV hover in the air
+
+    ```
+    ros2 topic pub --once /x3/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
+    ```
 
 ### Build a Docker image
 
