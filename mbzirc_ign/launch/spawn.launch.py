@@ -114,6 +114,14 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                   (sensor_prefix + '/camera_front/camera_info', 'front/camera_info')]
   )
 
+  # lidar
+  ros2_ign_lidar_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      arguments=[sensor_prefix +  '/front_laser/scan/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked'],
+      remappings=[(sensor_prefix + '/front_laser/scan/points', 'points')]
+  )
+
   # twist
   ros2_ign_twist_bridge = Node(
       package='ros_ign_bridge',
@@ -129,6 +137,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
         ros2_ign_magnetometer_bridge,
         ros2_ign_air_pressure_bridge,
         ros2_ign_camera_bridge,
+        ros2_ign_lidar_bridge,
         ros2_ign_twist_bridge,
   ])
 
