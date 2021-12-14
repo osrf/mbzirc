@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+
+<sdf version='1.6'>
+<!-- Basic model of the 16' WAM-V USV -->
+<model name="wam-v">
+  <static>true</static>
+  <link name="dummy_link">
+    <inertial>
+      <mass>180.0</mass>
+      <inertia>
+        <ixx>120.0</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>393</iyy>
+        <iyz>0.0</iyz>
+        <izz>446.0</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="base_visual">
+      <geometry>
+        <mesh><uri>meshes/WAM-V-Base.dae</uri></mesh>
+      </geometry>
+    </visual>
+
+    <!-- Top base -->
+    <collision name="top_base">
+      <pose>0 -0 1.25 0 0 0</pose>
+      <geometry>
+        <box><size>1.85 1 0.1" </size></box>
+      </geometry>
+    </collision>
+
+    <!-- left base -->
+    <collision name="left_float">
+      <pose>-0.4 1.03 0.2 0 1.57 0 </pose>
+      <geometry>
+        <cylinder><length>4</length><radius>0.2</radius></cylinder>
+      </geometry>
+    </collision>
+    <collision name="left_mid_float">
+      <pose>1.85 1.03 0.3 0 1.38 0</pose>
+      <geometry>
+        <cylinder><length>0.5</length><radius>0.17</radius></cylinder>
+      </geometry>
+    </collision>
+    <collision name="left_front_float">
+      <pose>2.3 1.03 0.4 0 1.3 0</pose>
+      <geometry>
+        <cylinder><length>0.45</length><radius>0.12</radius></cylinder>
+      </geometry>
+    </collision>
+
+    <!-- right base -->
+    <collision name="right_float">
+      <pose>-0.4 -1.03 0.2 0 1.57 0 </pose>
+      <geometry>
+        <cylinder><length>4</length><radius>0.2</radius></cylinder>
+      </geometry>
+    </collision>
+    <collision name="right_mid_float">
+      <pose>1.85 -1.03 0.3 0 1.38 0</pose>
+      <geometry>
+        <cylinder><length>0.5</length><radius>0.17</radius></cylinder>
+      </geometry>
+    </collision>
+    <collision name="right_front_float">
+      <pose>2.3 -1.03 0.4 0 1.3 0</pose>
+      <geometry>
+        <cylinder><length>0.45</length><radius>0.12</radius></cylinder>
+      </geometry>
+    </collision>
+  </link>
+</model>
+</sdf>
