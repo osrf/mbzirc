@@ -107,7 +107,7 @@ See Installation instructions for:
     # remember to source the setup.bash
     source install/share/setup.bash
 
-    ros2 launch mbzirc_ign spawn.launch.py name:=x3 world:=simple_demo model:=wam-v type:=usv x:=20 y:=0 z:=-1.0 R:=0 P:=0 Y:=0
+    ros2 launch mbzirc_ign spawn.launch.py name:=usv world:=simple_demo model:=wam-v type:=usv x:=20 y:=0 z:=-1.0 R:=0 P:=0 Y:=0
     ```
 
 ### Build a Docker image
