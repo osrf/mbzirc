@@ -101,6 +101,15 @@ See Installation instructions for:
     ros2 topic pub --once /x3/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
     ```
 
+1. In a separate terminal, spawn a USV
+
+    ```
+    # remember to source the setup.bash
+    source install/share/setup.bash
+
+    ros2 launch mbzirc_ign spawn.launch.py name:=x3 world:=simple_demo model:=wam-v type:=usv x:=20 y:=0 z:=-1.0 R:=0 P:=0 Y:=0
+    ```
+
 ### Build a Docker image
 
 1. Navigate to the `docker` directory and build the `mbzirc_sim` docker image
