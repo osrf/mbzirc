@@ -131,6 +131,32 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       remappings=[('/model/' + model_name +'/cmd_vel', 'cmd_vel')]
   )
 
+  # pose
+  ros2_ign_pose_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=['/model/' + model_name + '/pose@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V'],
+      remappings=[('/model/' + model_name +'/pose', 'pose')]
+  )
+
+  # pose static
+  ros2_ign_pose_static_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=['/model/' + model_name + '/pose_static@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V'],
+      remappings=[('/model/' + model_name +'/pose_static', 'pose_static')]
+  )
+
+
+  # tf broadcaster
+  ros2_tf_broadcaster = Node(
+      package='mbzirc_ros',
+      executable='pose_tf_broadcaster',
+      output='screen',
+  )
+
   group_action = GroupAction([
         PushRosNamespace(model_name),
         ros2_ign_imu_bridge,
@@ -139,6 +165,9 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
         ros2_ign_camera_bridge,
         ros2_ign_lidar_bridge,
         ros2_ign_twist_bridge,
+        ros2_ign_pose_bridge,
+        ros2_ign_pose_static_bridge,
+        ros2_tf_broadcaster,
   ])
 
   handler = RegisterEventHandler(
