@@ -3,7 +3,7 @@
 <sdf version='1.6'>
 <!-- Basic model of the 16' WAM-V USV -->
 <model name="wam-v">
-  <static>true</static>
+<!--  <static>true</static>-->
   <link name="base_link">
     <inertial>
       <mass>180.0</mass>
@@ -131,7 +131,7 @@
   </link>
 
   <joint name="left_chasis_engine_joint" type="revolute">
-    <pose>-2.373776 1.027135 0.318237 0 0 0</pose>
+<!--    <pose>-2.373776 1.027135 0.318237 0 0 0</pose>-->
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
@@ -146,7 +146,7 @@
   </joint>
 
   <joint name="left_engine_propeller_joint" type="revolute">
-    <pose>-0.278156 0 -0.509371 0 0 0</pose>
+<!--    <pose>-0.278156 0 -0.509371 0 0 0</pose>-->
     <axis>
       <xyz>1 0 0</xyz>
       <limit>
@@ -221,7 +221,7 @@
   </link>
 
   <joint name="right_chasis_engine_joint" type="revolute">
-    <pose>-2.373776 -1.027135 0.318237 0 0 0</pose>
+<!--    <pose>-2.373776 -1.027135 0.318237 0 0 0</pose>-->
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
@@ -236,7 +236,7 @@
   </joint>
 
   <joint name="right_engine_propeller_joint" type="revolute">
-    <pose>-0.278156 0 -0.509371 0 0 0</pose>
+<!--    <pose>-0.278156 0 -0.509371 0 0 0</pose>-->
     <axis>
       <xyz>1 0 0</xyz>
       <limit>
@@ -252,6 +252,50 @@
     <child>right_propeller_link</child>
   </joint>
 
+<!--  <plugin
+    filename="ignition-gazebo-thruster-system"
+    name="ignition::gazebo::systems::Thruster">
+    <namespace>usv_left</namespace>
+    <joint_name>left_engine_properller_joint</joint_name>
+    <thrust_coefficient>0.004422</thrust_coefficient>
+    <fluid_density>1000</fluid_density>
+    <propeller_diameter>0.2</propeller_diameter>
+  </plugin>
+
+  <plugin
+    filename="ignition-gazebo-thruster-system"
+    name="ignition::gazebo::systems::Thruster">
+    <namespace>usv_right</namespace>
+    <joint_name>right_engine_properller_joint</joint_name>
+    <thrust_coefficient>0.004422</thrust_coefficient>
+    <fluid_density>1000</fluid_density>
+    <propeller_diameter>0.2</propeller_diameter>
+  </plugin>
+-->
+
+  <plugin
+  filename="ignition-gazebo-hydrodynamics-system"
+  name="ignition::gazebo::systems::Hydrodynamics">
+      <link_name>base_link</link_name>
+      <xDotU>-4.876161</xDotU>
+      <yDotV>-126.324739</yDotV>
+      <zDotW>-126.324739</zDotW>
+      <kDotP>0</kDotP>
+      <mDotQ>-33.46</mDotQ>
+      <nDotR>-33.46</nDotR>
+      <xUU>-6.2282</xUU>
+      <xU>0</xU>
+      <yVV>-601.27</yVV>
+      <yV>0</yV>
+      <zWW>-601.27</zWW>
+      <zW>0</zW>
+      <kPP>-0.1916</kPP>
+      <kP>0</kP>
+      <mQQ>-632.698957</mQQ>
+      <mQ>0</mQ>
+      <nRR>-632.698957</nRR>
+      <nR>0</nR>
+  </plugin>
 
 </model>
 </sdf>
