@@ -43,7 +43,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
 
   model_file = os.path.join(
       get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
-  print("spawning model file: " + model_file)
+  print("spawning UAV file: " + model_file)
 
   # run erb
   process = subprocess.Popen(['erb', 'name=' + model_name, model_file], stdout=subprocess.PIPE)
@@ -149,6 +149,36 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
 
   return [ignition_spawn_entity, handler]
 
+def spawn_usv(context, model_path, model_name):
+
+  x_pos = LaunchConfiguration('x').perform(context)
+  y_pos = LaunchConfiguration('y').perform(context)
+  z_pos = LaunchConfiguration('z').perform(context)
+  r_rot = LaunchConfiguration('R').perform(context)
+  p_rot = LaunchConfiguration('P').perform(context)
+  y_rot = LaunchConfiguration('Y').perform(context)
+
+  model_file = os.path.join(
+      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf')
+  print("spawning USV file: " + model_file)
+
+  ignition_spawn_entity = Node(
+      package='ros_ign_gazebo',
+      executable='create',
+      output='screen',
+      arguments=['-file', model_file,
+                 '-name', model_name,
+                 '-allow_renaming', 'false',
+                 '-x', x_pos,
+                 '-y', y_pos,
+                 '-z', z_pos,
+                 '-R', r_rot,
+                 '-P', p_rot,
+                 '-Y', y_rot,
+                ],
+  )
+  return [ignition_spawn_entity]
+
 
 def launch(context, *args, **kwargs):
   robot_name = LaunchConfiguration('name').perform(context)
@@ -158,6 +188,10 @@ def launch(context, *args, **kwargs):
   if robot_type == 'uav':
       link_name = 'base_link'
       return spawn_uav(context, model_path, world_name, robot_name, link_name)
+  elif robot_type == 'usv':
+      return spawn_usv(context, model_path, robot_name)
+
+
 
 def generate_launch_description():
     return LaunchDescription([
