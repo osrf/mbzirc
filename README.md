@@ -107,7 +107,19 @@ See Installation instructions for:
     # remember to source the setup.bash
     source install/share/setup.bash
 
-    ros2 launch mbzirc_ign spawn.launch.py name:=usv world:=simple_demo model:=wam-v type:=usv x:=20 y:=0 z:=-1.0 R:=0 P:=0 Y:=0
+    ros2 launch mbzirc_ign spawn.launch.py name:=usv world:=simple_demo model:=wam-v type:=usv x:=0 y:=0 z:=1.0 R:=3.14 P:=0 Y:=0
+    ```
+
+1. To move the propeller
+    ```
+    ign topic -t /model/usv/joint/left_engine_propeller_joint/cmd_thrust -m ignition.msgs.Double -p 'data: -1'
+    ign topic -t /model/usv/joint/right_engine_propeller_joint/cmd_thrust -m ignition.msgs.Double -p 'data: 1'
+    ```
+
+1. To rotate the thruster
+    ```
+    ign topic -t /model/usv/joint/left_chasis_engine_joint/0/cmd_pos -m ignition.msgs.Double -p 'data: -1'
+    ign topic -t /model/usv/joint/right_chasis_engine_joint/0/cmd_pos -m ignition.msgs.Double -p 'data: -1'
     ```
 
 ### Build a Docker image

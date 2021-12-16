@@ -3,7 +3,7 @@
 <sdf version='1.6'>
 <!-- Basic model of the 16' WAM-V USV -->
 <model name="wam-v">
-  <static>true</static>
+  <static>false</static>
   <link name="base_link">
     <inertial>
       <mass>180.0</mass>
@@ -134,8 +134,8 @@
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
-        <lower>-3.14</lower>
-        <upper>3.14</upper>
+        <lower>-1.57079</lower>
+        <upper>1.57079</upper>
         <effort>10</effort>
         <velocity>10</velocity>
       </limit>
@@ -222,8 +222,8 @@
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
-        <lower>-3.14</lower>
-        <upper>3.14</upper>
+        <lower>-1.57079</lower>
+        <upper>1.57079</upper>
         <effort>10</effort>
         <velocity>10</velocity>
       </limit>
@@ -248,6 +248,41 @@
     <child>right_propeller_link</child>
   </joint>
 
+  <plugin
+    filename="ignition-gazebo-thruster-system"
+    name="ignition::gazebo::systems::Thruster">
+    <namespace>usv</namespace>
+    <joint_name>left_engine_propeller_joint</joint_name>
+    <thrust_coefficient>0.004422</thrust_coefficient>
+    <fluid_density>1000</fluid_density>
+    <propeller_diameter>0.2</propeller_diameter>
+    <velocity_control>true</velocity_control>
+  </plugin>
+
+  <plugin
+    filename="ignition-gazebo-joint-position-controller-system"
+    name="ignition::gazebo::systems::JointPositionController">
+    <joint_name>left_chasis_engine_joint</joint_name>
+    <use_velocity_commands>true</use_velocity_commands>
+  </plugin>
+
+  <plugin
+    filename="ignition-gazebo-thruster-system"
+    name="ignition::gazebo::systems::Thruster">
+    <namespace>usv</namespace>
+    <joint_name>right_engine_propeller_joint</joint_name>
+    <thrust_coefficient>0.004422</thrust_coefficient>
+    <fluid_density>1000</fluid_density>
+    <propeller_diameter>0.2</propeller_diameter>
+    <velocity_control>true</velocity_control>
+  </plugin>
+
+  <plugin
+    filename="ignition-gazebo-joint-position-controller-system"
+    name="ignition::gazebo::systems::JointPositionController">
+    <joint_name>right_chasis_engine_joint</joint_name>
+    <use_velocity_commands>true</use_velocity_commands>
+  </plugin>
 
 </model>
 </sdf>
