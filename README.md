@@ -101,6 +101,16 @@ See Installation instructions for:
     ros2 topic pub --once /x3/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
     ```
 
+1. View the TF tree
+
+    ```
+    # this generates frames.pdf
+    ros2 run tf2_tools view_frames
+
+    # view the TF tree using your favorite PDF viewer, e.g.
+    evince frames.pdf
+    ```
+
 ### Build a Docker image
 
 1. Navigate to the `docker` directory and build the `mbzirc_sim` docker image

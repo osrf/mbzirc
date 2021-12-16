@@ -1,0 +1,18 @@
+digraph G {
+"x4" -> "x4/rotor_5"[label=" Broadcaster: default_authority\nAverage rate: 1000.327\nBuffer length: 3.054\nMost recent transform: 20.167\nOldest transform: 17.113\n"];
+"x4" -> "x4/rotor_2"[label=" Broadcaster: default_authority\nAverage rate: 1000.327\nBuffer length: 3.054\nMost recent transform: 20.167\nOldest transform: 17.113\n"];
+"x4" -> "x4/rotor_1"[label=" Broadcaster: default_authority\nAverage rate: 1000.327\nBuffer length: 3.054\nMost recent transform: 20.167\nOldest transform: 17.113\n"];
+"x4" -> "x4/rotor_0"[label=" Broadcaster: default_authority\nAverage rate: 1000.327\nBuffer length: 3.054\nMost recent transform: 20.167\nOldest transform: 17.113\n"];
+"x4" -> "x4/rotor_4"[label=" Broadcaster: default_authority\nAverage rate: 1000.327\nBuffer length: 3.054\nMost recent transform: 20.167\nOldest transform: 17.113\n"];
+"x4" -> "x4/rotor_3"[label=" Broadcaster: default_authority\nAverage rate: 1000.327\nBuffer length: 3.054\nMost recent transform: 20.167\nOldest transform: 17.113\n"];
+"x4/base_link" -> "x4/base_link/front_laser"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"x4" -> "x4/base_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"x4/base_link" -> "x4/base_link/camera_front"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"x4/base_link" -> "x4/base_link/magnetometer"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"x4/base_link" -> "x4/base_link/air_pressure"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"x4/base_link" -> "x4/base_link/imu_sensor"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1639618909.4017045"[ shape=plaintext ] ;
+}->"x4";
+}
