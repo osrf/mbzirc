@@ -131,7 +131,6 @@
   </link>
 
   <joint name="left_chasis_engine_joint" type="revolute">
-    <pose>-2.373776 1.027135 0.318237 0 0 0</pose>
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
@@ -146,7 +145,6 @@
   </joint>
 
   <joint name="left_engine_propeller_joint" type="revolute">
-    <pose>-0.278156 0 -0.509371 0 0 0</pose>
     <axis>
       <xyz>1 0 0</xyz>
       <limit>
@@ -221,7 +219,6 @@
   </link>
 
   <joint name="right_chasis_engine_joint" type="revolute">
-    <pose>-2.373776 -1.027135 0.318237 0 0 0</pose>
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
@@ -236,7 +233,6 @@
   </joint>
 
   <joint name="right_engine_propeller_joint" type="revolute">
-    <pose>-0.278156 0 -0.509371 0 0 0</pose>
     <axis>
       <xyz>1 0 0</xyz>
       <limit>
