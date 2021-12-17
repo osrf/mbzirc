@@ -114,6 +114,18 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                   (sensor_prefix + '/camera_front/camera_info', 'front/camera_info')]
   )
 
+  # camera optical frame publisher
+  ros2_camera_optical_frame_publisher = Node(
+      package='mbzirc_ros',
+      executable='optical_frame_publisher',
+      arguments=['1'],
+      remappings=[('input/image', 'front/image_raw'),
+                  ('output/image', 'front/optical/image_raw'),
+                  ('input/camera_info', 'front/camera_info'),
+                  ('output/camera_info', 'front/optical/camera_info'),
+                 ]
+  )
+
   # lidar
   ros2_ign_lidar_bridge = Node(
       package='ros_ign_bridge',
@@ -163,6 +175,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
         ros2_ign_magnetometer_bridge,
         ros2_ign_air_pressure_bridge,
         ros2_ign_camera_bridge,
+        ros2_camera_optical_frame_publisher,
         ros2_ign_lidar_bridge,
         ros2_ign_twist_bridge,
         ros2_ign_pose_bridge,
