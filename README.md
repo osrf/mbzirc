@@ -140,6 +140,8 @@ See Installation instructions for:
     ros2 topic pub --once /usv/right/thrust/joint/cmd_pos std_msgs/msg/Float64 'data: 1'
     ```
 
+    This is equivalent to:
+
     ```
     ign topic -t /usv/left/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
     ign topic -t /usv/right/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
