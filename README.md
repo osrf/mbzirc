@@ -122,8 +122,8 @@ See Installation instructions for:
 
 1. To move the propeller
     ```
-    ros2 topic pub --once /usv/left/thrust std_msgs/msg/Float64 'data: -1'
-    ros2 topic pub --once /usv/right/thrust std_msgs/msg/Float64 'data: 1'
+    ros2 topic pub --once /usv/left/thrust/cmd_thrust std_msgs/msg/Float64 'data: -1'
+    ros2 topic pub --once /usv/right/thrust/cmd_thrust std_msgs/msg/Float64 'data: 1'
     ```
 
     This is equivalent to:
