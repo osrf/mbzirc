@@ -134,23 +134,30 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       remappings=[(sensor_prefix + '/front_laser/scan/points', 'points')]
   )
 
-  # rgbd camera
-  ros2_ign_rgbd_camera_bridge = Node(
+  # rgbd camera points
+  ros2_ign_rgbd_points_bridge = Node(
       package='ros_ign_bridge',
       executable='parameter_bridge',
-      arguments=[sensor_prefix +  '/camera_front/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked',
-                 sensor_prefix +  '/camera_front/depth_image@sensor_msgs/msg/Image@ignition.msgs.Image'],
-      remappings=[(sensor_prefix + '/camera_front/points', 'rgbd_camera/depth/points'),
-                  (sensor_prefix + '/camera_front/depth_image', 'rgbd_camera/depth')]
+      arguments=[sensor_prefix +  '/camera_front/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked'],
+      remappings=[(sensor_prefix + '/camera_front/points', 'rgbd_camera/depth/points')]
   )
+
+  # rgbd camera depth
+  ros2_ign_rgbd_depth_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      arguments=[sensor_prefix +  '/camera_front/depth_image@sensor_msgs/msg/Image@ignition.msgs.Image'],
+      remappings=[(sensor_prefix + '/camera_front/depth_image', 'front/depth')]
+  )
+
 
   # rgbd camera optical frame publisher
   ros2_rgbd_camera_optical_frame_publisher = Node(
       package='mbzirc_ros',
       executable='optical_frame_publisher',
       arguments=['0'],
-      remappings=[('input/image', 'rgbd_camera/depth'),
-                  ('output/image', 'rgbd_camera/optical/depth'),
+      remappings=[('input/image', 'front/depth'),
+                  ('output/image', 'front/optical/depth'),
                  ]
   )
 
@@ -196,7 +203,8 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
         ros2_ign_air_pressure_bridge,
         ros2_ign_camera_bridge,
         ros2_camera_optical_frame_publisher,
-        ros2_ign_rgbd_camera_bridge,
+        ros2_ign_rgbd_points_bridge,
+        ros2_ign_rgbd_depth_bridge,
         ros2_rgbd_camera_optical_frame_publisher,
         ros2_ign_lidar_bridge,
         ros2_ign_twist_bridge,

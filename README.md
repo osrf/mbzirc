@@ -68,7 +68,7 @@ See Installation instructions for:
     # remember to source the setup.bash
     source install/share/setup.bash
 
-    ros2 launch mbzirc_ign spawn.launch.py name:=x3 world:=simple_demo model:=x3_c2 type:=uav x:=1 y:=2 z:=0.05 R:=0 P:=0 Y:=0
+    ros2 launch mbzirc_ign spawn.launch.py name:=x4 world:=simple_demo model:=x4 type:=uav x:=1 y:=2 z:=0.08 R:=0 P:=0 Y:=0
     ```
 
 1. In another terminal, you can take a look at the ROS2 topics available
@@ -80,7 +80,7 @@ See Installation instructions for:
 1. Make sure data are published, e.g. try echoing the IMU topic
 
     ```
-    ros2 topic echo /x3/imu/data
+    ros2 topic echo /x4/imu/data
     ```
 
 1. Launch `rqt_image_view` to see camera stream from the UAV
@@ -92,13 +92,13 @@ See Installation instructions for:
 1. Publish a twist command with linear +z velocity to make the UAV take off
 
     ```
-    ros2 topic pub --once /x3/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.5}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
+    ros2 topic pub --once /x4/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.5}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
     ```
 
 1. Publish zero velocity twist command to make the UAV hover in the air
 
     ```
-    ros2 topic pub --once /x3/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
+    ros2 topic pub --once /x4/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
     ```
 
 1. View the TF tree
@@ -110,6 +110,17 @@ See Installation instructions for:
     # view the TF tree using your favorite PDF viewer, e.g.
     evince frames.pdf
     ```
+
+1. Visualize point clouds in rviz2
+
+   ```
+   ros2 run rviz2 rviz2
+   ```
+
+   Set `Fixed Frame` to `/x4/base_link`
+
+   Click on `Add` button below the left panel, select the `By topic` tab and choose the `/x4/rgbd_camera/depth/points` > `PointCloud2` topic to see colored point clouds in the 3D view.
+
 
 1. In a separate terminal, spawn a USV
 
