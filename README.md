@@ -143,6 +143,14 @@ See Installation instructions for:
     ign topic -t /model/usv/joint/right_chasis_engine_joint/0/cmd_pos -m ignition.msgs.Double -p 'data: -1'
     ```
 
+### Run Tests
+
+To run tests, install the pacakges from source. Execute the following command to run the tests and see verbose output in the console:
+
+```
+colcon test --merge-install --event-handlers console_direct+
+```
+
 ### Build a Docker image
 
 1. Navigate to the `docker` directory and build the `mbzirc_sim` docker image
@@ -158,3 +166,4 @@ See Installation instructions for:
     ```
     bash run.bash mbzirc_sim
     ```
+
