@@ -28,6 +28,7 @@ from launch_ros.actions import Node
 
 import launch_testing
 
+# launch simple_demo and spawns x3 and x4 UAVs
 def generate_test_description():
 
     process_under_test = Node(
