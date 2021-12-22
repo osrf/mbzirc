@@ -21,11 +21,12 @@ from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 
 from launch.actions import IncludeLaunchDescription
+from launch.actions import ExecuteProcess
+from launch.actions import TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
 import launch_testing
-
 
 def generate_test_description():
 
@@ -35,16 +36,50 @@ def generate_test_description():
         output='screen'
     )
 
-    gazebo = IncludeLaunchDescription(
+    # launch simple_demo world
+    gazebo = ExecuteProcess(
+        cmd=['ign gazebo -v 4 --iterations 15000 -s -r simple_demo.sdf'],
+        output='screen',
+        shell=True
+    )
+
+    # spawn x3
+    spawn_x3 = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
-                get_package_share_directory('ros_ign_gazebo'),
-                'launch/ign_gazebo.launch.py')
+                get_package_share_directory('mbzirc_ign'),
+                'launch/spawn.launch.py')
         ),
-        launch_arguments={'ign_args' : '-v 4 -s simple_demo.sdf'}.items())
+        launch_arguments={'name'  : 'x3',
+                          'world' : 'simple_demo',
+                          'model' : 'x3',
+                          'type'  : 'uav',
+                          'z'     : '0.08',}.items())
+    delay_launch_x3 = TimerAction(
+            period=3.0,
+            actions=[spawn_x3])
+
+    # spawn x4
+    spawn_x4 = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('mbzirc_ign'),
+                'launch/spawn.launch.py')
+        ),
+        launch_arguments={'name'  : 'x4',
+                          'world' : 'simple_demo',
+                          'model' : 'x4',
+                          'type'  : 'uav',
+                          'x'     : '2',
+                          'z'     : '0.08',}.items())
+    delay_launch_x4 = TimerAction(
+            period=4.0,
+            actions=[spawn_x4])
 
     return LaunchDescription([
         gazebo,
+        delay_launch_x3,
+        delay_launch_x4,
         process_under_test,
         launch_testing.util.KeepAliveProc(),
         launch_testing.actions.ReadyToTest(),
@@ -53,8 +88,9 @@ def generate_test_description():
 
 class RosApiTest(unittest.TestCase):
 
-    def test_termination(self, process_under_test, proc_info):
+    def test_termination(self, process_under_test, gazebo, proc_info):
         proc_info.assertWaitForShutdown(process=process_under_test, timeout=200)
+        proc_info.assertWaitForShutdown(process=gazebo, timeout=200)
 
 
 @launch_testing.post_shutdown_test()

@@ -148,7 +148,7 @@ See Installation instructions for:
 To run tests, install the pacakges from source. Execute the following command to run the tests and see verbose output in the console:
 
 ```
-colcon test --merge-install --event-handlers console_direct+
+colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros
 ```
 
 ### Build a Docker image
