@@ -31,6 +31,8 @@ using namespace std::chrono_literals;
 
 std::shared_ptr<rclcpp::Node> node;
 
+// code adapted from ros_ign_bridge
+
 //////////////////////////////////////////////////
 /// \brief A class for testing ROS topic subscription.
 template<typename ROS_T>

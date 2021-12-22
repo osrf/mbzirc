@@ -145,7 +145,7 @@ See Installation instructions for:
 
 ### Run Tests
 
-To run tests, install the pacakges from source. Execute the following command to run the tests and see verbose output in the console:
+To run tests, install from source, then execute the following command and see output in the console:
 
 ```
 colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros
