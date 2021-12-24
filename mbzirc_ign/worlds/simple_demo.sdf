@@ -4,6 +4,7 @@
 -->
 <sdf version="1.6">
   <world name="simple_demo">
+
     <plugin
       filename="ignition-gazebo-physics-system"
       name="ignition::gazebo::systems::Physics">
@@ -41,6 +42,21 @@
       filename="ignition-gazebo-scene-broadcaster-system"
       name="ignition::gazebo::systems::SceneBroadcaster">
     </plugin>
+    <!-- <plugin
+      filename="ignition-gazebo-buoyancy-system"
+      name="ignition::gazebo::systems::Buoyancy"> -->
+      <!-- <uniform_fluid_density>1000</uniform_fluid_density> -->
+      <!-- <graded_buoyancy>
+        <default_density>1000</default_density>
+        <density_change>
+          <above_depth>0</above_depth>
+          <density>1</density>
+        </density_change>
+      </graded_buoyancy> -->
+
+      <!-- enable by link name -->
+      <!-- <enable>usv</enable>
+    </plugin> -->
 
     <scene>
       <sky></sky>
