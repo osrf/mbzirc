@@ -122,14 +122,29 @@ See Installation instructions for:
 
 1. To move the propeller
     ```
+    ros2 topic pub --once /usv/left/thrust/cmd_thrust std_msgs/msg/Float64 'data: -1'
+    ros2 topic pub --once /usv/right/thrust/cmd_thrust std_msgs/msg/Float64 'data: 1'
+    ```
+
+    This is equivalent to:
+
+    ```
     ign topic -t /model/usv/joint/left_engine_propeller_joint/cmd_thrust -m ignition.msgs.Double -p 'data: -1'
     ign topic -t /model/usv/joint/right_engine_propeller_joint/cmd_thrust -m ignition.msgs.Double -p 'data: 1'
     ```
 
 1. To rotate the thruster
+
     ```
-    ign topic -t /model/usv/joint/left_chasis_engine_joint/0/cmd_pos -m ignition.msgs.Double -p 'data: -1'
-    ign topic -t /model/usv/joint/right_chasis_engine_joint/0/cmd_pos -m ignition.msgs.Double -p 'data: -1'
+    ros2 topic pub --once /usv/left/thrust/joint/cmd_pos std_msgs/msg/Float64 'data: -1'
+    ros2 topic pub --once /usv/right/thrust/joint/cmd_pos std_msgs/msg/Float64 'data: 1'
+    ```
+
+    This is equivalent to:
+
+    ```
+    ign topic -t /usv/left/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
+    ign topic -t /usv/right/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
     ```
 
 ### Build a Docker image
