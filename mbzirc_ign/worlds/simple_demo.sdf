@@ -103,6 +103,53 @@
       </uri>
     </include>
 
+    <model name="heightmap_bounds">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 -25 0 0 0</pose>
+        <collision name="x">
+          <pose>75 0 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1 150 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="y">
+          <pose>0 75 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>150 1 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="-x">
+          <pose>-75 0 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1 150 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="-y">
+          <pose>0 -75 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>150 1 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="base">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>5000 5000 1</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
     <include>
       <pose>0 0 -1 0 0 0</pose>
       <uri>

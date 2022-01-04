@@ -264,6 +264,7 @@
     name="ignition::gazebo::systems::JointPositionController">
     <joint_name>left_chasis_engine_joint</joint_name>
     <use_velocity_commands>true</use_velocity_commands>
+    <topic>usv/left/thruster/joint/cmd_pos</topic>
   </plugin>
 
   <plugin
@@ -282,6 +283,7 @@
     name="ignition::gazebo::systems::JointPositionController">
     <joint_name>right_chasis_engine_joint</joint_name>
     <use_velocity_commands>true</use_velocity_commands>
+    <topic>usv/right/thruster/joint/cmd_pos</topic>
   </plugin>
 
 </model>

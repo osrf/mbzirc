@@ -249,7 +249,49 @@ def spawn_usv(context, model_path, model_name):
                  '-Y', y_rot,
                 ],
   )
-  return [ignition_spawn_entity]
+
+  # thrust cmd
+  left_thrust_topic = '/model/' + model_name + '/joint/left_engine_propeller_joint/cmd_thrust'
+  right_thrust_topic = '/model/' + model_name + '/joint/right_engine_propeller_joint/cmd_thrust'
+  ros2_ign_thrust_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[left_thrust_topic + '@std_msgs/msg/Float64@ignition.msgs.Double',
+                 right_thrust_topic + '@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[(left_thrust_topic, 'left/thrust/cmd_thrust'),
+                  (right_thrust_topic, 'right/thrust/cmd_thrust')]
+  )
+
+  # thrust joint pos cmd
+  # left_joint_topic = '/model/' + model_name + '/joint/left_chasis_engine_joint/0/cmd_pos'
+  # right_joint_topic = '/model/' + model_name + '/joint/right_chasis_engine_joint/0/cmd_pos'
+  left_joint_topic = '/usv/left/thruster/joint/cmd_pos'
+  right_joint_topic = '/usv/right/thruster/joint/cmd_pos'
+
+  ros2_ign_thrust_joint_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[left_joint_topic + '@std_msgs/msg/Float64@ignition.msgs.Double',
+                 right_joint_topic + '@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[(left_joint_topic, 'left/thrust/joint/cmd_pos'),
+                  (right_joint_topic, 'right/thrust/joint/cmd_pos')]
+  )
+
+  group_action = GroupAction([
+        PushRosNamespace(model_name),
+        ros2_ign_thrust_bridge,
+        ros2_ign_thrust_joint_bridge,
+  ])
+
+  handler = RegisterEventHandler(
+      event_handler=OnProcessExit(
+          target_action=ignition_spawn_entity,
+          on_exit=[group_action],
+      ))
+
+  return [ignition_spawn_entity, handler]
 
 
 def launch(context, *args, **kwargs):
