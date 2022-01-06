@@ -1,6 +1,7 @@
 # Ubuntu 20.04 with nvidia-docker2 beta opengl support
 FROM nvidia/opengl:1.0-glvnd-devel-ubuntu20.04
 
+ENV DEBIAN_FRONTEND noninteractive
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get update \
  && apt-get install --no-install-recommends -y \
