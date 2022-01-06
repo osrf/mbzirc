@@ -1,0 +1,12 @@
+name: integration_tests
+
+on: [push]
+
+jobs:
+  integration_tests:
+    runs-on: ubuntu-20.04 # linux required if you want to use docker
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Compile and run tests
+      run: docker build -t mbzirc_sim . -f docker/tests/Dockerfile
