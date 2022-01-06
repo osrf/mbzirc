@@ -84,9 +84,8 @@ RUN apt-get -qq update && apt-get -q -y install \
 
 # Add a user with the same user_id as the user outside the container
 # Requires a docker build argument `user_id`
-ARG user_id
 ENV USERNAME developer
-RUN useradd -U --uid ${user_id} -ms /bin/bash $USERNAME \
+RUN useradd -U -ms /bin/bash $USERNAME \
  && echo "$USERNAME:$USERNAME" | chpasswd \
  && adduser $USERNAME sudo \
  && echo "$USERNAME ALL=NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME
