@@ -118,5 +118,12 @@ RUN sudo apt-get update \
   && rosdep install -r --from-paths src -i -y --rosdistro galactic
 
 RUN /bin/bash -c 'source /opt/ros/galactic/setup.bash && colcon build --merge-install'
+
+RUN /bin/bash -c 'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 &'
+
+ENV DISPLAY :1.0
+ENV RENDER_ENGINE_VALUES ogre2
+ENV MESA_GL_VERSION_OVERRIDE 3.3
+
 RUN /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros'
 RUN /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && colcon test-result'
