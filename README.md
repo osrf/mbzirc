@@ -18,6 +18,9 @@ See Installation instructions for:
 * ROS2 Galactic:  https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Binary.html
 
 
+1. Switch to the `surface_plugin` branch in ign-gazebo and recompile.
+
+
 ### Installation from Source
 
 1. Create a colcon workspace and clone the repo
