@@ -117,7 +117,7 @@ See Installation instructions for:
     # remember to source the setup.bash
     source install/share/setup.bash
 
-    ros2 launch mbzirc_ign spawn.launch.py name:=usv world:=simple_demo model:=wam-v type:=usv x:=0 y:=0 z:=1.0 R:=3.14 P:=0 Y:=0
+    ros2 launch mbzirc_ign spawn.launch.py name:=usv world:=simple_demo model:=wam-v type:=usv x:=15 y:=0 z:=-1.1 R:=0 P:=0 Y:=0
     ```
 
 1. To move the propeller
