@@ -46,7 +46,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   # calculate battery capacity from time
   # capacity (Ah) = flight time (in hours) * load (watts) / voltage
   # assume constant voltage for battery to keep things simple for now.
-  battery_capacity = (flight_time / 60) *  6.6 / 12.694
+  battery_capacity = (float(flight_time) / 60) *  6.6 / 12.694
 
   model_file = os.path.join(
       get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
@@ -55,7 +55,8 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   # run erb
   process = subprocess.Popen(['erb',
     'name=' + model_name,
-    'flight_time='+str(battery_capacity) model_file], stdout=subprocess.PIPE)
+    'flight_time='+str(battery_capacity),
+    model_file], stdout=subprocess.PIPE)
   stdout = process.communicate()[0]
   str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
 
