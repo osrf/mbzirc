@@ -27,13 +27,12 @@
     <collision name="top_base">
       <pose>0 -0 1.25 0 0 0</pose>
       <geometry>
-        <!-- <box><size>1.85 1 0.1" </size></box> -->
-        <box><size>1.85 1 0.125" </size></box>
+        <box><size>1.85 1 0.1" </size></box>
       </geometry>
     </collision>
 
     <!-- left base -->
-    <!-- <collision name="left_float">
+    <collision name="left_float">
       <pose>-0.4 1.03 0.2 0 1.57 0 </pose>
       <geometry>
         <cylinder><length>4</length><radius>0.2</radius></cylinder>
@@ -50,10 +49,10 @@
       <geometry>
         <cylinder><length>0.45</length><radius>0.12</radius></cylinder>
       </geometry>
-    </collision> -->
+    </collision>
 
     <!-- right base -->
-    <!-- <collision name="right_float">
+    <collision name="right_float">
       <pose>-0.4 -1.03 0.2 0 1.57 0 </pose>
       <geometry>
         <cylinder><length>4</length><radius>0.2</radius></cylinder>
@@ -70,19 +69,12 @@
       <geometry>
         <cylinder><length>0.45</length><radius>0.12</radius></cylinder>
       </geometry>
-    </collision> -->
+    </collision>
   </link>
 
   <!-- Balance link -->
   <link name="balance_link">
     <pose>147.733 0 0 0 0 0</pose>
-
-    <!-- <collision name="balance_collision">
-      <pose>0 0 0 0 0 0</pose>
-      <geometry>
-        <cylinder><length>0.18</length><radius>0.24</radius></cylinder>
-      </geometry>
-    </collision> -->
     <inertial>
       <mass>0.5</mass>
       <inertia>
@@ -104,7 +96,7 @@
         <mesh><uri>meshes/engine.dae</uri></mesh>
       </geometry>
     </visual>
-    <!-- <collision name="left_engine_vertical_axis_collision">
+    <collision name="left_engine_vertical_axis_collision">
       <pose>-0.16 0 -0.24 0 0 0</pose>
       <geometry>
         <box><size>0.2 0.15 0.83</size></box>
@@ -115,7 +107,7 @@
       <geometry>
         <box><size>0.12 0.15 0.12</size></box>
       </geometry>
-    </collision> -->
+    </collision>
     <inertial>
       <mass>15.0</mass>
       <inertia>
@@ -130,17 +122,17 @@
   </link>
   <link name="left_propeller_link">
     <pose>-2.651932 1.027135 -0.191134 0 0 0</pose>
-    <visual name ="left_properller_visual">
+    <visual name ="left_propeller_visual">
       <geometry>
         <mesh><uri>meshes/propeller.dae</uri></mesh>
       </geometry>
     </visual>
-    <!-- <collision name="left_propeller_collision">
+    <collision name="left_propeller_collision">
       <pose>-0.08 0 0 0 1.57 0</pose>
       <geometry>
         <cylinder><length>0.18</length><radius>0.24</radius></cylinder>
       </geometry>
-    </collision> -->
+    </collision>
     <inertial>
       <mass>0.5</mass>
       <inertia>
@@ -192,7 +184,7 @@
         <mesh><uri>meshes/engine.dae</uri></mesh>
       </geometry>
     </visual>
-    <!-- <collision name="right_engine_vertical_axis_collision">
+    <collision name="right_engine_vertical_axis_collision">
       <pose>-0.16 0 -0.24 0 0 0</pose>
       <geometry>
         <box><size>0.2 0.15 0.83</size></box>
@@ -203,7 +195,7 @@
       <geometry>
         <box><size>0.12 0.15 0.12</size></box>
       </geometry>
-    </collision> -->
+    </collision>
     <inertial>
       <mass>15.0</mass>
       <inertia>
@@ -218,17 +210,17 @@
   </link>
   <link name="right_propeller_link">
     <pose>-2.651932 -1.027135 -0.191134 0 0 0</pose>
-    <visual name ="right_properller_visual">
+    <visual name ="right_propeller_visual">
       <geometry>
         <mesh><uri>meshes/propeller.dae</uri></mesh>
       </geometry>
     </visual>
-    <!-- <collision name="right_propeller_collision">
+    <collision name="right_propeller_collision">
       <pose>-0.08 0 0 0 1.57 0</pose>
       <geometry>
         <cylinder><length>0.18</length><radius>0.24</radius></cylinder>
       </geometry>
-    </collision> -->
+    </collision>
     <inertial>
       <mass>0.5</mass>
       <inertia>
@@ -316,26 +308,12 @@
   <plugin
     filename="ignition-gazebo-surface-system"
     name="ignition::gazebo::systems::Surface">
-  </plugin>
-
-  <!-- hydrodynamics plugin-->
-  <!-- <plugin
-    filename="ignition-gazebo-hydrodynamics-system"
-    name="ignition::gazebo::systems::Hydrodynamics">
     <link_name>base_link</link_name>
-    <xDotU>0</xDotU>
-    <yDotV>0</yDotV>
-    <nDotR>0</nDotR>
-    <xUU>72.4</xUU>
-    <xU>51.3</xU>
-    <yVV>0</yVV>
-    <yV>40</yV>
-    <zW>500</zW>
-    <kP>50</kP>
-    <mQ>50</mQ>
-    <nRR>0</nRR>
-    <nR>400</nR>
-  </plugin> -->
+    <vehicle_length>4.9</vehicle_length>
+    <vehicle_width>2.4</vehicle_width>
+    <hull_radius>0.213</hull_radius>
+    <fluid_level>-1</fluid_level>
+  </plugin>
 
 </model>
 </sdf>
