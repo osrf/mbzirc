@@ -152,14 +152,15 @@ end
      </rotorConfiguration>
    </plugin>
    <!-- Battery plugin -->
+   <!-- Since we are interested in using time as the limiting factor -->
    <plugin filename="libignition-gazebo-linearbatteryplugin-system.so"
      name="ignition::gazebo::systems::LinearBatteryPlugin">
      <battery_name>linear_battery</battery_name>
      <voltage>12.694</voltage>
      <open_circuit_voltage_constant_coef>12.694</open_circuit_voltage_constant_coef>
-     <open_circuit_voltage_linear_coef>-3.1424</open_circuit_voltage_linear_coef>
-     <initial_charge>18.0</initial_charge>
-     <capacity>18.0</capacity>
+     <open_circuit_voltage_linear_coef>0</open_circuit_voltage_linear_coef>
+     <initial_charge><%= $capacity%></initial_charge>
+     <capacity><%= $capacity%></capacity>
      <resistance>0.061523</resistance>
      <smooth_current_tau>1.9499</smooth_current_tau>
      <power_load>6.6</power_load>
