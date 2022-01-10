@@ -331,6 +331,11 @@ def generate_launch_description():
             'Y',
             default_value='0',
             description='Y rotation to spawn'),
+        DeclareLaunchArgument(
+            'flightTime',
+            default_value='10',
+            description='Battery flight time in minutes (only for UAVs)'
+        )
         # launch setup
         OpaqueFunction(function = launch)
     ])
