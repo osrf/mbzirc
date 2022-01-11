@@ -72,22 +72,6 @@
     </collision>
   </link>
 
-  <!-- Balance link -->
-  <link name="balance_link">
-    <pose>147.733 0 0 0 0 0</pose>
-    <inertial>
-      <mass>0.5</mass>
-      <inertia>
-        <ixx>0.008545</ixx>
-        <ixy>0.0</ixy>
-        <ixz>0.0</ixz>
-        <iyy>0.008545</iyy>
-        <iyz>0.0</iyz>
-        <izz>0.0144</izz>
-      </inertia>
-    </inertial>
-  </link>
-
   <!-- left engine and thruster -->
   <link name="left_engine_link">
     <pose>-2.373776 1.027135 0.318237 0 0 0</pose>
@@ -233,11 +217,6 @@
       </inertia>
     </inertial>
   </link>
-
-  <joint name="balance_joint" type="fixed">
-    <parent>base_link</parent>
-    <child>balance_link</child>
-  </joint>
 
   <joint name="right_chasis_engine_joint" type="revolute">
     <axis>
