@@ -14,27 +14,6 @@
       filename="ignition-gazebo-user-commands-system"
       name="ignition::gazebo::systems::UserCommands">
     </plugin>
-    <plugin
-      filename="ignition-gazebo-sensors-system"
-      name="ignition::gazebo::systems::Sensors">
-      <render_engine>ogre2</render_engine>
-    </plugin>
-    <plugin
-      filename="ignition-gazebo-air-pressure-system"
-      name="ignition::gazebo::systems::AirPressure">
-    </plugin>
-    <plugin
-      filename="ignition-gazebo-altimeter-system"
-      name="ignition::gazebo::systems::Altimeter">
-    </plugin>
-    <plugin
-      filename="ignition-gazebo-imu-system"
-      name="ignition::gazebo::systems::Imu">
-    </plugin>
-    <plugin
-      filename="ignition-gazebo-magnetometer-system"
-      name="ignition::gazebo::systems::Magnetometer">
-    </plugin>
     <scene>
       <sky></sky>
       <grid>false</grid>
