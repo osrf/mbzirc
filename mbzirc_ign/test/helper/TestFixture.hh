@@ -132,6 +132,11 @@ class MBZIRCTestFixture : public ::testing::Test
     return launchProcess(cmd);
   }
 
+  public: void Step(int _steps)
+  {
+    this->fixture->Server()->Run(true, _steps, false);
+  }
+
   public: void StopLaunchFile(pid_t _launchfileHandle)
   {
     killpg(_launchfileHandle, SIGINT);
@@ -155,7 +160,7 @@ class MBZIRCTestFixture : public ::testing::Test
   }
 
   private: std::unique_ptr<ignition::gazebo::TestFixture> fixture;
- 
+
   private: int maxIter{2000};
 
   private: std::mutex finishedSim;

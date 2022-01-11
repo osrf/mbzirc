@@ -39,7 +39,7 @@ TEST_F(MBZIRCTestFixture, SpawnUAVTest)
 
   bool spawnedSuccessfully = false;
 
-  SetMaxIter(30000);
+  SetMaxIter(1000);
 
   LoadWorld("faster_than_realtime.sdf");
 
@@ -63,71 +63,12 @@ TEST_F(MBZIRCTestFixture, SpawnUAVTest)
   StartSim();
   auto launchHandle = LaunchWithParams("spawn.launch.py", params);
   WaitForMaxIter();
+
+  while(!spawnedSuccessfully && Iter() < 50000)
+  {
+    Step(100);
+  }
   StopLaunchFile(launchHandle);
 
   ASSERT_TRUE(spawnedSuccessfully);
 }
-
-#if 0
-TEST(uherih, frejorj)
-{
-   ignition::common::Console::SetVerbosity(4);
-
-  auto fixture = std::make_unique<ignition::gazebo::TestFixture>(
-      ignition::common::joinPaths(
-          std::string(PROJECT_SOURCE_PATH), "worlds", "faster_than_realtime.sdf"));
-
-  int _iter = 0;
-
-  const int maxIter{2000};
-
-  std::mutex finishedSim;
-  std::condition_variable cv;
-
-  bool spawnedSuccessfully = false;
-
-  fixture->OnPostUpdate(
-      [&](const ignition::gazebo::UpdateInfo &_info,
-          const ignition::gazebo::EntityComponentManager &_ecm)
-      {
-        _iter++;
-
-        if (_iter % 1000 == 0)
-          ignmsg << _iter << std::endl;
-
-        /// Check if model has been spawned
-        auto worldEntity = ignition::gazebo::worldEntity(_ecm);
-        ignition::gazebo::World world(worldEntity);
-
-        auto modelEntity = world.ModelByName(_ecm, "x3");
-        if (modelEntity != ignition::gazebo::kNullEntity)
-        {
-          spawnedSuccessfully = true;
-        }
-
-        if (_iter == maxIter - 1)
-        {
-          {
-            std::lock_guard<std::mutex> lk(finishedSim);
-          }
-          cv.notify_all();
-        }
-      });
-
-  fixture->Finalize();
-
-  fixture->Server()->Run(false, maxIter, false);
-  std::string cmd = std::string(
-      "ros2 launch mbzirc_ign spawn.launch.py name:=x3 world:=faster_than_realtime model:=x3_c2 type:=uav x:=1 y:=2 z:=0.05 flightTime:=10");
-
-  auto pid = launchProcess(cmd);
-
-  std::unique_lock<std::mutex> lock(finishedSim);
-  cv.wait(lock, [&_iter, &maxIter]
-          { return _iter == maxIter - 1; });
-  ASSERT_TRUE(spawnedSuccessfully);
-
-  std::cerr << "Killing " << pid << std::endl;
-  killpg(pid, SIGINT);
-}
-#endif
