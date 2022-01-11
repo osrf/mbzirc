@@ -55,7 +55,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   # run erb
   process = subprocess.Popen(['erb',
     'name=' + model_name,
-    'flight_time='+str(battery_capacity),
+    'capacity='+str(battery_capacity),
     model_file], stdout=subprocess.PIPE)
   stdout = process.communicate()[0]
   str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
@@ -335,7 +335,7 @@ def generate_launch_description():
             'flightTime',
             default_value='10',
             description='Battery flight time in minutes (only for UAVs)'
-        )
+        ),
         # launch setup
         OpaqueFunction(function = launch)
     ])
