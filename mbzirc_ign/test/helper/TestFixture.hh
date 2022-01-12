@@ -73,6 +73,7 @@ class MBZIRCTestFixture : public ::testing::Test
 
   /// \brief Loads the specified world. Note you should call this at the start
   /// of every test.
+  /// \param[in] World file name.
   public: void LoadWorld(std::string _world)
   {
     auto worldPath = ignition::common::joinPaths(
@@ -82,7 +83,8 @@ class MBZIRCTestFixture : public ::testing::Test
     this->fixture = std::make_unique<ignition::gazebo::TestFixture>(worldPath);
   }
 
-  /// \brief Sets the 
+  /// \brief Sets the OnPostupdate condition to be checked.
+  /// \param[in] func - the callback function to be run every step.
   public: void OnPostupdate(
     std::function<void(
       const ignition::gazebo::UpdateInfo &,
@@ -107,6 +109,8 @@ class MBZIRCTestFixture : public ::testing::Test
       });
   }
 
+  /// \brief Start the simulation in a background thread and run up to maxIter
+  /// steps.
   public: void StartSim()
   {
     this->fixture->Finalize();
@@ -114,6 +118,12 @@ class MBZIRCTestFixture : public ::testing::Test
     this->fixture->Server()->Run(false, maxIter, false);
   }
 
+  /// \brief Launch a launch file with parameters
+  /// \param[in] _file name of the launch file
+  /// \param[in] _params parameters fot he launch file. The parameters are
+  /// stored in a std::vector of std::pair<>. Each pair is a key, value for
+  /// each parameter.
+  /// \returns The pgroup of the launched processes.
   public: pid_t LaunchWithParams(
     const std::string &_file,
     const std::vector<std::pair<std::string, std::string>> &_params)
@@ -132,21 +142,27 @@ class MBZIRCTestFixture : public ::testing::Test
     return launchProcess(cmd);
   }
 
+  /// \brief Step while blocking the current thread.
+  /// \param[in] _steps - Number of steps to run.
   public: void Step(int _steps)
   {
     this->fixture->Server()->Run(true, _steps, false);
   }
 
+  /// \brief Kill the launch file and associated processes.
   public: void StopLaunchFile(pid_t _launchfileHandle)
   {
     killpg(_launchfileHandle, SIGINT);
   }
 
+  /// \brief Set Max iterations to wait when StartSim is called.
+  /// \param[in] _iter - Number of iterations to wait.
   public: void SetMaxIter(int _iter)
   {
     this->maxIter = _iter;
   }
 
+  /// \brief Wait for the simulation in StartSim() to come to a halt.
   public: void WaitForMaxIter()
   {
     std::unique_lock<std::mutex> lock(finishedSim);
@@ -154,18 +170,28 @@ class MBZIRCTestFixture : public ::testing::Test
       { return iter == maxIter - 1; });
   }
 
+  /// \brief number of iterations run of current simulation.
   public: int Iter()
   {
     return iter;
   }
 
+  /// \brief Test fixture
   private: std::unique_ptr<ignition::gazebo::TestFixture> fixture;
 
+  /// \brief max iterations for StartSim to wait
   private: int maxIter{2000};
 
+  /// \brief Synchronization primitive for StartSim and WaitForMaxIter()
   private: std::mutex finishedSim;
+
+  /// \brief Synchronization primitive for StartSim and WaitForMaxIter()
   private: std::condition_variable cv;
+
+  /// \brief Iterations run
   private: int iter{0};
+
+  /// \brief Callback function for PostUpdate
   private: std::function<void(
       const ignition::gazebo::UpdateInfo &,
       const ignition::gazebo::EntityComponentManager &)> postUpdateFunc;

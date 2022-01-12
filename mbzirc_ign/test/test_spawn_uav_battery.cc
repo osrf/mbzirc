@@ -28,7 +28,6 @@
 TEST_F(MBZIRCTestFixture, SpawnUAVTest)
 {
   /// This test checks that the UAV is spawned correctly.
-
   std::vector<std::pair<std::string,std::string>> params{
     {"name", "x3"},
     {"world", "faster_than_realtime"},
@@ -52,6 +51,7 @@ TEST_F(MBZIRCTestFixture, SpawnUAVTest)
     auto worldEntity = ignition::gazebo::worldEntity(_ecm);
     ignition::gazebo::World world(worldEntity);
 
+    /// Check for model
     auto modelEntity = world.ModelByName(_ecm, "x3");
     if (modelEntity != ignition::gazebo::kNullEntity)
     {
@@ -67,6 +67,7 @@ TEST_F(MBZIRCTestFixture, SpawnUAVTest)
   auto launchHandle = LaunchWithParams("spawn.launch.py", params);
   WaitForMaxIter();
 
+  // Wait for a maximum of 50K iterations or till the vehicle has been spawned.
   while(!spawnedSuccessfully && Iter() < 50000)
   {
     Step(100);
@@ -105,6 +106,7 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
 
   bool fullyDischarged = false;
 
+  // Monitor the discharge of the battery
   std::function<void(const ignition::msgs::BatteryState&)> batteryCb
     = [&](const ignition::msgs::BatteryState &_state) -> void
     {
@@ -114,8 +116,8 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
         fullyDischarged = true;
       }
     };
-
   node.Subscribe("/model/x3/battery/linear_battery/state", batteryCb);
+
   SetMaxIter(1000);
 
   LoadWorld("faster_than_realtime.sdf");
@@ -134,6 +136,8 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
         firstSpawned = _info.simTime;
         spawnedSuccessfully = true;
 
+        // Upon being spawned, send a command to ask the robot to fly this is to
+        // trigger discharging of the battery.
         ignition::msgs::Twist twist;
         ignition::msgs::Vector3d* vec = new ignition::msgs::Vector3d;
         vec->set_x(0);
@@ -144,6 +148,7 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
       }
       else
       {
+        // Sync the sim time with the battery listener thread.
         timeNow = _info.simTime;
       }
     }
@@ -155,10 +160,13 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
 
   using namespace std::literals::chrono_literals;
 
-  while(!fullyDischarged && (timeNow - firstSpawned < 4min))
+  // Wait for the battery to fully discharge or up to 2 minutes in simulated
+  // time.
+  while(!fullyDischarged && (timeNow - firstSpawned < 2min))
   {
     Step(100);
   }
+
   StopLaunchFile(launchHandle);
 
   ASSERT_TRUE(spawnedSuccessfully);
