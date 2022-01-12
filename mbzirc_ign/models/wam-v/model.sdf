@@ -285,7 +285,7 @@
   </plugin>
 
   <plugin
-    filename="ignition-gazebo-surface-system"
+    filename="libSurface.so"
     name="ignition::gazebo::systems::Surface">
     <link_name>base_link</link_name>
     <vehicle_length>4.9</vehicle_length>
