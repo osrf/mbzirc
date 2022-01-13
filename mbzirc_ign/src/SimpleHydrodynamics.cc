@@ -200,63 +200,71 @@ void SimpleHydrodynamics::PreUpdate(
   Eigen::MatrixXd Dmat     = Eigen::MatrixXd::Zero(6, 6);
 
   // Get vehicle state.
-  auto angularVel = this->dataPtr->link.WorldAngularVelocity(_ecm);
-  auto linearVel = this->dataPtr->link.WorldLinearVelocity(_ecm);
-  auto angularAccel = this->dataPtr->link.WorldAngularAcceleration(_ecm);
-  auto linearAccel = this->dataPtr->link.WorldLinearAcceleration(_ecm);
+  auto worldAngularVel = this->dataPtr->link.WorldAngularVelocity(_ecm);
+  auto worldLinearVel = this->dataPtr->link.WorldLinearVelocity(_ecm);
+  auto worldAngularAccel = this->dataPtr->link.WorldAngularAcceleration(_ecm);
+  auto worldLinearAccel = this->dataPtr->link.WorldLinearAcceleration(_ecm);
 
-  if (!angularVel)
+  // Sanity check: Make sure that we can read the full state.
+  if (!worldAngularVel)
   {
     ignerr << "No angular velocity" <<"\n";
     return;
   }
 
-  if (!linearVel)
+  if (!worldLinearVel)
   {
     ignerr << "No linear velocity" <<"\n";
     return;
   }
 
-  if (!angularAccel)
+  if (!worldAngularAccel)
   {
     ignerr << "No angular acceleration" <<"\n";
     return;
   }
 
-  if (!linearAccel)
+  if (!worldLinearAccel)
   {
     ignerr << "No linear acceleration" <<"\n";
     return;
   }
 
-  stateDot << (*linearAccel).X(), (*linearAccel).Y(), (*linearAccel).Z(),
-   (*angularAccel).X(), (*angularAccel).Y(), (*angularAccel).Z();
+  // Transform from world to local frame.
+  auto comPose = this->dataPtr->link.WorldInertialPose(_ecm);
+  auto localAngularVel   = comPose->Rot().Inverse() * (*worldAngularVel);
+  auto localLinearVel    = comPose->Rot().Inverse() * (*worldLinearVel);
+  auto localAngularAccel = comPose->Rot().Inverse() * (*worldAngularAccel);
+  auto localLinearAccel  = comPose->Rot().Inverse() * (*worldLinearAccel);
 
-  state << (*linearVel).X(), (*linearVel).Y(), (*linearVel).Z(),
-    (*angularVel).X(), (*angularVel).Y(), (*angularVel).Z();
+  stateDot << localLinearAccel.X(), localLinearAccel.Y(), localLinearAccel.Z(),
+   localAngularAccel.X(), localAngularAccel.Y(), localAngularAccel.Z();
+
+  state << localLinearVel.X(), localLinearVel.Y(), localLinearVel.Z(),
+    localAngularVel.X(), localAngularVel.Y(), localAngularVel.Z();
 
   // Added Mass.
   const Eigen::VectorXd kAmassVec = -1.0 * this->dataPtr->Ma * stateDot;
 
   // Coriolis - added mass components.
-  Cmat(0, 5) = this->dataPtr->paramYdotV * (*linearVel).Y();
-  Cmat(1, 5) = this->dataPtr->paramXdotU * (*linearVel).X();
-  Cmat(5, 0) = this->dataPtr->paramYdotV * (*linearVel).Y();
-  Cmat(5, 1) = this->dataPtr->paramXdotU * (*linearVel).X();
+  Cmat(0, 5) = this->dataPtr->paramYdotV * localLinearVel.Y();
+  Cmat(1, 5) = this->dataPtr->paramXdotU * localLinearVel.X();
+  Cmat(5, 0) = this->dataPtr->paramYdotV * localLinearVel.Y();
+  Cmat(5, 1) = this->dataPtr->paramXdotU * localLinearVel.X();
 
   // Drag.
   Dmat(0, 0) = this->dataPtr->paramXu +
-    this->dataPtr->paramXuu * std::abs((*linearVel).X());
+    this->dataPtr->paramXuu * std::abs(localLinearVel.X());
   Dmat(1, 1) = this->dataPtr->paramYv +
-    this->dataPtr->paramYvv * std::abs((*linearVel).Y());
+    this->dataPtr->paramYvv * std::abs(localLinearVel.Y());
   Dmat(2, 2) = this->dataPtr->paramZw +
-    this->dataPtr->paramZww * std::abs((*linearVel).Z());
+    this->dataPtr->paramZww * std::abs(localLinearVel.Z());
   Dmat(3, 3) = this->dataPtr->paramKp +
-    this->dataPtr->paramKpp * std::abs((*angularVel).X());
+    this->dataPtr->paramKpp * std::abs(localAngularVel.X());
   Dmat(4, 4) = this->dataPtr->paramMq +
-    this->dataPtr->paramMqq * std::abs((*angularVel).Y());
+    this->dataPtr->paramMqq * std::abs(localAngularVel.Y());
   Dmat(5, 5) = this->dataPtr->paramNr +
-    this->dataPtr->paramNrr * std::abs((*angularVel).Z());
+    this->dataPtr->paramNrr * std::abs(localAngularVel.Z());
 
   const Eigen::VectorXd kDvec = -1.0 * Dmat * state;
 
@@ -264,12 +272,10 @@ void SimpleHydrodynamics::PreUpdate(
   const Eigen::VectorXd kForceSum = kAmassVec + kDvec;
 
   // Transform the force and torque to the world frame.
-  ignition::math::Vector3d forceWorld =
-    (*this->dataPtr->link.WorldInertialPose(_ecm)).Rot().RotateVector(
-      ignition::math::Vector3d(kForceSum(0), kForceSum(1), kForceSum(2)));
-  ignition::math::Vector3d torqueWorld =
-    (*this->dataPtr->link.WorldInertialPose(_ecm)).Rot().RotateVector(
-      ignition::math::Vector3d(kForceSum(3), kForceSum(4), kForceSum(5)));
+  ignition::math::Vector3d forceWorld = (*comPose).Rot().RotateVector(
+    ignition::math::Vector3d(kForceSum(0), kForceSum(1), kForceSum(2)));
+  ignition::math::Vector3d torqueWorld = (*comPose).Rot().RotateVector(
+    ignition::math::Vector3d(kForceSum(3), kForceSum(4), kForceSum(5)));
 
   // Apply the force and torque at COM.
   this->dataPtr->link.AddWorldWrench(_ecm, forceWorld, torqueWorld);
