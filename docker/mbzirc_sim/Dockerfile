@@ -1,14 +1,17 @@
 # Ubuntu 20.04 with nvidia-docker2 beta opengl support
 FROM nvidia/opengl:1.0-glvnd-devel-ubuntu20.04
 
-RUN export DEBIAN_FRONTEND=noninteractive \
- && apt-get update \
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
  && apt-get install --no-install-recommends -y \
     tzdata \
     sudo \
     wget \
     gnupg2 \
-    lsb-release
+    lsb-release \
+ && rm -rf /var/lib/apt/lists/* \
+ && apt-get -qq clean
 
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone && \
@@ -59,20 +62,23 @@ RUN /bin/sh -c 'wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share
 
 # install ignition fortress
 RUN apt-get update \
-  &&  apt-get install -y ignition-fortress \
-  && apt-get clean
+  && apt-get install -y ignition-fortress \
+  && rm -rf /var/lib/apt/lists/* \
+  && apt-get clean -qq
 
 # install rosdep
-RUN apt update \
+RUN apt-get update \
   && apt install -y python3-rosdep \
+  && rm -rf /var/lib/apt/lists/* \
+  && apt-get clean -qq \
   && rosdep init \
-  && rosdep update \
-  && apt-get clean
+  && rosdep update
 
 # install ROS2
 RUN apt-get update \
-  &&  apt-get install -y ros-galactic-ros-base \
-  && apt-get clean
+  && apt-get install -y ros-galactic-ros-base \
+  && rm -rf /var/lib/apt/lists/* \
+  && apt-get clean -qq
 
 # install colcon
 RUN apt-get -qq update && apt-get -q -y install \
@@ -99,11 +105,20 @@ RUN mkdir ~/workspaces ~/other
 # When running a container start in the developer's home folder
 WORKDIR /home/$USERNAME
 
+# Handle input ARG mbzirc_sha_commit to build a given ref in the source code of
+# osrf/mbzirc
+ARG mbzirc_sha_commit
+ARG mbzirc_repo_url=https://github.com/osrf/mbzirc
+
 # clone mbzirc sim
 RUN mkdir -p mbzirc_ws/src \
  && cd mbzirc_ws/src \
  && git config --global http.postBuffer 1048576000 \
- && git clone https://github.com/osrf/mbzirc
+ && git clone ${mbzirc_repo_url} mbzirc \
+ && if [ "${mbzirc_sha_commit}" != "" ]; then \
+       echo "Using: SHA ${mbzirc_sha_commit}" && \
+       git --git-dir mbzirc/.git checkout "${mbzirc_sha_commit}"; \
+    fi
 
 # clone ros_ign bridge
 RUN cd /home/$USERNAME/mbzirc_ws/src \
@@ -115,14 +130,18 @@ ENV IGNITION_VERSION fortress
 
 RUN sudo apt-get update \
   && rosdep update \
-  && rosdep install -r --from-paths src -i -y --rosdistro galactic
+  && rosdep install -r --from-paths src -i -y --rosdistro galactic \
+  && sudo rm -rf /var/lib/apt/lists/* \
+  && sudo apt-get clean -qq
 
-RUN /bin/bash -c 'source /opt/ros/galactic/setup.bash && colcon build --merge-install'
+RUN /bin/bash -c 'source /opt/ros/galactic/setup.bash \
+  && colcon build --merge-install' \
+  && rm -fr build/ log/
 RUN /bin/sh -c 'echo ". /opt/ros/galactic/setup.bash" >> ~/.bashrc' \
  && /bin/sh -c 'echo ". ~/mbzirc_ws/install/setup.sh" >> ~/.bashrc'
 
-# Create a directory required by cloudsim
-RUN mkdir -p /tmp/ign
+# Leave apt-get ready for users
+RUN sudo apt-get update
 
 # Copy entry point script, and set the entrypoint
 # COPY mbzirc_sim/run_sim.bash ./
