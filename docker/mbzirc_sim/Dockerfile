@@ -105,6 +105,12 @@ RUN mkdir ~/workspaces ~/other
 # When running a container start in the developer's home folder
 WORKDIR /home/$USERNAME
 
+# clone mbzirc sim
+RUN mkdir -p mbzirc_ws/src \
+ && cd mbzirc_ws/src \
+ && git config --global http.postBuffer 1048576000 \
+ && git clone https://github.com/osrf/mbzirc
+
 # clone ros_ign bridge
 RUN cd /home/$USERNAME/mbzirc_ws/src \
  && git clone https://github.com/osrf/ros_ign.git -b ros2
