@@ -99,11 +99,20 @@ RUN mkdir ~/workspaces ~/other
 # When running a container start in the developer's home folder
 WORKDIR /home/$USERNAME
 
+# Input ARG mbzirc_sha_commit to build a given git ref in the source code
+ARG mbzirc_sha_commit
+# Input ARG to allow using forks for testing. Default to osrf/mbzirc
+ARG mbzirc_repo_url=https://github.com/osrf/mbzirc
+
 # clone mbzirc sim
 RUN mkdir -p mbzirc_ws/src \
  && cd mbzirc_ws/src \
  && git config --global http.postBuffer 1048576000 \
- && git clone https://github.com/osrf/mbzirc
+ && git clone ${mbzirc_repo_url} mbzirc \
+ && if [ "${mbzirc_sha_commit}" != "" ]; then \
+       echo "Using: SHA ${mbzirc_sha_commit}" && \
+       git --git-dir mbzirc/.git checkout "${mbzirc_sha_commit}"; \
+    fi
 
 # clone ros_ign bridge
 RUN cd /home/$USERNAME/mbzirc_ws/src \
