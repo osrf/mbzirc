@@ -15,7 +15,6 @@
  *
  */
 
-#include <ignition/msgs/wrench.pb.h>
 #include <string>
 #include <Eigen/Eigen>
 #include <ignition/common/Profiler.hh>
@@ -23,9 +22,6 @@
 #include <ignition/plugin/Register.hh>
 #include <sdf/sdf.hh>
 
-#include "ignition/gazebo/components/AngularVelocity.hh"
-#include "ignition/gazebo/components/Inertial.hh"
-#include "ignition/gazebo/components/LinearVelocity.hh"
 #include "ignition/gazebo/Link.hh"
 #include "ignition/gazebo/Model.hh"
 
