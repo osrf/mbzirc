@@ -40,13 +40,23 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   r_rot = LaunchConfiguration('R').perform(context)
   p_rot = LaunchConfiguration('P').perform(context)
   y_rot = LaunchConfiguration('Y').perform(context)
+  # take flight time in minutes
+  flight_time = LaunchConfiguration('flightTime').perform(context)
+
+  # calculate battery capacity from time
+  # capacity (Ah) = flight time (in hours) * load (watts) / voltage
+  # assume constant voltage for battery to keep things simple for now.
+  battery_capacity = (float(flight_time) / 60) *  6.6 / 12.694
 
   model_file = os.path.join(
       get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
   print("spawning UAV file: " + model_file)
 
   # run erb
-  process = subprocess.Popen(['erb', 'name=' + model_name, model_file], stdout=subprocess.PIPE)
+  process = subprocess.Popen(['erb',
+    'name=' + model_name,
+    'capacity='+str(battery_capacity),
+    model_file], stdout=subprocess.PIPE)
   stdout = process.communicate()[0]
   str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
 
@@ -114,6 +124,18 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                   (sensor_prefix + '/camera_front/camera_info', 'front/camera_info')]
   )
 
+  # camera optical frame publisher
+  ros2_camera_optical_frame_publisher = Node(
+      package='mbzirc_ros',
+      executable='optical_frame_publisher',
+      arguments=['1'],
+      remappings=[('input/image', 'front/image_raw'),
+                  ('output/image', 'front/optical/image_raw'),
+                  ('input/camera_info', 'front/camera_info'),
+                  ('output/camera_info', 'front/optical/camera_info'),
+                 ]
+  )
+
   # lidar
   ros2_ign_lidar_bridge = Node(
       package='ros_ign_bridge',
@@ -163,6 +185,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
         ros2_ign_magnetometer_bridge,
         ros2_ign_air_pressure_bridge,
         ros2_ign_camera_bridge,
+        ros2_camera_optical_frame_publisher,
         ros2_ign_lidar_bridge,
         ros2_ign_twist_bridge,
         ros2_ign_pose_bridge,
@@ -206,7 +229,49 @@ def spawn_usv(context, model_path, model_name):
                  '-Y', y_rot,
                 ],
   )
-  return [ignition_spawn_entity]
+
+  # thrust cmd
+  left_thrust_topic = '/model/' + model_name + '/joint/left_engine_propeller_joint/cmd_thrust'
+  right_thrust_topic = '/model/' + model_name + '/joint/right_engine_propeller_joint/cmd_thrust'
+  ros2_ign_thrust_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[left_thrust_topic + '@std_msgs/msg/Float64@ignition.msgs.Double',
+                 right_thrust_topic + '@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[(left_thrust_topic, 'left/thrust/cmd_thrust'),
+                  (right_thrust_topic, 'right/thrust/cmd_thrust')]
+  )
+
+  # thrust joint pos cmd
+  # left_joint_topic = '/model/' + model_name + '/joint/left_chasis_engine_joint/0/cmd_pos'
+  # right_joint_topic = '/model/' + model_name + '/joint/right_chasis_engine_joint/0/cmd_pos'
+  left_joint_topic = '/usv/left/thruster/joint/cmd_pos'
+  right_joint_topic = '/usv/right/thruster/joint/cmd_pos'
+
+  ros2_ign_thrust_joint_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[left_joint_topic + '@std_msgs/msg/Float64@ignition.msgs.Double',
+                 right_joint_topic + '@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[(left_joint_topic, 'left/thrust/joint/cmd_pos'),
+                  (right_joint_topic, 'right/thrust/joint/cmd_pos')]
+  )
+
+  group_action = GroupAction([
+        PushRosNamespace(model_name),
+        ros2_ign_thrust_bridge,
+        ros2_ign_thrust_joint_bridge,
+  ])
+
+  handler = RegisterEventHandler(
+      event_handler=OnProcessExit(
+          target_action=ignition_spawn_entity,
+          on_exit=[group_action],
+      ))
+
+  return [ignition_spawn_entity, handler]
 
 
 def launch(context, *args, **kwargs):
@@ -266,6 +331,11 @@ def generate_launch_description():
             'Y',
             default_value='0',
             description='Y rotation to spawn'),
+        DeclareLaunchArgument(
+            'flightTime',
+            default_value='10',
+            description='Battery flight time in minutes (only for UAVs)'
+        ),
         # launch setup
         OpaqueFunction(function = launch)
     ])

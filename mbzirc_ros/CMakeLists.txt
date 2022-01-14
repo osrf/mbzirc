@@ -9,19 +9,29 @@ find_package(rclcpp REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
+add_executable(optical_frame_publisher src/optical_frame_publisher.cc)
+ament_target_dependencies(optical_frame_publisher
+  geometry_msgs
+  rclcpp
+  tf2
+  tf2_ros
+  sensor_msgs
+)
 
 add_executable(pose_tf_broadcaster src/pose_tf_broadcaster.cc)
 ament_target_dependencies(pose_tf_broadcaster
-   geometry_msgs
-   rclcpp
-   tf2
-   tf2_ros
-   tf2_msgs
+  geometry_msgs
+  rclcpp
+  tf2
+  tf2_ros
+  tf2_msgs
 )
 
 # Resources
 install(TARGETS
+  optical_frame_publisher
   pose_tf_broadcaster
   DESTINATION lib/${PROJECT_NAME})
 
