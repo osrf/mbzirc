@@ -4,16 +4,16 @@
 <model name="usv">
   <static>false</static>
   <link name="base_link">
-    <pose>0 0 0 0 0 1.57079</pose>
+    <pose>0 0 0.0 0 0 1.57079</pose>
     <inertial>
-      <mass>180.0</mass>
+      <mass>500.0</mass>
       <inertia>
-        <ixx>120.0</ixx>
+        <ixx>1581.0</ixx>
         <ixy>0.0</ixy>
         <ixz>0.0</ixz>
-        <iyy>393</iyy>
+        <iyy>535</iyy>
         <iyz>0.0</iyz>
-        <izz>446.0</izz>
+        <izz>1953.0</izz>
       </inertia>
     </inertial>
 
@@ -111,7 +111,7 @@
       </geometry>
     </collision>
     <collision name="box_collision017">
-      <pose>1.332 -0.802631 0.337911 1.5708 -0.392699 0.0</pose>
+      <pose>1.332 -0.802631 0.337911 1.5708 0.392699 0.0</pose>
       <geometry>
         <box>
           <size>0.734711 0.329741 0.0459061</size>
@@ -224,7 +224,7 @@
       </geometry>
     </collision>
     <collision name="box_collision033">
-      <pose>1.332 0.802633 0.337911 -1.5708 -0.392699 0.0</pose>
+      <pose>1.332 0.802633 0.337911 -1.5708 0.392699 0.0</pose>
       <geometry>
         <box>
           <size>0.734711 0.329741 0.0459061</size>
@@ -270,12 +270,12 @@
     <inertial>
       <mass>15.0</mass>
       <inertia>
-        <ixx>0.889245</ixx>
+        <ixx>0.4</ixx>
         <ixy>0.0</ixy>
         <ixz>0.0</ixz>
-        <iyy>0.811125</iyy>
+        <iyy>0.25</iyy>
         <iyz>0.0</iyz>
-        <izz>0.078125</izz>
+        <izz>0.25</izz>
       </inertia>
     </inertial>
 
@@ -314,12 +314,12 @@
     <inertial>
       <mass>0.5</mass>
       <inertia>
-        <ixx>0.008545</ixx>
+        <ixx>0.00208</ixx>
         <ixy>0.0</ixy>
         <ixz>0.0</ixz>
-        <iyy>0.008545</iyy>
+        <iyy>0.00333</iyy>
         <iyz>0.0</iyz>
-        <izz>0.0144</izz>
+        <izz>0.00208</izz>
       </inertia>
     </inertial>
 
@@ -357,12 +357,12 @@
     <inertial>
       <mass>15.0</mass>
       <inertia>
-        <ixx>0.889245</ixx>
+        <ixx>0.4</ixx>
         <ixy>0.0</ixy>
         <ixz>0.0</ixz>
-        <iyy>0.811125</iyy>
+        <iyy>0.25</iyy>
         <iyz>0.0</iyz>
-        <izz>0.078125</izz>
+        <izz>0.25</izz>
       </inertia>
     </inertial>
 
@@ -401,12 +401,12 @@
     <inertial>
       <mass>0.5</mass>
       <inertia>
-        <ixx>0.008545</ixx>
+        <ixx>0.00208</ixx>
         <ixy>0.0</ixy>
         <ixz>0.0</ixz>
-        <iyy>0.008545</iyy>
+        <iyy>0.00333</iyy>
         <iyz>0.0</iyz>
-        <izz>0.0144</izz>
+        <izz>0.00208</izz>
       </inertia>
     </inertial>
 
@@ -456,7 +456,7 @@
 
   <joint name="left_engine_propeller_joint" type="revolute">
     <axis>
-      <xyz>1 0 0</xyz>
+      <xyz>0 -1 0</xyz>
       <limit>
         <effort>100</effort>
         <velocity>100</velocity>
@@ -486,7 +486,7 @@
 
   <joint name="right_engine_propeller_joint" type="revolute">
     <axis>
-      <xyz>1 0 0</xyz>
+      <xyz>0 -1 0</xyz>
       <limit>
         <effort>100</effort>
         <velocity>100</velocity>
@@ -540,10 +540,10 @@
     filename="libSurface.so"
     name="ignition::gazebo::systems::Surface">
     <link_name>base_link</link_name>
-    <vehicle_length>4.9</vehicle_length>
-    <vehicle_width>2.4</vehicle_width>
-    <hull_radius>0.213</hull_radius>
-    <fluid_level>-1</fluid_level>
+    <vehicle_length>6</vehicle_length>
+    <vehicle_width>3.3</vehicle_width>
+    <hull_radius>0.27</hull_radius>
+    <fluid_level>-0.55</fluid_level>
   </plugin>
 
   <plugin
@@ -565,7 +565,6 @@
     <nR>400.0</nR>
     <nRR>0.0</nRR>
   </plugin>
-
 
 </model>
 </sdf>
