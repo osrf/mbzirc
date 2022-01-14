@@ -440,7 +440,7 @@
 
   </link>
 
-  <joint name="left_chasis_engine_joint" type="revolute">
+  <joint name="left_chassis_engine_joint" type="revolute">
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
@@ -470,7 +470,7 @@
     <child>left_propeller_link</child>
   </joint>
 
-  <joint name="right_chasis_engine_joint" type="revolute">
+  <joint name="right_chassis_engine_joint" type="revolute">
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
@@ -514,7 +514,7 @@
   <plugin
     filename="ignition-gazebo-joint-position-controller-system"
     name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>left_chasis_engine_joint</joint_name>
+    <joint_name>left_chassis_engine_joint</joint_name>
     <use_velocity_commands>true</use_velocity_commands>
     <topic>usv/left/thruster/joint/cmd_pos</topic>
   </plugin>
@@ -533,7 +533,7 @@
   <plugin
     filename="ignition-gazebo-joint-position-controller-system"
     name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>right_chasis_engine_joint</joint_name>
+    <joint_name>right_chassis_engine_joint</joint_name>
     <use_velocity_commands>true</use_velocity_commands>
     <topic>usv/right/thruster/joint/cmd_pos</topic>
   </plugin>
