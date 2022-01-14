@@ -247,7 +247,7 @@
             <child>rotor_0</child>
             <parent>base_link</parent>
             <axis>
-                <xyz>0.043578 -0.075479 0.996195</xyz>
+                <xyz>0 0 1</xyz>
                 <limit>
                     <lower>-1e+16</lower>
                     <upper>1e+16</upper>
@@ -256,7 +256,6 @@
                     <spring_reference>0</spring_reference>
                     <spring_stiffness>0</spring_stiffness>
                 </dynamics>
-                <use_parent_model_frame>1</use_parent_model_frame>
             </axis>
         </joint>
         <link name="rotor_1">
@@ -314,7 +313,7 @@
             <child>rotor_1</child>
             <parent>base_link</parent>
             <axis>
-                <xyz>-0.087156 0 0.996195</xyz>
+                <xyz>0 0 1</xyz>
                 <limit>
                     <lower>-1e+16</lower>
                     <upper>1e+16</upper>
@@ -323,7 +322,6 @@
                     <spring_reference>0</spring_reference>
                     <spring_stiffness>0</spring_stiffness>
                 </dynamics>
-                <use_parent_model_frame>1</use_parent_model_frame>
             </axis>
         </joint>
         <link name="rotor_2">
@@ -381,7 +379,7 @@
             <child>rotor_2</child>
             <parent>base_link</parent>
             <axis>
-                <xyz>0.043578 0.075479 0.996195</xyz>
+                <xyz>0 0 1</xyz>
                 <limit>
                     <lower>-1e+16</lower>
                     <upper>1e+16</upper>
@@ -390,7 +388,6 @@
                     <spring_reference>0</spring_reference>
                     <spring_stiffness>0</spring_stiffness>
                 </dynamics>
-                <use_parent_model_frame>1</use_parent_model_frame>
             </axis>
         </joint>
         <link name="rotor_3">
@@ -448,7 +445,7 @@
             <child>rotor_3</child>
             <parent>base_link</parent>
             <axis>
-                <xyz>0.043578 -0.075479 0.996195</xyz>
+                <xyz>0 0 1</xyz>
                 <limit>
                     <lower>-1e+16</lower>
                     <upper>1e+16</upper>
@@ -457,7 +454,6 @@
                     <spring_reference>0</spring_reference>
                     <spring_stiffness>0</spring_stiffness>
                 </dynamics>
-                <use_parent_model_frame>1</use_parent_model_frame>
             </axis>
         </joint>
         <link name="rotor_4">
@@ -515,7 +511,7 @@
             <child>rotor_4</child>
             <parent>base_link</parent>
             <axis>
-                <xyz>-0.087156 -0 0.996195</xyz>
+                <xyz>0 0 1</xyz>
                 <limit>
                     <lower>-1e+16</lower>
                     <upper>1e+16</upper>
@@ -524,7 +520,6 @@
                     <spring_reference>0</spring_reference>
                     <spring_stiffness>0</spring_stiffness>
                 </dynamics>
-                <use_parent_model_frame>1</use_parent_model_frame>
             </axis>
         </joint>
         <link name="rotor_5">
@@ -582,7 +577,7 @@
             <child>rotor_5</child>
             <parent>base_link</parent>
             <axis>
-                <xyz>0.043578 0.075479 0.996195</xyz>
+                <xyz>0 0 1</xyz>
                 <limit>
                     <lower>-1e+16</lower>
                     <upper>1e+16</upper>
@@ -591,7 +586,6 @@
                     <spring_reference>0</spring_reference>
                     <spring_stiffness>0</spring_stiffness>
                 </dynamics>
-                <use_parent_model_frame>1</use_parent_model_frame>
             </axis>
         </joint>
     </model>
