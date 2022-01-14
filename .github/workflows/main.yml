@@ -31,7 +31,7 @@ jobs:
             cd docker
             bash -xe ./build.bash ${{ matrix.image_name }} \
               ${{ github.server_url }}/${{ github.repository }} \
-              ${{ github.sha }} \
+              ${{ github.sha }}
             echo "::set-output name=name::${{ matrix.image_name }}:latest"
 
       - name: Create latest version tag
