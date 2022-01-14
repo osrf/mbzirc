@@ -27,6 +27,7 @@ configure_file(
 #============================================================================
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
+  SimpleHydrodynamics
   Surface
 )
 
