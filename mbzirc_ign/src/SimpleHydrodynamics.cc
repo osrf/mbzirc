@@ -40,58 +40,58 @@ class ignition::gazebo::systems::SimpleHydrodynamicsPrivate
   public: Model model{kNullEntity};
 
   /// \brief Added mass in surge, X_\dot{u}.
-  public: double paramXdotU;
+  public: double paramXdotU{0.0};
 
   /// \brief Added mass in sway, Y_\dot{v}.
-  public: double paramYdotV;
+  public: double paramYdotV{0.0};
 
   /// \brief Added mass in heave, Z_\dot{w}.
-  public: double paramZdotW;
+  public: double paramZdotW{0.0};
 
   /// \brief Added mass in roll, K_\dot{p}.
-  public: double paramKdotP;
+  public: double paramKdotP{0.0};
 
   /// \brief Added mass in pitch, M_\dot{q}.
-  public: double paramMdotQ;
+  public: double paramMdotQ{0.0};
 
   /// \brief Added mass in yaw, N_\dot{r}.
-  public: double paramNdotR;
+  public: double paramNdotR{0.0};
 
   /// \brief Linear drag in surge.
-  public: double paramXu;
+  public: double paramXu{0.0};
 
   /// \brief Quadratic drag in surge.
-  public: double paramXuu;
+  public: double paramXuu{0.0};
 
   /// \brief Linear drag in sway.
-  public: double paramYv;
+  public: double paramYv{0.0};
 
   /// \brief Quadratic drag in sway.
-  public: double paramYvv;
+  public: double paramYvv{0.0};
 
   /// \brief Linear drag in heave.
-  public: double paramZw;
+  public: double paramZw{0.0};
 
   /// \brief Quadratic drag in heave.
-  public: double paramZww;
+  public: double paramZww{0.0};
 
   /// \brief Linear drag in roll.
-  public: double paramKp;
+  public: double paramKp{0.0};
 
   /// \brief Quadratic drag in roll.
-  public: double paramKpp;
+  public: double paramKpp{0.0};
 
   /// \brief Linear drag in pitch.
-  public: double paramMq;
+  public: double paramMq{0.0};
 
   /// \brief Quadratic drag in pitch.
-  public: double paramMqq;
+  public: double paramMqq{0.0};
 
   /// \brief Linear drag in yaw.
-  public: double paramNr;
+  public: double paramNr{0.0};
 
   /// \brief Quadratic drag in yaw.
-  public: double paramNrr;
+  public: double paramNrr{0.0};
 
   /// \brief Added mass of vehicle.
   /// See: https://en.wikipedia.org/wiki/Added_mass
