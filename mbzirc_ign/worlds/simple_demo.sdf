@@ -1,9 +1,8 @@
 <?xml version="1.0" ?>
-<!--
 
--->
 <sdf version="1.6">
   <world name="simple_demo">
+
     <plugin
       filename="ignition-gazebo-physics-system"
       name="ignition::gazebo::systems::Physics">
@@ -157,5 +156,10 @@
       </uri>
     </include>
 
+    <include>
+      <name>Vessel A</name>
+      <pose>25 25 -1 0 0.0 -1.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel A</uri>
+    </include>
   </world>
 </sdf>

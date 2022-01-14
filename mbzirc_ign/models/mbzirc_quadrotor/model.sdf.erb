@@ -2,7 +2,7 @@
 
 <%
 if !defined?(name) || name== nil || name.empty?
-  $model_name = 'x3'
+  $model_name = 'mbzirc_quadrotor'
 else
   $model_name = name
 end
@@ -11,7 +11,8 @@ end
 <sdf version='1.6'>
  <include>
    <name><%= $model_name%></name>
-   <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/X3 UAV Config 2</uri>
+   <uri>mbzirc_quadrotor_base</uri>
+
    <!-- Publish robot state information -->
    <plugin filename="libignition-gazebo-pose-publisher-system.so"
      name="ignition::gazebo::systems::PosePublisher">
