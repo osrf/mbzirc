@@ -237,6 +237,9 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       package='mbzirc_ros',
       executable='pose_tf_broadcaster',
       output='screen',
+      parameters=[
+          {"world_frame": world_name}
+      ]
   )
 
   group_action = GroupAction([
