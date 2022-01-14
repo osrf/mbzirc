@@ -30,43 +30,24 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
-
-  # Fetch and configure GTest
-  include(FetchContent)
-  FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
-  )
-  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-  FetchContent_MakeAvailable(googletest)
-
-  enable_testing()
-  include(Dart)
+  find_package(ament_cmake_gtest REQUIRED)
 
   # Build-time constants
   set("PROJECT_BINARY_PATH" ${CMAKE_CURRENT_BINARY_DIR})
   set("PROJECT_SOURCE_PATH" ${CMAKE_CURRENT_SOURCE_DIR})
   configure_file(test/helper/TestConstants.hh.in TestConstants.hh @ONLY)
 
-  include(GoogleTest)
-
   foreach(TEST_TARGET
     test_spawn_uav_battery)
 
-    add_executable(
+    ament_add_gtest(
       ${TEST_TARGET}
       test/${TEST_TARGET}.cc
     )
-    target_include_directories(${TEST_TARGET}
-      PUBLIC ${CMAKE_BINARY_DIR}/proto)
-    target_link_libraries(${TEST_TARGET}
-      PUBLIC gtest_main
-      PRIVATE ignition-gazebo6::ignition-gazebo6
-    )
-    include_directories(${CMAKE_CURRENT_BINARY_DIR})
-    gtest_discover_tests(${TEST_TARGET})
+    target_include_directories(${TEST_TARGET} 
+      PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto )
+    target_link_libraries(${TEST_TARGET} ignition-gazebo6::ignition-gazebo6)
   endforeach()
 endif()
-
 
 ament_package()
