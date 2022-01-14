@@ -1,9 +1,9 @@
 # MBZIRC Releasing instructions
 
-The MBZIRC project release the software ready to use inside a docker image.
+The MBZIRC project releases the software ready to use inside a docker image.
 The docker images are available from https://hub.docker.com/u/osrf/mbzirc
 
-This document cover the internal team instructions for releasing a new version
+This document covers the internal team instructions for releasing a new version
 of the docker image
 
 ## How to push a new docker image to the dockerhub automatically
@@ -14,9 +14,10 @@ the docker image and upload it to the dockerhub.
 ### Triggering a new release
 
 The GitHub action for releasing is configured to react to the new push of git
-tags with the following name: `dockerhub_release_*` where `*` is any string. It
-is not used in the releasing, probably something meaningful for the person
-doing the release, could be a name, a date, or other.
+tags with the following name: `dockerhub_release_*` where `*` is any string.
+The string is not used during the release process. It mainly serves as
+something meaningful for the person doing the release, could be a name, a date,
+or other.
 
 The source code of the new image would the one corresponding to the tag. An
 example using `_alpha0`: in a local checkout just run
@@ -40,7 +41,7 @@ The timestamp includes hour/minute so more than one release can be done in the s
 
 ### Understanding the GitHub action
 
-The Github Action for releasing mainly does:
+The Github Action for releasing mainly does the following:
 
  1. Setup docker and sources
  2. Use the `build.sh` script to create the docker image from the commit
@@ -58,10 +59,9 @@ https://github.com/osrf/mbzirc/settings/secrets/actions).
 
 ### Troubleshooting
 
-If the Github action fails, the best way to debug it is [acceding to the logs
-of it](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/using-workflow-run-logs).
+If the Github action fails, the best way to debug it is to [examine its logs](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/using-workflow-run-logs).
 
-1. rosdep failed while building the image
+1. `rosdep` failed while building the image
 Sometimes the network connection with github repositories is broken when
 running rosdep. Best way to workaround the problem is usually retry the
 build from the Github action UI in "Re-run all jobs" button inside a run.
@@ -70,12 +70,12 @@ build from the Github action UI in "Re-run all jobs" button inside a run.
 If for some reason the login step inside dockerhub fails, first step would be
 to check that credentials in place inside github repository. Opening
 https://github.com/osrf/mbzirc/settings/secrets/actions should display all the
-variables are named `secrets.*` in the github action, mainly DOCKERHUB_USERNAME
-and DOCKERHUB_PASSWORD.
+variables are named `secrets.*` in the github action, mainly `DOCKERHUB_USERNAME`
+and `DOCKERHUB_PASSWORD`.
 
 The credentials can be tested locally using:
 ```bash
-docker login -u osrf # entre password
+docker login -u osrf # change `osrf` to your username and enter password
 ```
 
 ## Fallback plan for releasing: manually submit the image to dockerhub
@@ -93,7 +93,7 @@ Basically it does the same that is run inside the GitHub action but in the user 
    ```
 3. Grab crendentials from the OR password manager. Login in dockerhub:
    ```bash
-   docker login -u osrf # password
+   docker login -u osrf # change `osrf` to your username and enter password
    ```
 4. Push the new images:
    ```bash
