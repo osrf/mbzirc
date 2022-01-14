@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<sdf version="1.6">
+<sdf version="1.8">
     <model name="hexrotor">
         <pose>0 0 0.121078 0 0 0</pose>
         <link name="base_link">
@@ -171,6 +171,26 @@
                 </magnetometer>
             </sensor>
         </link>
+
+        <!-- Front payload slot -->
+        <frame name="slot_0">
+          <pose>0.1 0 -0.03 0 0 0</pose>
+        </frame>
+
+        <!-- Rear payload slot -->
+        <frame name="slot_1">
+          <pose>-0.1 0 -0.03 0 0 -3.14159</pose>
+        </frame>
+
+        <!-- Top payload slot -->
+        <frame name="slot_2">
+          <pose>0.0 0 0.08 0 1.57 0</pose>
+        </frame>
+
+        <!-- Bottom payload slot -->
+        <frame name="slot_3">
+          <pose>0.0 0 -0.02 0 -1.57 0</pose>
+        </frame>
 
         <link name="rotor_0">
             <pose frame="">0.247 0.1506 0.028 0.087267 0 0.523599</pose>

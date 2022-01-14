@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-<sdf version="1.6">
-    <model name="quadrotor">
+<sdf version="1.9">
+    <model name="mbzirc_quadrotor_base">
         <pose>0 0 0.053302 0 0 0</pose>
         <link name="base_link">
-            <pose frame="">0 0 0 0 -0 0</pose>
+            <pose>0 0 0 0 -0 0</pose>
             <inertial>
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <mass>1.5</mass>
                 <inertia>
                     <ixx>0.025</ixx>
@@ -17,7 +17,7 @@
                 </inertia>
             </inertial>
             <collision name="base_link_inertia_collision">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <box>
                         <size>0.47 0.47 0.11</size>
@@ -25,7 +25,7 @@
                 </geometry>
             </collision>
             <visual name="base_link_inertia_visual">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <mesh>
                         <scale>1 1 1</scale>
@@ -34,7 +34,7 @@
                 </geometry>
             </visual>
             <visual name="marker_visual_1">
-                <pose frame="">-0.07 0 0.065 0 -0 0</pose>
+                <pose>-0.07 0 0.065 0 -0 0</pose>
                 <geometry>
                     <mesh>
                         <uri>meshes/led.dae</uri>
@@ -42,7 +42,7 @@
                 </geometry>
             </visual>
             <visual name="marker_visual_2">
-                <pose frame="">-0.08 0.037 0.04 -1.0472 -0 0.2</pose>
+                <pose>-0.08 0.037 0.04 -1.0472 -0 0.2</pose>
                 <geometry>
                     <mesh>
                         <uri>meshes/led.dae</uri>
@@ -50,7 +50,7 @@
                 </geometry>
             </visual>
             <visual name="marker_visual_3">
-                <pose frame="">-0.08 -0.035 0.04 1.0472 -0 -0.1</pose>
+                <pose>-0.08 -0.035 0.04 1.0472 -0 -0.1</pose>
                 <geometry>
                     <mesh>
                         <uri>meshes/led.dae</uri>
@@ -169,10 +169,30 @@
             </sensor>
         </link>
 
+        <!-- Front payload slot -->
+        <frame name="slot_0">
+          <pose>0.1 0 0 0 0 0</pose>
+        </frame>
+
+        <!-- Rear payload slot -->
+        <frame name="slot_1">
+          <pose>0.11 0 0 0 0 -3.14159</pose>
+        </frame>
+
+        <!-- Top payload slot -->
+        <frame name="slot_2">
+          <pose>0.0 0 0.05 0 1.57 0</pose>
+        </frame>
+
+        <!-- Bottom payload slot -->
+        <frame name="slot_3">
+          <pose>0.0 0 -0.05 0 -1.57 0</pose>
+        </frame>
+
         <link name="rotor_0">
-            <pose frame="">0.13 -0.22 0.023 0 -0 0</pose>
+            <pose>0.13 -0.22 0.023 0 -0 0</pose>
             <inertial>
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <mass>0.005</mass>
                 <inertia>
                     <ixx>9.75e-07</ixx>
@@ -184,7 +204,7 @@
                 </inertia>
             </inertial>
             <collision name="rotor_0_collision">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <cylinder>
                         <length>0.005</length>
@@ -201,7 +221,7 @@
                 </surface>
             </collision>
             <visual name="rotor_0_visual">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <mesh>
                         <scale>0.1 0.1 0.1</scale>
@@ -237,9 +257,9 @@
             </axis>
         </joint>
         <link name="rotor_1">
-            <pose frame="">-0.13 0.2 0.023 0 -0 0</pose>
+            <pose>-0.13 0.2 0.023 0 -0 0</pose>
             <inertial>
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <mass>0.005</mass>
                 <inertia>
                     <ixx>9.75e-07</ixx>
@@ -251,7 +271,7 @@
                 </inertia>
             </inertial>
             <collision name="rotor_1_collision">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <cylinder>
                         <length>0.005</length>
@@ -268,7 +288,7 @@
                 </surface>
             </collision>
             <visual name="rotor_1_visual">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <mesh>
                         <scale>0.1 0.1 0.1</scale>
@@ -304,9 +324,9 @@
             </axis>
         </joint>
         <link name="rotor_2">
-            <pose frame="">0.13 0.22 0.023 0 -0 0</pose>
+            <pose>0.13 0.22 0.023 0 -0 0</pose>
             <inertial>
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <mass>0.005</mass>
                 <inertia>
                     <ixx>9.75e-07</ixx>
@@ -318,7 +338,7 @@
                 </inertia>
             </inertial>
             <collision name="rotor_2_collision">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <cylinder>
                         <length>0.005</length>
@@ -335,7 +355,7 @@
                 </surface>
             </collision>
             <visual name="rotor_2_visual">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <mesh>
                         <scale>0.1 0.1 0.1</scale>
@@ -371,9 +391,9 @@
             </axis>
         </joint>
         <link name="rotor_3">
-            <pose frame="">-0.13 -0.2 0.023 0 -0 0</pose>
+            <pose>-0.13 -0.2 0.023 0 -0 0</pose>
             <inertial>
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <mass>0.005</mass>
                 <inertia>
                     <ixx>9.75e-07</ixx>
@@ -385,7 +405,7 @@
                 </inertia>
             </inertial>
             <collision name="rotor_3_collision">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <cylinder>
                         <length>0.005</length>
@@ -402,7 +422,7 @@
                 </surface>
             </collision>
             <visual name="rotor_3_visual">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <mesh>
                         <scale>0.1 0.1 0.1</scale>
