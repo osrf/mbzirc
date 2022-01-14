@@ -171,10 +171,10 @@ Each UAV platfrom (quadrotor and hexrotor) has four available payload slots as f
 
 1. `slot0`: front
 2. `slot1`: rear
-3. `slot2`: top 
-4. `slot3`: bottom 
+3. `slot2`: bottom
+4. `slot3`: top
 
-In each of these four slots, various perceptive sensors may be installed. 
+In each of these four slots, various perceptive sensors may be installed.
 The avilable sensors are listed in the repository in the [`models/sensors` directory](https://github.com/osrf/mbzirc/tree/main/mbzirc_ign/models/sensors)
 
 To choose a sensor for a payload slot, pass the argument to the spawn launch file:
