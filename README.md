@@ -68,7 +68,7 @@ See Installation instructions for:
     # remember to source the setup.bash
     source install/setup.bash
 
-    ros2 launch mbzirc_ign spawn.launch.py name:=quadrotor_1 world:=simple_demo model:=mbzirc_quadrotor type:=uav x:=1 y:=2 z:=0.05 R:=0 P:=0 Y:=0
+    ros2 launch mbzirc_ign spawn.launch.py name:=quadrotor_1 world:=simple_demo model:=mbzirc_quadrotor type:=uav x:=1 y:=2 z:=0.05 R:=0 P:=0 Y:=0 slot0:=mbzirc_hd_camera
     ```
 
 1. In another terminal, you can take a look at the ROS2 topics available
@@ -146,6 +146,7 @@ See Installation instructions for:
     ign topic -t /usv/left/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
     ign topic -t /usv/right/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
     ```
+    
 
 ### Build a Docker image
 
@@ -162,3 +163,39 @@ See Installation instructions for:
     ```
     bash run.bash mbzirc_sim
     ```
+    
+    
+### Configuring UAV Platform Payloads
+
+Each UAV platfrom (quadrotor and hexrotor) has four available payload slots as follows:
+
+1. `slot0`: front
+2. `slot1`: rear
+3. `slot2`: bottom
+4. `slot3`: top
+
+In each of these four slots, various perceptive sensors may be installed.
+The avilable sensors are listed in the repository in the [`models/sensors` directory](https://github.com/osrf/mbzirc/tree/main/mbzirc_ign/models/sensors)
+
+To choose a sensor for a payload slot, pass the argument to the spawn launch file:
+
+```
+ros2 launch mbzirc_ign spawn.launch.py name:=quadrotor_1 world:=simple_demo model:=mbzirc_quadrotor type:=uav x:=1 y:=2 z:=0.05 R:=0 P:=0 Y:=0 \
+  slot0:=mbzirc_hd_camera \
+  slot1:=mbzirc_vga_camera \
+  slot3:=mbzirc_planar_lidar 
+```
+
+To modify the orientation of the payload sensor, pass the desired mounting position in degrees (note the quotation marks)
+
+```
+ros2 launch mbzirc_ign spawn.launch.py name:=quadrotor_1 world:=simple_demo model:=mbzirc_quadrotor type:=uav x:=1 y:=2 z:=0.05 R:=0 P:=0 Y:=0 \
+  slot0:=mbzirc_hd_camera \
+  slot0_rpy:="0 -5 0" \
+  slot1:=mbzirc_vga_camera \
+  slot1_rpy:="0 -90 0" \
+  slot3:=mbzirc_planar_lidar \
+  slot3_rpy:="0 10 0"
+```
+
+
