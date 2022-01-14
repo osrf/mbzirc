@@ -48,6 +48,11 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   slot2_payload = LaunchConfiguration('slot2').perform(context)
   slot3_payload = LaunchConfiguration('slot3').perform(context)
 
+  slot0_rpy = LaunchConfiguration('slot0_rpy').perform(context)
+  slot1_rpy = LaunchConfiguration('slot1_rpy').perform(context)
+  slot2_rpy = LaunchConfiguration('slot2_rpy').perform(context)
+  slot3_rpy = LaunchConfiguration('slot3_rpy').perform(context)
+
   # calculate battery capacity from time
   # capacity (Ah) = flight time (in hours) * load (watts) / voltage
   # assume constant voltage for battery to keep things simple for now.
@@ -63,9 +68,13 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   command.append(f'capacity={battery_capacity}')
 
   if slot0_payload: command.append(f'slot0={slot0_payload}')
+  if slot0_rpy: command.append(f'slot0_pos={slot0_rpy}')
   if slot1_payload: command.append(f'slot1={slot1_payload}')
-  if slot2_payload: command.append(f'slot2={slot2_payload}')
+  if slot1_rpy: command.append(f'slot1_pos={slot1_rpy}')
+  if slot2_payload: command.append(f'slot2="{slot2_payload}"')
+  if slot2_rpy: command.append(f'slot2_pos={slot2_rpy}')
   if slot3_payload: command.append(f'slot3={slot3_payload}')
+  if slot3_rpy: command.append(f'slot3_pos={slot3_rpy}')
 
   command.append(model_file)
 
@@ -390,17 +399,33 @@ def generate_launch_description():
             default_value='',
             description='Payload mounted to slot 0'),
         DeclareLaunchArgument(
+            'slot0_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
             'slot1',
             default_value='',
             description='Payload mounted to slot 1'),
+        DeclareLaunchArgument(
+            'slot1_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
         DeclareLaunchArgument(
             'slot2',
             default_value='',
             description='Payload mounted to slot 2'),
         DeclareLaunchArgument(
+            'slot2_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
             'slot3',
             default_value='',
             description='Payload mounted to slot 3'),
+        DeclareLaunchArgument(
+            'slot3_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
         # launch setup
         OpaqueFunction(function = launch)
     ])
