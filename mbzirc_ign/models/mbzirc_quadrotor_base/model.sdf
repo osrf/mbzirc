@@ -172,7 +172,7 @@
       <pose>0.1 0 0 0 0 0</pose>
     </frame>
     <frame name='slot_1'>
-      <pose>0.11 0 0 0 0 -3.14159</pose>
+      <pose>-0.1 0 0 0 0 -3.14159</pose>
     </frame>
     <frame name='slot_2'>
       <pose>0.0 0 0.05 0 1.57 0</pose>
