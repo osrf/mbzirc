@@ -71,7 +71,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   if slot0_rpy: command.append(f'slot0_pos={slot0_rpy}')
   if slot1_payload: command.append(f'slot1={slot1_payload}')
   if slot1_rpy: command.append(f'slot1_pos={slot1_rpy}')
-  if slot2_payload: command.append(f'slot2="{slot2_payload}"')
+  if slot2_payload: command.append(f'slot2={slot2_payload}')
   if slot2_rpy: command.append(f'slot2_pos={slot2_rpy}')
   if slot3_payload: command.append(f'slot3={slot3_payload}')
   if slot3_rpy: command.append(f'slot3_pos={slot3_rpy}')
