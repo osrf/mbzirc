@@ -274,7 +274,6 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
         ros2_ign_imu_bridge,
         ros2_ign_magnetometer_bridge,
         ros2_ign_air_pressure_bridge,
-        ros2_ign_camera_bridge,
         ros2_camera_optical_frame_publisher,
         ros2_ign_rgbd_points_bridge,
         ros2_ign_rgbd_depth_bridge,
