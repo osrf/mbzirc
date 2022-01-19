@@ -13,4 +13,6 @@ jobs:
       - name: xvfb
         run: 'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 &'
       - name: Compile and run tests
-        run: docker build --device /dev/dri:/dev/dri -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=:1.0 -t mbzirc_sim . -f docker/tests/Dockerfile
+        # TODO: split to docker run
+        #run: docker build --device /dev/dri:/dev/dri -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=:1.0 -t mbzirc_sim . -f docker/tests/Dockerfile
+        run: docker build -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=:1.0 -t mbzirc_sim . -f docker/tests/Dockerfile
