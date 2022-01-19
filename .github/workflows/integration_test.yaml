@@ -16,8 +16,7 @@ jobs:
         # TODO: split to docker run
         run: |
           docker build -t mbzirc_sim . -f docker/tests/Dockerfile
-          docker run --device /dev/dri:/dev/dri \
-                     -v /tmp/.X11-unix:/tmp/.X11-unix \
+          docker run -v /tmp/.X11-unix:/tmp/.X11-unix \
                      -e DISPLAY=:1.0 \
                      mbzirc_sim \
                      /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros && colcon test-result'
