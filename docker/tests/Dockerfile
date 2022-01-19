@@ -48,6 +48,8 @@ RUN apt-get update -qq \
         iputils-ping \
         xvfb \
         curl \
+        mesa-utils \
+        libgl1-mesa-glx \
  && apt-get clean -qq
 
 # set up ros2 repo
