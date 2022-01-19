@@ -127,5 +127,5 @@ RUN /bin/bash -c 'source /opt/ros/galactic/setup.bash && colcon build --merge-in
 ENV RENDER_ENGINE_VALUES ogre2
 ENV MESA_GL_VERSION_OVERRIDE 3.3
 
-RUN /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros'
-RUN /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && colcon test-result'
+#RUN /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros'
+#RUN /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && colcon test-result'
