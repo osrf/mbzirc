@@ -48,12 +48,77 @@
       </visual>
     </link>
 
+    <!--Left flap--->
+    <link name='left_flap'>
+       <visual name='left_flap_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/wing.dae</uri>
+            <submesh>
+              <name>Flap_Left</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <!--Left flap--->
+    <link name='right_flap'>
+       <visual name='right_flap_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/wing.dae</uri>
+            <submesh>
+              <name>Flap_Right</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
     <!-- Joints -->
     <!-- Propeller Joint -->
     <joint name="propeller_joint" type="revolute">
       <pose>0 0 0 0 0 0</pose>
       <parent>base_link</parent>
       <child>propeller</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-0.261799</lower>
+          <upper>0.261799</upper>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+
+    <!-- Left Flap Joint -->
+    <joint name="left_flap_joint" type="revolute">
+      <pose>0 0 0 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>left_flap</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.261799</lower>
+          <upper>0.261799</upper>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- Right flap Joint -->
+    <joint name="right_flap_joint" type="revolute">
+      <pose>0 0 0 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>right_flap</child>
       <axis>
         <xyz>0 1 0</xyz>
         <limit>
