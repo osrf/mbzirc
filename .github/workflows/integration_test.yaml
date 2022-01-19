@@ -6,7 +6,9 @@ jobs:
   integration_tests:
     runs-on: ubuntu-20.04 # linux required if you want to use docker
     steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-    - name: Compile and run tests
-      run: docker build -t mbzirc_sim . -f docker/tests/Dockerfile
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Check DRI in dev
+        run: ls -lasR /dev/dri*
+      - name: Compile and run tests
+        run: docker build --device /dev/dri:/dev/dri -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -t mbzirc_sim . -f docker/tests/Dockerfile
