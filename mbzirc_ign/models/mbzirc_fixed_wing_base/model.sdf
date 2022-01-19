@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
 <sdf version='1.9'>
   <model name='mbzirc_quadrotor_base'>
-    <pose>0 0 0.053302 0 0 0</pose>
+    <pose>0 0 0.02577 0 0 0</pose>
 
     <!--Base Link-->
     <link name='base_link'>
-      <pose>0 0 0 0 0 0</pose>
       <visual name='base_link_visual'>
-        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>meshes/wing.dae</uri>
@@ -32,10 +30,9 @@
       </collision>
     </link>
 
-    <!--Propeller Blade--->
+    <!--Propeller Blade-->
     <link name='propeller'>
-       <visual name='propeller_visual'>
-        <pose>0 0 0 0 0 0</pose>
+      <visual name='propeller_visual'>
         <geometry>
           <mesh>
             <uri>meshes/wing.dae</uri>
@@ -48,10 +45,9 @@
       </visual>
     </link>
 
-    <!--Left flap--->
+    <!--Left flap-->
     <link name='left_flap'>
-       <visual name='left_flap_visual'>
-        <pose>0 0 0 0 0 0</pose>
+      <visual name='left_flap_visual'>
         <geometry>
           <mesh>
             <uri>meshes/wing.dae</uri>
@@ -64,7 +60,7 @@
       </visual>
     </link>
 
-    <!--Left flap--->
+    <!--Left flap-->
     <link name='right_flap'>
        <visual name='right_flap_visual'>
         <pose>0 0 0 0 0 0</pose>
@@ -87,7 +83,7 @@
       <parent>base_link</parent>
       <child>propeller</child>
       <axis>
-        <xyz>1 0 0</xyz>
+        <xyz>0 1 0</xyz>
         <limit>
           <lower>-0.261799</lower>
           <upper>0.261799</upper>
@@ -104,7 +100,7 @@
       <parent>base_link</parent>
       <child>left_flap</child>
       <axis>
-        <xyz>0 1 0</xyz>
+        <xyz>1 0.330321014 0</xyz>
         <limit>
           <lower>-0.261799</lower>
           <upper>0.261799</upper>
@@ -120,7 +116,7 @@
       <parent>base_link</parent>
       <child>right_flap</child>
       <axis>
-        <xyz>0 1 0</xyz>
+        <xyz>1 -0.330321014 0</xyz>
         <limit>
           <lower>-0.261799</lower>
           <upper>0.261799</upper>

@@ -36,6 +36,70 @@ end
       <motorType>velocity</motorType>
   </plugin>
 
+  <!-- LiftDrag plugins -->
+  <plugin
+    filename="ignition-gazebo-lift-drag-system"
+    name="ignition::gazebo::systems::LiftDrag">
+    <a0>0.13</a0>
+    <cla>3.7</cla>
+    <cda>0.06417112299</cda>
+    <cma>-1.8</cma>
+    <alpha_stall>0.3391428111</alpha_stall>
+    <cla_stall>-3.85</cla_stall>
+    <cda_stall>-0.9233984055</cda_stall>
+    <cma_stall>0</cma_stall>
+    <cp>0 -0.1 0</cp>
+    <area>0.50</area>
+    <air_density>1.2041</air_density>
+    <forward>0 -1 0</forward>
+    <upward>0 0 1</upward>
+    <link_name>base_link</link_name>
+  </plugin>
+  <plugin
+    filename="ignition-gazebo-lift-drag-system"
+    name="ignition::gazebo::systems::LiftDrag">
+    <a0>0.15</a0>
+    <cla>6.8</cla>
+    <cda>0.06417112299</cda>
+    <cma>-1.8</cma>
+    <alpha_stall>0.6391428111</alpha_stall>
+    <cla_stall>-3.85</cla_stall>
+    <cda_stall>-0.9233984055</cda_stall>
+    <cma_stall>0</cma_stall>
+    <cp>0.7 0.20 0</cp>
+    <area>0.10</area>
+    <air_density>1.2041</air_density>
+    <forward>0 -1 0</forward>
+    <upward>0 0 1</upward>
+    <link_name>base_link</link_name>
+    <control_joint_name>
+      left_flap_joint
+    </control_joint_name>
+    <control_joint_rad_to_cl>-5.0</control_joint_rad_to_cl>
+  </plugin>
+  <plugin
+    filename="ignition-gazebo-lift-drag-system"
+    name="ignition::gazebo::systems::LiftDrag">
+    <a0>0.15</a0>
+    <cla>6.8</cla>
+    <cda>0.06417112299</cda>
+    <cma>-1.8</cma>
+    <alpha_stall>0.6391428111</alpha_stall>
+    <cla_stall>-3.85</cla_stall>
+    <cda_stall>-0.9233984055</cda_stall>
+    <cma_stall>0</cma_stall>
+    <cp>-0.7 0.20 0</cp>
+    <area>0.10</area>
+    <air_density>1.2041</air_density>
+    <forward>0 -1 0</forward>
+    <upward>0 0 1</upward>
+    <link_name>base_link</link_name>
+    <control_joint_name>
+      right_flap_joint
+    </control_joint_name>
+    <control_joint_rad_to_cl>-5.0</control_joint_rad_to_cl>
+  </plugin>
+
   <!-- Battery plugin -->
   <!-- Since we are interested in using time as the limiting factor -->
   <plugin filename="libignition-gazebo-linearbatteryplugin-system.so"
