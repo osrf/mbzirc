@@ -157,10 +157,6 @@
     </include>
 
     <include>
-      <uri>mbzirc_fixedwing_base</uri>
-    </include>
-
-    <include>
       <name>Vessel A</name>
       <pose>25 25 -1 0 0.0 -1.0</pose>
       <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel A</uri>
