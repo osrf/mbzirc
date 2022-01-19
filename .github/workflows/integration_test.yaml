@@ -9,7 +9,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
       - name: Install dri packages
-        run: sudo apt-get install -y libxcb-dri3-0 libxcb-dri2-0 mesa-utils and libgl1-mesa-glx xvfb
+        run: sudo apt-get install -y libxcb-dri3-0 libxcb-dri2-0 mesa-utils libgl1-mesa-glx xvfb
       - name: xvfb
         run: 'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 &'
       - name: Check DRI in dev
