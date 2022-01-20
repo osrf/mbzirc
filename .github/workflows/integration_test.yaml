@@ -15,7 +15,8 @@ jobs:
       - name: Run tests
         run: |
           xvfb-run -a -s '-screen 1 1920x1080x24' \
-            docker run -e DISPLAY=:1.0 mbzirc_sim /bin/bash -c \
+            docker run -e DISPLAY=:1.0 -v /tmp/.X11-unix:/tmp/.X11-unix \
+            mbzirc_sim /bin/bash -c \
               'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
                colcon test --merge-install \
                            --event-handlers console_direct+ \
