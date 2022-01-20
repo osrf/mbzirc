@@ -146,7 +146,7 @@ See Installation instructions for:
     ign topic -t /usv/left/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
     ign topic -t /usv/right/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
     ```
-    
+
 
 ### Build a Docker image
 

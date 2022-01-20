@@ -16,6 +16,7 @@ end
     </include>
   </model>
 
+  <!-- Multicopter motor for the propeller --!>
   <plugin filename="libignition-gazebo-multicopter-motor-model-system.so"
     name="ignition::gazebo::systems::MulticopterMotorModel">
       <robotNamespace>model/<%= $model_name%></robotNamespace>
@@ -34,6 +35,20 @@ end
       <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
       <motorType>velocity</motorType>
+  </plugin>
+
+  <!-- Joints -->
+  <plugin
+  filename="ignition-gazebo-joint-position-controller-system"
+  name="ignition::gazebo::systems::JointPositionController">
+    <joint_name>left_flap_joint</joint_name>
+    <p_gain>1</p_gain>
+  </plugin>
+  <plugin
+    filename="ignition-gazebo-joint-position-controller-system"
+    name="ignition::gazebo::systems::JointPositionController">
+    <joint_name>right_flap_joint</joint_name>
+    <p_gain>1</p_gain>
   </plugin>
 
   <!-- LiftDrag plugins -->
