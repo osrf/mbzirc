@@ -10,13 +10,15 @@ jobs:
         uses: actions/checkout@v2
       - name: Install dri packages
         run: sudo apt-get install -y libxcb-dri3-0 libxcb-dri2-0 mesa-utils libgl1-mesa-glx xvfb
-      - name: xvfb
-        run: 'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 &'
-      - name: Compile and run tests
-        # TODO: split to docker run
+      - name: Build base image
+        run: docker build -t mbzirc_sim . -f docker/tests/Dockerfile
+      - name: Run tests
         run: |
-          docker build -t mbzirc_sim . -f docker/tests/Dockerfile
-          docker run -v /tmp/.X11-unix:/tmp/.X11-unix \
-                     -e DISPLAY=:1.0 \
-                     mbzirc_sim \
-                     /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros && colcon test-result'
+          xvfb-run -a -s '-screen 1 1920x1080x24' \
+          docker run
+            -v /tmp/.X11-unix:/tmp/.X11-unix \
+            -e DISPLAY=:1.0 \
+            mbzirc_sim \
+            /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
+                          colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros && \
+                          colcon test-result'
