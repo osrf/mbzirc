@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+      - name: Install xvfb
+        run: sudo apt-get install -y xvfb
       - name: Install dri packages
         run: sudo apt-get install -y libxcb-dri3-0 libxcb-dri2-0 mesa-utils libgl1-mesa-glx xvfb
       - name: Build base image
@@ -17,10 +19,16 @@ jobs:
         with:
           working-directory: ./node_modules
           options: -screen 0 1920x1080x24
-          run: docker run -v /tmp/.X11-unix:/tmp/.X11-unix \
-            mbzirc_sim /bin/bash -c \
-              'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
-               colcon test --merge-install \
-                           --event-handlers console_direct+ \
-                           --packages-select mbzirc_ros && \
-               colcon test-result'
+          run: pwd
+        run: |
+          xvfb-run --server-num=99 -s '-screen 0 1920x1080x24' \
+            docker run \
+              -e DISPLAY=:00\
+              -v /tmp/.X11-unix:/tmp/.X11-unix \
+              mbzirc_sim \
+              /bin/bash -c \
+                'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
+                 colcon test --merge-install \
+                             --event-handlers console_direct+ \
+                             --packages-select mbzirc_ros && \
+                 colcon test-result'
