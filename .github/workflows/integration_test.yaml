@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   integration_tests:
-    runs-on: ubuntu-20.04 # linux required if you want to use docker
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -15,10 +15,10 @@ jobs:
       - name: Run tests
         run: |
           xvfb-run -a -s '-screen 1 1920x1080x24' \
-          docker run \
-            -v /tmp/.X11-unix:/tmp/.X11-unix \
-            -e DISPLAY=:1.0 \
-            mbzirc_sim \
-            /bin/bash -c 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
-                          colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros && \
-                          colcon test-result'
+            docker run mbzirc_sim:latest \
+            /bin/bash -c \
+              'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
+               colcon test --merge-install \
+                           --event-handlers console_direct+ \
+                           --packages-select mbzirc_ros && \
+               colcon test-result'
