@@ -15,7 +15,7 @@ jobs:
       - name: Run tests
         run: |
           xvfb-run -a -s '-screen 1 1920x1080x24' \
-          docker run
+          docker run \
             -v /tmp/.X11-unix:/tmp/.X11-unix \
             -e DISPLAY=:1.0 \
             mbzirc_sim \
