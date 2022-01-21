@@ -39,7 +39,7 @@ def generate_test_description():
 
     # launch simple_demo world
     gazebo = ExecuteProcess(
-        cmd=['ign gazebo --headless-rendering -v 4 --iterations 35000 -s -r simple_demo.sdf'],
+        cmd=['ign gazebo --headless-rendering -v 4 --iterations 30000 -s -r simple_demo.sdf'],
         output='screen',
         shell=True
     )
@@ -82,7 +82,7 @@ def generate_test_description():
     return LaunchDescription([
         gazebo,
         delay_launch_quadrotor,
-        delay_launch_hexrotor,
+#        delay_launch_hexrotor,
         process_under_test,
         launch_testing.util.KeepAliveProc(),
         launch_testing.actions.ReadyToTest(),

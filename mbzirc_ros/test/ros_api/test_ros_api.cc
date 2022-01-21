@@ -97,13 +97,13 @@ TEST(RosApiTest, SimTopics)
   // tf
   MyTestClass<tf2_msgs::msg::TFMessage> tf("/tf");
   waitUntilBoolVarAndSpin(
-    node, tf.callbackExecuted, 10ms, 3000);
+    node, tf.callbackExecuted, 10ms, 3500);
   EXPECT_TRUE(tf.callbackExecuted);
 
   // tf_static
   MyTestClass<tf2_msgs::msg::TFMessage> tfStatic("/tf_static");
   waitUntilBoolVarAndSpin(
-    node, tfStatic.callbackExecuted, 10ms, 3000);
+    node, tfStatic.callbackExecuted, 10ms, 3500);
   EXPECT_TRUE(tfStatic.callbackExecuted);
 }
 
@@ -158,7 +158,7 @@ TEST(RosApiTest, UAVTopics)
   waitUntilBoolVarAndSpin(
     node, magnetometer.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(magnetometer.callbackExecuted);
-
+/*
   // rgbd - color
   MyTestClass<sensor_msgs::msg::Image> rgbdImage(
       "/hexrotor/slot0/image_raw");
@@ -174,11 +174,11 @@ TEST(RosApiTest, UAVTopics)
   EXPECT_TRUE(rgbdCameraInfo.callbackExecuted);
 
   // rgbd - depth
-//  MyTestClass<sensor_msgs::msg::Image> rgbdDepth(
-//      "/hexrotor/slot0/depth");
-//  waitUntilBoolVarAndSpin(
-//    node, rgbdDepth.callbackExecuted, 10ms, 500);
-//  EXPECT_TRUE(rgbdDepth.callbackExecuted);
+  MyTestClass<sensor_msgs::msg::Image> rgbdDepth(
+      "/hexrotor/slot0/depth");
+  waitUntilBoolVarAndSpin(
+    node, rgbdDepth.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(rgbdDepth.callbackExecuted);
 
   // rgbd - points
   MyTestClass<sensor_msgs::msg::PointCloud2> rgbdPoints(
@@ -202,11 +202,12 @@ TEST(RosApiTest, UAVTopics)
   EXPECT_TRUE(rgbdOpticalCameraInfo.callbackExecuted);
 
   // rgbd optical - depth
-//  MyTestClass<sensor_msgs::msg::Image> rgbdOpticalDepth(
-//      "/hexrotor/slot0/optical/depth");
-//  waitUntilBoolVarAndSpin(
-//    node, rgbdOpticalDepth.callbackExecuted, 10ms, 500);
-//  EXPECT_TRUE(rgbdOpticalDepth.callbackExecuted);
+  MyTestClass<sensor_msgs::msg::Image> rgbdOpticalDepth(
+      "/hexrotor/slot0/optical/depth");
+  waitUntilBoolVarAndSpin(
+    node, rgbdOpticalDepth.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(rgbdOpticalDepth.callbackExecuted);
+*/
 
   // \todo check cmd_vel and points (lidar) topics
 }
