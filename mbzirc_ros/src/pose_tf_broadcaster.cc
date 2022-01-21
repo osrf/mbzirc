@@ -31,6 +31,8 @@ class FramePublisher : public rclcpp::Node
 {
   public: FramePublisher() : Node("frame_publisher")
   {
+    this->declare_parameter<std::string>("world_frame", "");
+
     this->tfBroadcaster =
       std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     this->tfBroadcasterStatic =
@@ -48,14 +50,48 @@ class FramePublisher : public rclcpp::Node
 
   private: void HandlePose(const std::shared_ptr<tf2_msgs::msg::TFMessage> _msg)
   {
-    // Send the transformation
-    this->tfBroadcaster->sendTransform(_msg->transforms);
+    std::string world_frame;
+    this->get_parameter("world_frame", world_frame); 
+    if (!world_frame.empty())
+    {
+      std::vector<geometry_msgs::msg::TransformStamped> filtered;
+      for (auto transform: _msg->transforms)
+      {
+        if (transform.header.frame_id != world_frame)
+        {
+          filtered.push_back(transform);
+        }
+      }
+      this->tfBroadcaster->sendTransform(filtered);
+    }
+    else
+    {
+      // Send the transformation
+      this->tfBroadcaster->sendTransform(_msg->transforms);
+    }
   }
 
   private: void HandlePoseStatic(const std::shared_ptr<tf2_msgs::msg::TFMessage> _msg)
   {
-    // Send the transformation
-    this->tfBroadcasterStatic->sendTransform(_msg->transforms);
+    std::string world_frame;
+    this->get_parameter("world_frame", world_frame); 
+    if (!world_frame.empty())
+    {
+      std::vector<geometry_msgs::msg::TransformStamped> filtered;
+      for (auto transform: _msg->transforms)
+      {
+        if (transform.header.frame_id != world_frame)
+        {
+          filtered.push_back(transform);
+        }
+      }
+      this->tfBroadcasterStatic->sendTransform(filtered);
+    }
+    else
+    {
+      // Send the transformation
+      this->tfBroadcasterStatic->sendTransform(_msg->transforms);
+    }
   }
 
   private: rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr subscription;

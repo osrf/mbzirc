@@ -1,3 +1,6 @@
+**This is work in progress and is subject to change in the next releases. Please do not use the information provided in the simulation environment until unless officially announced by the organizers of MBZIRC**
+
+
 # MBZIRC Maritime Grand Challenge Simulator
 
 This repository contains simulation software created for the
@@ -35,143 +38,32 @@ See Installation instructions for:
     colcon build --merge-install
     ```
 
-#### Run the demo
 
-1. Source the setup file
+### Docker setup
 
-    ```
-    cd ~/mbzirc_ws
-    source install/share/setup.bash
-    ```
+Docker images are available on Docker Hub: https://hub.docker.com/repository/docker/osrf/mbzirc
 
-1. Launch simple demo world
+1. Pull the latest version of the docker image
 
     ```
-    ros2 launch ros_ign_gazebo ign_gazebo.launch.py ign_args:="-v 4 -r simple_demo.sdf"
+    docker pull osrf/mbzirc:mbzirc_sim_latest
     ```
 
-  * This is equivalent to:
+1. Clone the repo and launch a Docker container from the image using the `run.bash` script. Note: requires `nvidia-docker`.
 
     ```
-    ign gazebo -v 4 simple_demo.sdf
+    git clone https://github.com/osrf/mbzirc.git
+    cd mbzirc/docker
+    bash run.bash osrf/mbzirc:mbzirc_sim_latest  /bin/bash
     ```
 
-    * You may have to set the environment variables:
+To build a docker image of the simulator locally:
 
-      ```
-      export IGN_GAZEBO_RESOURCE_PATH=$IGN_GAZEBO_RESOURCE_PATH:install/share/mbzirc_ign/models:install/share/mbzirc_ign/worlds
-      ```
 
-1. In a separate terminal, spawn a UAV
+1. Navigate to the `docker` directory and build the `mbzirc_sim` Docker image
 
     ```
-    # remember to source the setup.bash
-    source install/share/setup.bash
-
-    ros2 launch mbzirc_ign spawn.launch.py name:=x4 world:=simple_demo model:=x4 type:=uav x:=1 y:=2 z:=0.08 R:=0 P:=0 Y:=0
-    ```
-
-1. In another terminal, you can take a look at the ROS2 topics available
-
-    ```
-    ros2 topic list
-    ```
-
-1. Make sure data are published, e.g. try echoing the IMU topic
-
-    ```
-    ros2 topic echo /x4/imu/data
-    ```
-
-1. Launch `rqt_image_view` to see camera stream from the UAV
-
-    ```
-    ros2 run rqt_image_view rqt_image_view &
-    ```
-
-1. Publish a twist command with linear +z velocity to make the UAV take off
-
-    ```
-    ros2 topic pub --once /x4/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.5}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
-    ```
-
-1. Publish zero velocity twist command to make the UAV hover in the air
-
-    ```
-    ros2 topic pub --once /x4/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0,y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
-    ```
-
-1. View the TF tree
-
-    ```
-    # this generates frames.pdf
-    ros2 run tf2_tools view_frames
-
-    # view the TF tree using your favorite PDF viewer, e.g.
-    evince frames.pdf
-    ```
-
-1. Visualize point clouds in rviz2
-
-   ```
-   ros2 run rviz2 rviz2
-   ```
-
-   Set `Fixed Frame` to `/x4/base_link`
-
-   Click on `Add` button below the left panel, select the `By topic` tab and choose the `/x4/rgbd_camera/depth/points` > `PointCloud2` topic to see colored point clouds in the 3D view.
-
-
-1. In a separate terminal, spawn a USV
-
-    ```
-    # remember to source the setup.bash
-    source install/share/setup.bash
-
-    ros2 launch mbzirc_ign spawn.launch.py name:=usv world:=simple_demo model:=wam-v type:=usv x:=0 y:=0 z:=1.0 R:=3.14 P:=0 Y:=0
-    ```
-
-1. To move the propeller
-    ```
-    ros2 topic pub --once /usv/left/thrust/cmd_thrust std_msgs/msg/Float64 'data: -1'
-    ros2 topic pub --once /usv/right/thrust/cmd_thrust std_msgs/msg/Float64 'data: 1'
-    ```
-
-    This is equivalent to:
-
-    ```
-    ign topic -t /model/usv/joint/left_engine_propeller_joint/cmd_thrust -m ignition.msgs.Double -p 'data: -1'
-    ign topic -t /model/usv/joint/right_engine_propeller_joint/cmd_thrust -m ignition.msgs.Double -p 'data: 1'
-    ```
-
-1. To rotate the thruster
-
-    ```
-    ros2 topic pub --once /usv/left/thrust/joint/cmd_pos std_msgs/msg/Float64 'data: -1'
-    ros2 topic pub --once /usv/right/thrust/joint/cmd_pos std_msgs/msg/Float64 'data: 1'
-    ```
-
-    This is equivalent to:
-
-    ```
-    ign topic -t /usv/left/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
-    ign topic -t /usv/right/thruster/joint/cmd_pos -m ignition.msgs.Double -p 'data: -1'
-    ```
-
-### Run Tests
-
-To run tests, install from source, then execute the following command and see output in the console:
-
-```
-colcon test --merge-install --event-handlers console_direct+ --packages-select mbzirc_ros
-```
-
-### Build a Docker image
-
-1. Navigate to the `docker` directory and build the `mbzirc_sim` docker image
-
-    ```
-    cd ~/mbzirc_ws/src/mbzirc/docker
+    cd mbzirc/docker
     bash build.bash mbzirc_sim
     ```
 
@@ -181,4 +73,8 @@ colcon test --merge-install --event-handlers console_direct+ --packages-select m
     ```
     bash run.bash mbzirc_sim
     ```
+  
+## Running the simulator
+
+Please see the wiki:  https://github.com/osrf/mbzirc/wiki
 
