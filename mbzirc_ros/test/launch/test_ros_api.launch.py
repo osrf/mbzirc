@@ -28,7 +28,7 @@ from launch_ros.actions import Node
 
 import launch_testing
 
-# launch simple_demo and spawns x3 and x4 UAVs
+# launch simple_demo and spawn quadrotor and hexrotor UAVs
 def generate_test_description():
 
     process_under_test = Node(
@@ -39,48 +39,50 @@ def generate_test_description():
 
     # launch simple_demo world
     gazebo = ExecuteProcess(
-        cmd=['ign gazebo --headless-rendering -v 4 --iterations 15000 -s -r simple_demo.sdf'],
+        cmd=['ign gazebo --headless-rendering -v 4 --iterations 14000 -s -r simple_demo.sdf'],
         output='screen',
         shell=True
     )
 
-    # spawn x3
-    spawn_x3 = IncludeLaunchDescription(
+    # spawn quadrotor
+    spawn_quadrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
                 get_package_share_directory('mbzirc_ign'),
                 'launch/spawn.launch.py')
         ),
-        launch_arguments={'name'  : 'x3',
+        launch_arguments={'name'  : 'quadrotor',
                           'world' : 'simple_demo',
-                          'model' : 'x3',
+                          'model' : 'mbzirc_quadrotor',
                           'type'  : 'uav',
+                          'slot0' : 'mbzirc_hd_camera',
                           'z'     : '0.08',}.items())
-    delay_launch_x3 = TimerAction(
-            period=3.0,
-            actions=[spawn_x3])
+    delay_launch_quadrotor = TimerAction(
+            period=8.0,
+            actions=[spawn_quadrotor])
 
-    # spawn x4
-    spawn_x4 = IncludeLaunchDescription(
+    # spawn hexrotor
+    spawn_hexrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
                 get_package_share_directory('mbzirc_ign'),
                 'launch/spawn.launch.py')
         ),
-        launch_arguments={'name'  : 'x4',
+        launch_arguments={'name'  : 'hexrotor',
                           'world' : 'simple_demo',
-                          'model' : 'x4',
+                          'model' : 'mbzirc_hexrotor',
                           'type'  : 'uav',
+                          'slot0' : 'mbzirc_rgbd_camera',
                           'x'     : '2',
                           'z'     : '0.08',}.items())
-    delay_launch_x4 = TimerAction(
-            period=4.0,
-            actions=[spawn_x4])
+    delay_launch_hexrotor = TimerAction(
+            period=16.0,
+            actions=[spawn_hexrotor])
 
     return LaunchDescription([
         gazebo,
-        delay_launch_x3,
-        delay_launch_x4,
+        delay_launch_quadrotor,
+        delay_launch_hexrotor,
         process_under_test,
         launch_testing.util.KeepAliveProc(),
         launch_testing.actions.ReadyToTest(),
