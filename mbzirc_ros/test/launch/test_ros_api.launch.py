@@ -39,7 +39,7 @@ def generate_test_description():
 
     # launch simple_demo world
     gazebo = ExecuteProcess(
-        cmd=['ign gazebo -v 4 --iterations 15000 -s -r simple_demo.sdf'],
+        cmd=['ign gazebo --headless-rendering -v 4 --iterations 15000 -s -r simple_demo.sdf'],
         output='screen',
         shell=True
     )

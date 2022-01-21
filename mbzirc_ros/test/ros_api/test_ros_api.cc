@@ -97,13 +97,13 @@ TEST(RosApiTest, SimTopics)
   // tf
   MyTestClass<tf2_msgs::msg::TFMessage> tf("/tf");
   waitUntilBoolVarAndSpin(
-    node, tf.callbackExecuted, 10ms, 1000);
+    node, tf.callbackExecuted, 10ms, 2000);
   EXPECT_TRUE(tf.callbackExecuted);
 
   // tf_static
   MyTestClass<tf2_msgs::msg::TFMessage> tfStatic("/tf_static");
   waitUntilBoolVarAndSpin(
-    node, tfStatic.callbackExecuted, 10ms, 1000);
+    node, tfStatic.callbackExecuted, 10ms, 2000);
   EXPECT_TRUE(tfStatic.callbackExecuted);
 }
 
@@ -114,7 +114,7 @@ TEST(RosApiTest, UAVTopics)
   MyTestClass<sensor_msgs::msg::Image> image(
       "/x3/front/image_raw");
   waitUntilBoolVarAndSpin(
-    node, image.callbackExecuted, 10ms, 1000);
+    node, image.callbackExecuted, 10ms, 2000);
   EXPECT_TRUE(image.callbackExecuted);
 
   // camera_info
