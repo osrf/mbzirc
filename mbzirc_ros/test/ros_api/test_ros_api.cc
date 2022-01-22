@@ -110,6 +110,27 @@ TEST(RosApiTest, SimTopics)
 /////////////////////////////////////////////////
 TEST(RosApiTest, UAVTopics)
 {
+  // imu
+  MyTestClass<sensor_msgs::msg::Imu> imu(
+      "/quadrotor/imu/data");
+  waitUntilBoolVarAndSpin(
+    node, imu.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(imu.callbackExecuted);
+
+  // air_pressure
+  MyTestClass<sensor_msgs::msg::FluidPressure> airPressure(
+      "/quadrotor/air_pressure");
+  waitUntilBoolVarAndSpin(
+    node, airPressure.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(airPressure.callbackExecuted);
+
+  // magnetometer
+  MyTestClass<sensor_msgs::msg::MagneticField> magnetometer(
+      "/quadrotor/magnetic_field");
+  waitUntilBoolVarAndSpin(
+    node, magnetometer.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(magnetometer.callbackExecuted);
+/*
   // image_raw
   MyTestClass<sensor_msgs::msg::Image> image(
       "/quadrotor/slot0/image_raw");
@@ -138,27 +159,6 @@ TEST(RosApiTest, UAVTopics)
     node, cameraInfoOptical.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(cameraInfoOptical.callbackExecuted);
 
-  // imu
-  MyTestClass<sensor_msgs::msg::Imu> imu(
-      "/quadrotor/imu/data");
-  waitUntilBoolVarAndSpin(
-    node, imu.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(imu.callbackExecuted);
-
-  // air_pressure
-  MyTestClass<sensor_msgs::msg::FluidPressure> airPressure(
-      "/quadrotor/air_pressure");
-  waitUntilBoolVarAndSpin(
-    node, airPressure.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(airPressure.callbackExecuted);
-
-  // magnetometer
-  MyTestClass<sensor_msgs::msg::MagneticField> magnetometer(
-      "/quadrotor/magnetic_field");
-  waitUntilBoolVarAndSpin(
-    node, magnetometer.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(magnetometer.callbackExecuted);
-/*
   // rgbd - color
   MyTestClass<sensor_msgs::msg::Image> rgbdImage(
       "/hexrotor/slot0/image_raw");

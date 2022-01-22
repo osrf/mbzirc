@@ -55,7 +55,7 @@ def generate_test_description():
                           'world' : 'simple_demo',
                           'model' : 'mbzirc_quadrotor',
                           'type'  : 'uav',
-                          'slot0' : 'mbzirc_hd_camera',
+                          # 'slot0' : 'mbzirc_hd_camera',
                           'z'     : '0.08',}.items())
     delay_launch_quadrotor = TimerAction(
             period=20.0,
