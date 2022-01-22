@@ -130,84 +130,89 @@ TEST(RosApiTest, UAVTopics)
   waitUntilBoolVarAndSpin(
     node, magnetometer.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(magnetometer.callbackExecuted);
-/*
-  // image_raw
-  MyTestClass<sensor_msgs::msg::Image> image(
-      "/quadrotor/slot0/image_raw");
-  waitUntilBoolVarAndSpin(
-    node, image.callbackExecuted, 10ms, 3000);
-  EXPECT_TRUE(image.callbackExecuted);
 
-  // camera_info
-  MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfo(
-      "/quadrotor/slot0/camera_info");
-  waitUntilBoolVarAndSpin(
-    node, cameraInfo.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(cameraInfo.callbackExecuted);
+  // rendering tests are disabled as it causes a crash on CI
+  // \todo enable
+  const char *var = std::getenv("DISPLAY_TEST");
+  if (var && std::string(var) == "1")
+  {
+    // image_raw
+    MyTestClass<sensor_msgs::msg::Image> image(
+        "/quadrotor/slot0/image_raw");
+    waitUntilBoolVarAndSpin(
+      node, image.callbackExecuted, 10ms, 3000);
+    EXPECT_TRUE(image.callbackExecuted);
 
-  // optical image
-  MyTestClass<sensor_msgs::msg::Image> imageOptical(
-      "/quadrotor/slot0/optical/image_raw");
-  waitUntilBoolVarAndSpin(
-    node, imageOptical.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(imageOptical.callbackExecuted);
+    // camera_info
+    MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfo(
+        "/quadrotor/slot0/camera_info");
+    waitUntilBoolVarAndSpin(
+      node, cameraInfo.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(cameraInfo.callbackExecuted);
 
-  // optical camera_info
-  MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfoOptical(
-      "/quadrotor/slot0/optical/camera_info");
-  waitUntilBoolVarAndSpin(
-    node, cameraInfoOptical.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(cameraInfoOptical.callbackExecuted);
+    // optical image
+    MyTestClass<sensor_msgs::msg::Image> imageOptical(
+        "/quadrotor/slot0/optical/image_raw");
+    waitUntilBoolVarAndSpin(
+      node, imageOptical.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(imageOptical.callbackExecuted);
 
-  // rgbd - color
-  MyTestClass<sensor_msgs::msg::Image> rgbdImage(
-      "/hexrotor/slot0/image_raw");
-  waitUntilBoolVarAndSpin(
-    node, rgbdImage.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(rgbdImage.callbackExecuted);
+    // optical camera_info
+    MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfoOptical(
+        "/quadrotor/slot0/optical/camera_info");
+    waitUntilBoolVarAndSpin(
+      node, cameraInfoOptical.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(cameraInfoOptical.callbackExecuted);
 
-  // rgbd - camera_info
-  MyTestClass<sensor_msgs::msg::CameraInfo> rgbdCameraInfo(
-      "/hexrotor/slot0/camera_info");
-  waitUntilBoolVarAndSpin(
-    node, rgbdCameraInfo.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(rgbdCameraInfo.callbackExecuted);
+    // rgbd - color
+    MyTestClass<sensor_msgs::msg::Image> rgbdImage(
+        "/hexrotor/slot0/image_raw");
+    waitUntilBoolVarAndSpin(
+      node, rgbdImage.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(rgbdImage.callbackExecuted);
 
-  // rgbd - depth
-  MyTestClass<sensor_msgs::msg::Image> rgbdDepth(
-      "/hexrotor/slot0/depth");
-  waitUntilBoolVarAndSpin(
-    node, rgbdDepth.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(rgbdDepth.callbackExecuted);
+    // rgbd - camera_info
+    MyTestClass<sensor_msgs::msg::CameraInfo> rgbdCameraInfo(
+        "/hexrotor/slot0/camera_info");
+    waitUntilBoolVarAndSpin(
+      node, rgbdCameraInfo.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(rgbdCameraInfo.callbackExecuted);
 
-  // rgbd - points
-  MyTestClass<sensor_msgs::msg::PointCloud2> rgbdPoints(
-      "/hexrotor/slot0/points");
-  waitUntilBoolVarAndSpin(
-    node, rgbdPoints.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(rgbdPoints.callbackExecuted);
+    // rgbd - depth
+    MyTestClass<sensor_msgs::msg::Image> rgbdDepth(
+        "/hexrotor/slot0/depth");
+    waitUntilBoolVarAndSpin(
+      node, rgbdDepth.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(rgbdDepth.callbackExecuted);
 
-  // rgbd optical - color
-  MyTestClass<sensor_msgs::msg::Image> rgbdOpticalImage(
-      "/hexrotor/slot0/optical/image_raw");
-  waitUntilBoolVarAndSpin(
-    node, rgbdOpticalImage.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(rgbdOpticalImage.callbackExecuted);
+    // rgbd - points
+    MyTestClass<sensor_msgs::msg::PointCloud2> rgbdPoints(
+        "/hexrotor/slot0/points");
+    waitUntilBoolVarAndSpin(
+      node, rgbdPoints.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(rgbdPoints.callbackExecuted);
 
-  // rgbd optical - camera_info
-  MyTestClass<sensor_msgs::msg::CameraInfo> rgbdOpticalCameraInfo(
-      "/hexrotor/slot0/optical/camera_info");
-  waitUntilBoolVarAndSpin(
-    node, rgbdOpticalCameraInfo.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(rgbdOpticalCameraInfo.callbackExecuted);
+    // rgbd optical - color
+    MyTestClass<sensor_msgs::msg::Image> rgbdOpticalImage(
+        "/hexrotor/slot0/optical/image_raw");
+    waitUntilBoolVarAndSpin(
+      node, rgbdOpticalImage.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(rgbdOpticalImage.callbackExecuted);
 
-  // rgbd optical - depth
-  MyTestClass<sensor_msgs::msg::Image> rgbdOpticalDepth(
-      "/hexrotor/slot0/optical/depth");
-  waitUntilBoolVarAndSpin(
-    node, rgbdOpticalDepth.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(rgbdOpticalDepth.callbackExecuted);
-*/
+    // rgbd optical - camera_info
+    MyTestClass<sensor_msgs::msg::CameraInfo> rgbdOpticalCameraInfo(
+        "/hexrotor/slot0/optical/camera_info");
+    waitUntilBoolVarAndSpin(
+      node, rgbdOpticalCameraInfo.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(rgbdOpticalCameraInfo.callbackExecuted);
+
+    // rgbd optical - depth
+    MyTestClass<sensor_msgs::msg::Image> rgbdOpticalDepth(
+        "/hexrotor/slot0/optical/depth");
+    waitUntilBoolVarAndSpin(
+      node, rgbdOpticalDepth.callbackExecuted, 10ms, 500);
+    EXPECT_TRUE(rgbdOpticalDepth.callbackExecuted);
+  }
 
   // \todo check cmd_vel and points (lidar) topics
 }
