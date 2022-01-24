@@ -1,0 +1,133 @@
+<?xml version="1.0" ?>
+<!--
+
+-->
+<sdf version="1.6">
+  <world name="faster_than_realtime">
+    <plugin
+      filename="ignition-gazebo-physics-system"
+      name="ignition::gazebo::systems::Physics">
+      <max_step_size>0.02</max_step_size>
+      <real_time_factor>0</real_time_factor>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-user-commands-system"
+      name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    <scene>
+      <sky></sky>
+      <grid>false</grid>
+      <ambient>1.0 1.0 1.0</ambient>
+      <background>0.8 0.8 0.8</background>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_platform">
+      <static>true</static>
+      <pose>0 0 -1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>20 20 3</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>20 20 3</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+              <pbr>
+                  <metal>
+                      <albedo_map>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Cave Straight Type A/tip/files/materials/textures/Gravel_Albedo.jpg</albedo_map>
+                      <normal_map>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Cave Straight Type A/tip/files/materials/textures/Gravel_Normal.jpg</normal_map>
+                      <roughness_map>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Cave Straight Type A/tip/files/materials/textures/Gravel_Roughness.jpg</roughness_map>
+                  </metal>
+              </pbr>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <include>
+      <pose>0 0 5 0 0 0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Fortress heightmap
+      </uri>
+    </include>
+
+    <model name="heightmap_bounds">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 -25 0 0 0</pose>
+        <collision name="x">
+          <pose>75 0 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1 150 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="y">
+          <pose>0 75 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>150 1 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="-x">
+          <pose>-75 0 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1 150 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="-y">
+          <pose>0 -75 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>150 1 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="base">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>5000 5000 1</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <include>
+      <pose>0 0 -1 0 0 0</pose>
+      <uri>
+        water_plane
+      </uri>
+    </include>
+
+  </world>
+</sdf>
