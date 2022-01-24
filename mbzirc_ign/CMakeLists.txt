@@ -62,7 +62,6 @@ if(BUILD_TESTING)
 
   foreach(TEST_TARGET
     test_spawn_uav_battery)
-
     ament_add_gtest(
       ${TEST_TARGET}
       test/${TEST_TARGET}.cc
@@ -70,6 +69,7 @@ if(BUILD_TESTING)
     target_include_directories(${TEST_TARGET} 
       PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto )
     target_link_libraries(${TEST_TARGET} ignition-gazebo6::ignition-gazebo6)
+    set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
   endforeach()
 endif()
 

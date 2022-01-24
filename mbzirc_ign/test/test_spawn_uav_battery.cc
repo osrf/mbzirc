@@ -31,7 +31,7 @@ TEST_F(MBZIRCTestFixture, SpawnUAVTest)
   std::vector<std::pair<std::string,std::string>> params{
     {"name", "x3"},
     {"world", "faster_than_realtime"},
-    {"model", "x3_c2"},
+    {"model", "mbzirc_quadrotor"},
     {"type",  "uav"},
     {"x", "1"},
     {"y", "2"},
@@ -87,18 +87,18 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
   std::vector<std::pair<std::string,std::string>> params{
     {"name", "x3"},
     {"world", "faster_than_realtime"},
-    {"model", "x3_c2"},
+    {"model", "mbzirc_quadrotor"},
     {"type",  "uav"},
     {"x", "1"},
     {"y", "2"},
     {"z", "0.05"},
-    {"flightTime", "1"}
+    {"flightTime", "0.5"}
   };
 
   ignition::transport::Node node;
   auto pub = node.Advertise<ignition::msgs::Twist>("/model/x3/cmd_vel");
 
-  bool spawnedSuccessfully = false;
+  bool spawnedSuccessfully = false, publisherReady = false;
 
   std::chrono::steady_clock::duration firstSpawned;
   std::chrono::steady_clock::duration timeNow;
@@ -133,23 +133,29 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
     {
       if (!spawnedSuccessfully)
       {
-        firstSpawned = _info.simTime;
         spawnedSuccessfully = true;
-
-        // Upon being spawned, send a command to ask the robot to fly this is to
-        // trigger discharging of the battery.
-        ignition::msgs::Twist twist;
-        ignition::msgs::Vector3d* vec = new ignition::msgs::Vector3d;
-        vec->set_x(0);
-        vec->set_y(0);
-        vec->set_z(1);
-        twist.set_allocated_linear(vec);
-        pub.Publish(twist);
       }
       else
       {
         // Sync the sim time with the battery listener thread.
         timeNow = _info.simTime;
+      }
+
+      if(!pub.HasConnections())
+        return;
+      // Send a command to ask the robot to fly this is to
+      // trigger discharging of the battery.
+      ignition::msgs::Twist twist;
+      ignition::msgs::Vector3d* vec = new ignition::msgs::Vector3d;
+      vec->set_x(0);
+      vec->set_y(0);
+      vec->set_z(1);
+      twist.set_allocated_linear(vec);
+      pub.Publish(twist);
+      if(!publisherReady)
+      {
+        firstSpawned = _info.simTime;
+        publisherReady = true;
       }
     }
   });
@@ -172,5 +178,5 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
   ASSERT_TRUE(spawnedSuccessfully);
   ASSERT_TRUE(fullyDischarged);
   ASSERT_NEAR(
-    std::chrono::duration<double>(dischargedAt - firstSpawned).count(), 60, 5);
+    std::chrono::duration<double>(dischargedAt - firstSpawned).count(), 30, 5);
 }
