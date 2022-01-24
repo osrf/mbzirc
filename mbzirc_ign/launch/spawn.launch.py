@@ -43,6 +43,16 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   # take flight time in minutes
   flight_time = LaunchConfiguration('flightTime').perform(context)
 
+  slot0_payload = LaunchConfiguration('slot0').perform(context)
+  slot1_payload = LaunchConfiguration('slot1').perform(context)
+  slot2_payload = LaunchConfiguration('slot2').perform(context)
+  slot3_payload = LaunchConfiguration('slot3').perform(context)
+
+  slot0_rpy = LaunchConfiguration('slot0_rpy').perform(context)
+  slot1_rpy = LaunchConfiguration('slot1_rpy').perform(context)
+  slot2_rpy = LaunchConfiguration('slot2_rpy').perform(context)
+  slot3_rpy = LaunchConfiguration('slot3_rpy').perform(context)
+
   # calculate battery capacity from time
   # capacity (Ah) = flight time (in hours) * load (watts) / voltage
   # assume constant voltage for battery to keep things simple for now.
@@ -53,12 +63,26 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   print("spawning UAV file: " + model_file)
 
   # run erb
-  process = subprocess.Popen(['erb',
-    'name=' + model_name,
-    'capacity='+str(battery_capacity),
-    model_file], stdout=subprocess.PIPE)
+  command = ['erb']
+  command.append(f'name={model_name}')
+  command.append(f'capacity={battery_capacity}')
+
+  if slot0_payload: command.append(f'slot0={slot0_payload}')
+  if slot0_rpy: command.append(f'slot0_pos={slot0_rpy}')
+  if slot1_payload: command.append(f'slot1={slot1_payload}')
+  if slot1_rpy: command.append(f'slot1_pos={slot1_rpy}')
+  if slot2_payload: command.append(f'slot2={slot2_payload}')
+  if slot2_rpy: command.append(f'slot2_pos={slot2_rpy}')
+  if slot3_payload: command.append(f'slot3={slot3_payload}')
+  if slot3_rpy: command.append(f'slot3_pos={slot3_rpy}')
+
+  command.append(model_file)
+
+  process = subprocess.Popen(command, stdout=subprocess.PIPE)
   stdout = process.communicate()[0]
   str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
+
+  print(command, str_output)
 
   ignition_spawn_entity = Node(
       package='ros_ign_gazebo',
@@ -105,44 +129,80 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       remappings=[(sensor_prefix + '/air_pressure/air_pressure', 'air_pressure')]
   )
 
-  # camera - image transport
-  # ros2_ign_camera_bridge = Node(
-  #     package='ros_ign_image',
-  #     executable='image_bridge',
-  #     output='screen',
-  #     arguments=[sensor_prefix +  '/camera_front/image'],
-  #     remappings=[(sensor_prefix + '/camera_front/image', 'front/image_raw')]
-  # )
+  payloads = []
+  check = [slot0_payload, slot1_payload, slot2_payload, slot3_payload]
 
-  # camera - parameter bridge
-  ros2_ign_camera_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      arguments=[sensor_prefix +  '/camera_front/image@sensor_msgs/msg/Image@ignition.msgs.Image',
-                 sensor_prefix +  '/camera_front/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
-      remappings=[(sensor_prefix + '/camera_front/image', 'front/image_raw'),
-                  (sensor_prefix + '/camera_front/camera_info', 'front/camera_info')]
-  )
+  for idx in range(0, 4):
+      payload = check[idx]
+      if len(payload) == 0:
+          continue
+      prefix = f'/world/{world_name}/model/{model_name}/model/sensor_{idx}/link/sensor_link/sensor'
 
-  # camera optical frame publisher
-  ros2_camera_optical_frame_publisher = Node(
-      package='mbzirc_ros',
-      executable='optical_frame_publisher',
-      arguments=['1'],
-      remappings=[('input/image', 'front/image_raw'),
-                  ('output/image', 'front/optical/image_raw'),
-                  ('input/camera_info', 'front/camera_info'),
-                  ('output/camera_info', 'front/optical/camera_info'),
-                 ]
-  )
+      if payload in ['mbzirc_vga_camera', 'mbzirc_hd_camera']:
+          camera_bridge = Node(
+              package='ros_ign_bridge',
+              executable='parameter_bridge',
+              arguments=[prefix +  '/camera/image@sensor_msgs/msg/Image@ignition.msgs.Image',
+                         prefix +  '/camera/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
+              remappings=[(prefix + '/camera/image', f'slot{idx}/image_raw'),
+                          (prefix + '/camera/camera_info', f'slot{idx}/camera_info')]
+          )
 
-  # lidar
-  ros2_ign_lidar_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      arguments=[sensor_prefix +  '/front_laser/scan/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked'],
-      remappings=[(sensor_prefix + '/front_laser/scan/points', 'points')]
-  )
+          # camera optical frame publisher
+          ros2_camera_optical_frame_publisher = Node(
+              package='mbzirc_ros',
+              executable='optical_frame_publisher',
+              arguments=['1'],
+              remappings=[('input/image',  f'slot{idx}/image_raw'),
+                          ('output/image', f'slot{idx}/optical/image_raw'),
+                          ('input/camera_info', f'slot{idx}/camera_info'),
+                          ('output/camera_info', f'slot{idx}/optical/camera_info'),
+                         ]
+          )
+
+          payloads.append(camera_bridge)
+          payloads.append(ros2_camera_optical_frame_publisher)
+      elif payload in ['mbzirc_planar_lidar', 'mbzirc_3d_lidar']:
+          ros2_ign_lidar_bridge = Node(
+              package='ros_ign_bridge',
+              executable='parameter_bridge',
+              output='screen',
+              arguments=[prefix + '/lidar/scan/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked'],
+              remappings=[(prefix + '/lidar/scan/points', f'slot{idx}/points')]
+          )
+          payloads.append(ros2_ign_lidar_bridge)
+      elif payload in ['mbzirc_rgbd_camera']:
+          rgbd_pointcloud_bridge = Node(
+              package='ros_ign_bridge',
+              executable='parameter_bridge',
+              output='screen',
+              arguments=[
+                  prefix + '/camera/image@sensor_msgs/msg/Image@ignition.msgs.Image',
+                  prefix + '/camera/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo',
+                  prefix + '/camera/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked',
+              ],
+              remappings=[
+                  (prefix + '/camera/image', f'slot{idx}/image_raw'),
+                  (prefix + '/camera/points', f'slot{idx}/points'),
+                  (prefix + '/camera/camera_info', f'slot{idx}/camera_info'),
+              ]
+          )
+
+          image_optical_frame = Node(
+              package='mbzirc_ros',
+              executable='optical_frame_publisher',
+              arguments=['1'],
+              remappings=[('input/image',  f'slot{idx}/image_raw'),
+                          ('output/image', f'slot{idx}/optical/image_raw'),
+                          ('input/camera_info', f'slot{idx}/camera_info'),
+                          ('output/camera_info', f'slot{idx}/optical/camera_info'),
+                         ]
+          )
+
+          payloads.append(rgbd_pointcloud_bridge)
+          payloads.append(image_optical_frame)
+      else:
+          print('Unknown payload: ', payload)
 
   # twist
   ros2_ign_twist_bridge = Node(
@@ -177,6 +237,9 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       package='mbzirc_ros',
       executable='pose_tf_broadcaster',
       output='screen',
+      parameters=[
+          {"world_frame": world_name}
+      ]
   )
 
   group_action = GroupAction([
@@ -184,13 +247,11 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
         ros2_ign_imu_bridge,
         ros2_ign_magnetometer_bridge,
         ros2_ign_air_pressure_bridge,
-        ros2_ign_camera_bridge,
-        ros2_camera_optical_frame_publisher,
-        ros2_ign_lidar_bridge,
         ros2_ign_twist_bridge,
         ros2_ign_pose_bridge,
         ros2_ign_pose_static_bridge,
         ros2_tf_broadcaster,
+        *payloads
   ])
 
   handler = RegisterEventHandler(
@@ -322,7 +383,6 @@ def generate_launch_description():
             'R',
             default_value='0',
             description='R rotation to spawn'),
-
         DeclareLaunchArgument(
             'P',
             default_value='0',
@@ -331,11 +391,44 @@ def generate_launch_description():
             'Y',
             default_value='0',
             description='Y rotation to spawn'),
+
         DeclareLaunchArgument(
             'flightTime',
             default_value='10',
-            description='Battery flight time in minutes (only for UAVs)'
-        ),
+            description='Battery flight time in minutes (only for UAVs)'),
+
+        DeclareLaunchArgument(
+            'slot0',
+            default_value='',
+            description='Payload mounted to slot 0'),
+        DeclareLaunchArgument(
+            'slot0_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot1',
+            default_value='',
+            description='Payload mounted to slot 1'),
+        DeclareLaunchArgument(
+            'slot1_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot2',
+            default_value='',
+            description='Payload mounted to slot 2'),
+        DeclareLaunchArgument(
+            'slot2_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot3',
+            default_value='',
+            description='Payload mounted to slot 3'),
+        DeclareLaunchArgument(
+            'slot3_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
         # launch setup
         OpaqueFunction(function = launch)
     ])

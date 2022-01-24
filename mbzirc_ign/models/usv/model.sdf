@@ -1,0 +1,572 @@
+<?xml version="1.0"?>
+
+<sdf version='1.6'>
+<model name="usv">
+  <static>false</static>
+  <link name="base_link">
+    <pose>0 0 0.0 0 0 1.57079</pose>
+    <inertial>
+      <mass>500.0</mass>
+      <inertia>
+        <ixx>1581.0</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>535</iyy>
+        <iyz>0.0</iyz>
+        <izz>1953.0</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="base_visual">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>USV</name>
+            <center>false</center>
+          </submesh>
+        </mesh>
+      </geometry>
+    </visual>
+
+    <collision name="box_collision001">
+      <pose>0.0 0.0 0.389269 0.0 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>1.99008 1.50858 0.559889</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision002">
+      <pose>0.0 -1.41327 0.120878 0.0 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>1.99008 1.11563 0.0231074</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision003">
+      <pose>0.0 1.41327 0.120878 0.0 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>1.99008 1.11563 0.0231074</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="cylinder_collision025">
+      <pose>-1.36239 0.0 -0.240119 1.5708 0.0 0.0</pose>
+      <geometry>
+        <cylinder>
+          <length>5.29989</length>
+          <radius>0.272196</radius>
+        </cylinder>
+      </geometry>
+    </collision>
+    <collision name="box_collision004">
+      <pose>-1.36239 0.0 -0.0436482 0.0 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.5444 5.93886 0.392941</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision005">
+      <pose>-1.36239 0.0 0.0404701 0.0 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.691388 4.2583 0.161106</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision013">
+      <pose>-1.35067 -0.802631 0.135418 1.5708 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision014">
+      <pose>-1.35067 0.802633 0.135418 -1.5708 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision015">
+      <pose>-1.08572 0.576783 0.448761 0.0 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.182903 0.328882 0.431239</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision016">
+      <pose>-1.08572 -0.57678 0.448761 0.0 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.182903 0.328882 0.431239</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision017">
+      <pose>1.332 -0.802631 0.337911 1.5708 0.392699 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision018">
+      <pose>-1.0028 -0.802631 0.456284 1.5708 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.112524 0.379202 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision019">
+      <pose>-1.33199 0.802633 0.337911 -1.5708 -0.392699 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision020">
+      <pose>-1.0028 0.802633 0.456284 1.5708 0.0 3.14159</pose>
+      <geometry>
+        <box>
+          <size>0.112524 0.379202 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision021">
+      <pose>0.757578 -0.148006 0.345798 1.5708 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.441853 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision022">
+      <pose>0.757578 0.185036 0.334445 1.309 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.441853 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision023">
+      <pose>-0.73159 -0.148006 0.345798 1.5708 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.441853 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision024">
+      <pose>-1.10465 0.35878 0.225041 1.5708 0.0 1.5708</pose>
+      <geometry>
+        <box>
+          <size>0.442059 0.243019 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision025">
+      <pose>-1.08202 0.00359192 0.582752 1.5708 0.0 1.5708</pose>
+      <geometry>
+        <box>
+          <size>0.880139 0.0535857 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision026">
+      <pose>-1.04962 0.332458 0.502834 1.5708 0.0 1.5708</pose>
+      <geometry>
+        <box>
+          <size>0.290446 0.0535857 0.148965</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision030">
+      <pose>1.362 0.0 0.0404701 0.0 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.691388 4.2583 0.161106</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision031">
+      <pose>1.362 0.0 -0.0436482 0.0 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.5444 5.93886 0.392941</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="cylinder_collision031">
+      <pose>1.362 0.0 -0.240119 1.5708 0.0 0.0</pose>
+      <geometry>
+        <cylinder>
+          <length>5.29989</length>
+          <radius>0.272196</radius>
+        </cylinder>
+      </geometry>
+    </collision>
+    <collision name="box_collision032">
+      <pose>-1.33199 -0.802631 0.337911 1.5708 -0.392699 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision033">
+      <pose>1.332 0.802633 0.337911 -1.5708 0.392699 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision034">
+      <pose>1.351 -0.802631 0.135418 1.5708 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision035">
+      <pose>1.351 0.802633 0.135418 -1.5708 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision036">
+      <pose>1.003 -0.802631 0.456284 1.5708 0.0 0.0</pose>
+      <geometry>
+        <box>
+          <size>0.112524 0.379202 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision037">
+      <pose>1.003 0.802633 0.456284 1.5708 0.0 3.14159</pose>
+      <geometry>
+        <box>
+          <size>0.112524 0.379202 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="left_engine_link">
+    <pose>0 1.358 -0.716 0 0 1.57079</pose>
+    <inertial>
+      <mass>15.0</mass>
+      <inertia>
+        <ixx>0.4</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>0.25</iyy>
+        <iyz>0.0</iyz>
+        <izz>0.25</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="Motor_L_visual">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Motor_L</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <material>
+        <diffuse>1.0 1.0 1.0</diffuse>
+        <specular>1.0 1.0 1.0</specular>
+      </material>
+    </visual>
+
+    <collision name="Motor_L_collision">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Motor_L</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="left_propeller_link">
+    <pose>-0.2 1.358 -0.716 0 0 1.57079</pose>
+
+    <inertial>
+      <mass>0.5</mass>
+      <inertia>
+        <ixx>0.00208</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>0.00333</iyy>
+        <iyz>0.0</iyz>
+        <izz>0.00208</izz>
+      </inertia>
+    </inertial>
+
+    <visual name= "Prop_L_visual">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Prop_L</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <material>
+        <diffuse>1.0 1.0 1.0</diffuse>
+        <specular>1.0 1.0 1.0</specular>
+      </material>
+    </visual>
+
+    <collision name= "Prop_L_collisoin">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Prop_L</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="right_engine_link">
+    <pose>0 -1.358 -0.716 0 0 1.57079</pose>
+    <inertial>
+      <mass>15.0</mass>
+      <inertia>
+        <ixx>0.4</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>0.25</iyy>
+        <iyz>0.0</iyz>
+        <izz>0.25</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="Motor_R_visual">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Motor_R</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <material>
+        <diffuse>1.0 1.0 1.0</diffuse>
+        <specular>1.0 1.0 1.0</specular>
+      </material>
+    </visual>
+
+    <collision name="Motor_R_collision">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Motor_R</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+    </collision>
+  </link>
+
+
+  <link name="right_propeller_link">
+    <pose>-0.2 -1.358 -0.716 0 0 1.57079</pose>
+    <inertial>
+      <mass>0.5</mass>
+      <inertia>
+        <ixx>0.00208</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>0.00333</iyy>
+        <iyz>0.0</iyz>
+        <izz>0.00208</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="Prop_R_visual">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Prop_R</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <material>
+        <diffuse>1.0 1.0 1.0</diffuse>
+        <specular>1.0 1.0 1.0</specular>
+      </material>
+    </visual>
+
+    <collision name="Prop_R_collision">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Prop_R</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+    </collision>
+
+  </link>
+
+  <joint name="left_chassis_engine_joint" type="revolute">
+    <axis>
+      <xyz>0 0 1</xyz>
+      <limit>
+        <lower>-1.57079</lower>
+        <upper>1.57079</upper>
+        <effort>10</effort>
+        <velocity>10</velocity>
+      </limit>
+    </axis>
+    <parent>base_link</parent>
+    <child>left_engine_link</child>
+  </joint>
+
+  <joint name="left_engine_propeller_joint" type="revolute">
+    <axis>
+      <xyz>0 -1 0</xyz>
+      <limit>
+        <effort>100</effort>
+        <velocity>100</velocity>
+      </limit>
+      <dynamics>
+        <friction>0.05</friction>
+        <damping>0.05</damping>
+      </dynamics>
+    </axis>
+    <parent>left_engine_link</parent>
+    <child>left_propeller_link</child>
+  </joint>
+
+  <joint name="right_chassis_engine_joint" type="revolute">
+    <axis>
+      <xyz>0 0 1</xyz>
+      <limit>
+        <lower>-1.57079</lower>
+        <upper>1.57079</upper>
+        <effort>10</effort>
+        <velocity>10</velocity>
+      </limit>
+    </axis>
+    <parent>base_link</parent>
+    <child>right_engine_link</child>
+  </joint>
+
+  <joint name="right_engine_propeller_joint" type="revolute">
+    <axis>
+      <xyz>0 -1 0</xyz>
+      <limit>
+        <effort>100</effort>
+        <velocity>100</velocity>
+      </limit>
+      <dynamics>
+        <friction>0.05</friction>
+        <damping>0.05</damping>
+      </dynamics>
+    </axis>
+    <parent>right_engine_link</parent>
+    <child>right_propeller_link</child>
+  </joint>
+
+  <plugin
+    filename="ignition-gazebo-thruster-system"
+    name="ignition::gazebo::systems::Thruster">
+    <namespace>usv</namespace>
+    <joint_name>left_engine_propeller_joint</joint_name>
+    <thrust_coefficient>0.004422</thrust_coefficient>
+    <fluid_density>1000</fluid_density>
+    <propeller_diameter>0.2</propeller_diameter>
+    <velocity_control>true</velocity_control>
+  </plugin>
+
+  <plugin
+    filename="ignition-gazebo-joint-position-controller-system"
+    name="ignition::gazebo::systems::JointPositionController">
+    <joint_name>left_chassis_engine_joint</joint_name>
+    <use_velocity_commands>true</use_velocity_commands>
+    <topic>usv/left/thruster/joint/cmd_pos</topic>
+  </plugin>
+
+  <plugin
+    filename="ignition-gazebo-thruster-system"
+    name="ignition::gazebo::systems::Thruster">
+    <namespace>usv</namespace>
+    <joint_name>right_engine_propeller_joint</joint_name>
+    <thrust_coefficient>0.004422</thrust_coefficient>
+    <fluid_density>1000</fluid_density>
+    <propeller_diameter>0.2</propeller_diameter>
+    <velocity_control>true</velocity_control>
+  </plugin>
+
+  <plugin
+    filename="ignition-gazebo-joint-position-controller-system"
+    name="ignition::gazebo::systems::JointPositionController">
+    <joint_name>right_chassis_engine_joint</joint_name>
+    <use_velocity_commands>true</use_velocity_commands>
+    <topic>usv/right/thruster/joint/cmd_pos</topic>
+  </plugin>
+
+  <plugin
+    filename="libSurface.so"
+    name="ignition::gazebo::systems::Surface">
+    <link_name>base_link</link_name>
+    <vehicle_length>6</vehicle_length>
+    <vehicle_width>3.3</vehicle_width>
+    <hull_radius>0.27</hull_radius>
+    <fluid_level>-0.55</fluid_level>
+  </plugin>
+
+  <plugin
+    filename="libSimpleHydrodynamics.so"
+    name="ignition::gazebo::systems::SimpleHydrodynamics">
+    <link_name>base_link</link_name>
+    <!-- Added mass -->
+    <xDotU>0.0</xDotU>
+    <yDotV>0.0</yDotV>
+    <nDotR>0.0</nDotR>
+    <!-- Linear and quadratic drag -->
+    <xU>51.3</xU>
+    <xUU>72.4</xUU>
+    <yV>40.0</yV>
+    <yVV>0.0</yVV>
+    <zW>500.0</zW>
+    <kP>50.0</kP>
+    <mQ>50.0</mQ>
+    <nR>400.0</nR>
+    <nRR>0.0</nRR>
+  </plugin>
+
+</model>
+</sdf>
