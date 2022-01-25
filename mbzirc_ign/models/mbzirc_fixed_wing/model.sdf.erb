@@ -14,121 +14,123 @@ end
     <include merge="true">
       <uri>model://mbzirc_fixed_wing_base</uri>
     </include>
+
+    <!-- Multicopter motor for the propeller -->
+    <plugin filename="libignition-gazebo-multicopter-motor-model-system.so"
+      name="ignition::gazebo::systems::MulticopterMotorModel">
+        <robotNamespace>model/<%= $model_name%></robotNamespace>
+        <jointName>propeller_joint</jointName>
+        <linkName>propeller</linkName>
+        <turningDirection>ccw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>800.0</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>command/motor_speed</commandSubTopic>
+        <motorNumber>0</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+        <motorType>velocity</motorType>
+    </plugin>
+
+    <!-- Joints -->
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>left_flap_joint</joint_name>
+      <p_gain>1</p_gain>
+      <topic>/model/<%= $model_name%>/joint/left_flap_joint/cmd_pos</topic>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>right_flap_joint</joint_name>
+      <p_gain>1</p_gain>
+      <topic>/model/<%= $model_name%>/joint/right_flap_joint/cmd_pos</topic>
+    </plugin>
+
+    <!-- LiftDrag plugins -->
+    <plugin
+      filename="ignition-gazebo-lift-drag-system"
+      name="ignition::gazebo::systems::LiftDrag">
+      <a0>0.13</a0>
+      <cla>3.7</cla>
+      <cda>0.06417112299</cda>
+      <cma>-1.8</cma>
+      <alpha_stall>0.3391428111</alpha_stall>
+      <cla_stall>-3.85</cla_stall>
+      <cda_stall>-0.9233984055</cda_stall>
+      <cma_stall>0</cma_stall>
+      <cp>0 -0.1 0</cp>
+      <area>0.50</area>
+      <air_density>1.2041</air_density>
+      <forward>0 -1 0</forward>
+      <upward>0 0 1</upward>
+      <link_name>base_link</link_name>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-lift-drag-system"
+      name="ignition::gazebo::systems::LiftDrag">
+      <a0>0.15</a0>
+      <cla>6.8</cla>
+      <cda>0.06417112299</cda>
+      <cma>-1.8</cma>
+      <alpha_stall>0.6391428111</alpha_stall>
+      <cla_stall>-3.85</cla_stall>
+      <cda_stall>-0.9233984055</cda_stall>
+      <cma_stall>0</cma_stall>
+      <cp>0.7 0.20 0</cp>
+      <area>0.10</area>
+      <air_density>1.2041</air_density>
+      <forward>0 -1 0</forward>
+      <upward>0 0 1</upward>
+      <link_name>base_link</link_name>
+      <control_joint_name>
+        left_flap_joint
+      </control_joint_name>
+      <control_joint_rad_to_cl>-5.0</control_joint_rad_to_cl>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-lift-drag-system"
+      name="ignition::gazebo::systems::LiftDrag">
+      <a0>0.15</a0>
+      <cla>6.8</cla>
+      <cda>0.06417112299</cda>
+      <cma>-1.8</cma>
+      <alpha_stall>0.6391428111</alpha_stall>
+      <cla_stall>-3.85</cla_stall>
+      <cda_stall>-0.9233984055</cda_stall>
+      <cma_stall>0</cma_stall>
+      <cp>-0.7 0.20 0</cp>
+      <area>0.10</area>
+      <air_density>1.2041</air_density>
+      <forward>0 -1 0</forward>
+      <upward>0 0 1</upward>
+      <link_name>base_link</link_name>
+      <control_joint_name>
+        right_flap_joint
+      </control_joint_name>
+      <control_joint_rad_to_cl>-5.0</control_joint_rad_to_cl>
+    </plugin>
+
+    <!-- Battery plugin -->
+    <!-- Since we are interested in using time as the limiting factor -->
+    <plugin filename="libignition-gazebo-linearbatteryplugin-system.so"
+      name="ignition::gazebo::systems::LinearBatteryPlugin">
+      <battery_name>linear_battery</battery_name>
+      <voltage>12.694</voltage>
+      <open_circuit_voltage_constant_coef>12.694</open_circuit_voltage_constant_coef>
+      <open_circuit_voltage_linear_coef>0</open_circuit_voltage_linear_coef>
+      <initial_charge><%= capacity%></initial_charge>
+      <capacity><%= capacity%></capacity>
+      <resistance>0.061523</resistance>
+      <smooth_current_tau>1.9499</smooth_current_tau>
+      <power_load>6.6</power_load>
+      <start_on_motion>true</start_on_motion>
+      <fix_issue_225>true</fix_issue_225>
+    </plugin>
   </model>
-
-  <!-- Multicopter motor for the propeller -->
-  <plugin filename="libignition-gazebo-multicopter-motor-model-system.so"
-    name="ignition::gazebo::systems::MulticopterMotorModel">
-      <robotNamespace>model/<%= $model_name%></robotNamespace>
-      <jointName>propeller_joint</jointName>
-      <linkName>propeller</linkName>
-      <turningDirection>ccw</turningDirection>
-      <timeConstantUp>0.0125</timeConstantUp>
-      <timeConstantDown>0.025</timeConstantDown>
-      <maxRotVelocity>800.0</maxRotVelocity>
-      <motorConstant>8.54858e-06</motorConstant>
-      <momentConstant>0.016</momentConstant>
-      <commandSubTopic>command/motor_speed</commandSubTopic>
-      <motorNumber>0</motorNumber>
-      <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
-      <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
-      <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
-      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
-      <motorType>velocity</motorType>
-  </plugin>
-
-  <!-- Joints -->
-  <plugin
-  filename="ignition-gazebo-joint-position-controller-system"
-  name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>left_flap_joint</joint_name>
-    <p_gain>1</p_gain>
-  </plugin>
-  <plugin
-    filename="ignition-gazebo-joint-position-controller-system"
-    name="ignition::gazebo::systems::JointPositionController">
-    <joint_name>right_flap_joint</joint_name>
-    <p_gain>1</p_gain>
-  </plugin>
-
-  <!-- LiftDrag plugins -->
-  <plugin
-    filename="ignition-gazebo-lift-drag-system"
-    name="ignition::gazebo::systems::LiftDrag">
-    <a0>0.13</a0>
-    <cla>3.7</cla>
-    <cda>0.06417112299</cda>
-    <cma>-1.8</cma>
-    <alpha_stall>0.3391428111</alpha_stall>
-    <cla_stall>-3.85</cla_stall>
-    <cda_stall>-0.9233984055</cda_stall>
-    <cma_stall>0</cma_stall>
-    <cp>0 -0.1 0</cp>
-    <area>0.50</area>
-    <air_density>1.2041</air_density>
-    <forward>0 -1 0</forward>
-    <upward>0 0 1</upward>
-    <link_name>base_link</link_name>
-  </plugin>
-  <plugin
-    filename="ignition-gazebo-lift-drag-system"
-    name="ignition::gazebo::systems::LiftDrag">
-    <a0>0.15</a0>
-    <cla>6.8</cla>
-    <cda>0.06417112299</cda>
-    <cma>-1.8</cma>
-    <alpha_stall>0.6391428111</alpha_stall>
-    <cla_stall>-3.85</cla_stall>
-    <cda_stall>-0.9233984055</cda_stall>
-    <cma_stall>0</cma_stall>
-    <cp>0.7 0.20 0</cp>
-    <area>0.10</area>
-    <air_density>1.2041</air_density>
-    <forward>0 -1 0</forward>
-    <upward>0 0 1</upward>
-    <link_name>base_link</link_name>
-    <control_joint_name>
-      left_flap_joint
-    </control_joint_name>
-    <control_joint_rad_to_cl>-5.0</control_joint_rad_to_cl>
-  </plugin>
-  <plugin
-    filename="ignition-gazebo-lift-drag-system"
-    name="ignition::gazebo::systems::LiftDrag">
-    <a0>0.15</a0>
-    <cla>6.8</cla>
-    <cda>0.06417112299</cda>
-    <cma>-1.8</cma>
-    <alpha_stall>0.6391428111</alpha_stall>
-    <cla_stall>-3.85</cla_stall>
-    <cda_stall>-0.9233984055</cda_stall>
-    <cma_stall>0</cma_stall>
-    <cp>-0.7 0.20 0</cp>
-    <area>0.10</area>
-    <air_density>1.2041</air_density>
-    <forward>0 -1 0</forward>
-    <upward>0 0 1</upward>
-    <link_name>base_link</link_name>
-    <control_joint_name>
-      right_flap_joint
-    </control_joint_name>
-    <control_joint_rad_to_cl>-5.0</control_joint_rad_to_cl>
-  </plugin>
-
-  <!-- Battery plugin -->
-  <!-- Since we are interested in using time as the limiting factor -->
-  <plugin filename="libignition-gazebo-linearbatteryplugin-system.so"
-    name="ignition::gazebo::systems::LinearBatteryPlugin">
-    <battery_name>linear_battery</battery_name>
-    <voltage>12.694</voltage>
-    <open_circuit_voltage_constant_coef>12.694</open_circuit_voltage_constant_coef>
-    <open_circuit_voltage_linear_coef>0</open_circuit_voltage_linear_coef>
-    <initial_charge><%= capacity%></initial_charge>
-    <capacity><%= capacity%></capacity>
-    <resistance>0.061523</resistance>
-    <smooth_current_tau>1.9499</smooth_current_tau>
-    <power_load>6.6</power_load>
-    <start_on_motion>true</start_on_motion>
-    <fix_issue_225>true</fix_issue_225>
-  </plugin>
 </sdf>

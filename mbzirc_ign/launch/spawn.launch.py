@@ -204,14 +204,32 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       else:
           print('Unknown payload: ', payload)
 
-  # twist
-  ros2_ign_twist_bridge = Node(
+  if model_path == "mbzirc_fixed_wing":
+    # Left Flap
+    ros2_ign_left_flap = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=['/model/' + model_name + '/joint/left_flap_joint/cmd_pos@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[('/model/' + model_name + '/joint/left_flap_joint/cmd_pos', 'cmd/left_flap')]
+    )
+    # Right Flap
+    ros2_ign_right_flap = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=['/model/' + model_name + '/joint/right_flap_joint/cmd_pos@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[('/model/' + model_name + '/joint/right_flap_joint/cmd_pos', 'cmd/right_flap')]
+    )
+  else:
+    # twist
+    ros2_ign_twist_bridge = Node(
       package='ros_ign_bridge',
       executable='parameter_bridge',
       output='screen',
       arguments=['/model/' + model_name + '/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist'],
       remappings=[('/model/' + model_name +'/cmd_vel', 'cmd_vel')]
-  )
+    )
 
   # pose
   ros2_ign_pose_bridge = Node(
@@ -242,17 +260,31 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       ]
   )
 
-  group_action = GroupAction([
-        PushRosNamespace(model_name),
-        ros2_ign_imu_bridge,
-        ros2_ign_magnetometer_bridge,
-        ros2_ign_air_pressure_bridge,
-        ros2_ign_twist_bridge,
-        ros2_ign_pose_bridge,
-        ros2_ign_pose_static_bridge,
-        ros2_tf_broadcaster,
-        *payloads
-  ])
+  if model_path == "mbzirc_fixed_wing":
+      group_action = GroupAction([
+          PushRosNamespace(model_name),
+          ros2_ign_imu_bridge,
+          ros2_ign_magnetometer_bridge,
+          ros2_ign_air_pressure_bridge,
+          ros2_ign_left_flap,
+          ros2_ign_right_flap,
+          ros2_ign_pose_bridge,
+          ros2_ign_pose_static_bridge,
+          ros2_tf_broadcaster,
+          *payloads
+    ])
+  else:
+    group_action = GroupAction([
+          PushRosNamespace(model_name),
+          ros2_ign_imu_bridge,
+          ros2_ign_magnetometer_bridge,
+          ros2_ign_air_pressure_bridge,
+          ros2_ign_twist_bridge,
+          ros2_ign_pose_bridge,
+          ros2_ign_pose_static_bridge,
+          ros2_tf_broadcaster,
+          *payloads
+    ])
 
   handler = RegisterEventHandler(
       event_handler=OnProcessExit(
