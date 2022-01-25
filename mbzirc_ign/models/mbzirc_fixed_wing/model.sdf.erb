@@ -18,22 +18,22 @@ end
     <!-- Multicopter motor for the propeller -->
     <plugin filename="libignition-gazebo-multicopter-motor-model-system.so"
       name="ignition::gazebo::systems::MulticopterMotorModel">
-        <robotNamespace>model/<%= $model_name%></robotNamespace>
-        <jointName>propeller_joint</jointName>
-        <linkName>propeller</linkName>
-        <turningDirection>ccw</turningDirection>
-        <timeConstantUp>0.0125</timeConstantUp>
-        <timeConstantDown>0.025</timeConstantDown>
-        <maxRotVelocity>800.0</maxRotVelocity>
-        <motorConstant>8.54858e-06</motorConstant>
-        <momentConstant>0.016</momentConstant>
-        <commandSubTopic>command/motor_speed</commandSubTopic>
-        <motorNumber>0</motorNumber>
-        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
-        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
-        <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
-        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
-        <motorType>velocity</motorType>
+      <robotNamespace>model/<%= $model_name%></robotNamespace>
+      <jointName>propeller_joint</jointName>
+      <linkName>propeller</linkName>
+      <turningDirection>ccw</turningDirection>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <maxRotVelocity>800.0</maxRotVelocity>
+      <motorConstant>8.54858e-06</motorConstant>
+      <momentConstant>0.016</momentConstant>
+      <commandSubTopic>command/motor_speed</commandSubTopic>
+      <motorNumber>0</motorNumber>
+      <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+      <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+      <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      <motorType>velocity</motorType>
     </plugin>
 
     <!-- Joints -->

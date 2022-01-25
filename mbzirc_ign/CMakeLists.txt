@@ -16,6 +16,9 @@ find_package(ignition-plugin1 REQUIRED COMPONENTS loader register)
 set(IGN_PLUGIN_VER ${ignition-plugin1_VERSION_MAJOR})
 find_package(sdformat12 REQUIRED)
 
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+
 #============================================================================
 # Hooks
 configure_file(
@@ -42,6 +45,19 @@ endforeach()
 install(
   TARGETS ${MBZIRC_IGN_PLUGINS}
   DESTINATION lib)
+
+#============================================================================
+# ROS Bridge
+add_executable(MavBridge src/MavBridge.cc)
+ament_target_dependencies(MavBridge
+    rclcpp
+    std_msgs
+    ignition-transport11
+    ignition-msgs8
+  )
+install(
+  TARGETS MavBridge
+  DESTINATION lib/${PROJECT_NAME})
 
 #============================================================================
 # Resources
