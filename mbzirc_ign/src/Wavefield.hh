@@ -137,12 +137,12 @@ namespace systems
     /// \param[in] _phase The phase parameter.
     public: void SetPhase(double _phase);
 
-        /// \brief Set the time constant.
+    /// \brief Set the time constant.
     ///
     /// \param[in] _tau The time constant.
     public: void SetTau(double _tau);
 
-        /// \brief Set the PMS amplitude multiplier
+    /// \brief Set the PMS amplitude multiplier
     ///
     /// \param[in] _gain The multiplier
     public: void SetGain(double _gain);

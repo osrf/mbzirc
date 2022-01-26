@@ -257,6 +257,7 @@ class ignition::gazebo::systems::WaveParametersPrivate
       directions.push_back(d);
     }
   }
+
   /// \brief Recalculate all derived quantities from inputs.
   public: void Recalculate()
   {
