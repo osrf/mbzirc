@@ -27,7 +27,6 @@
 #include <ignition/math/Vector2.hh>
 #include <ignition/math/Vector3.hh>
 
-#include "Geometry.hh"
 #include "Physics.hh"
 #include "Utilities.hh"
 #include "Wavefield.hh"
@@ -135,7 +134,7 @@ class ignition::gazebo::systems::WaveParametersPrivate
   public: void RecalculateCmr()
   {
     // Normalize direction
-    this->direction = Geometry::Normalize(this->direction);
+    this->direction.Normalize();
 
     // Derived mean values
     this->angularFrequency = 2.0 * M_PI / this->period;
@@ -199,7 +198,7 @@ class ignition::gazebo::systems::WaveParametersPrivate
   public: void RecalculatePms()
   {
     // Normalize direction
-    this->direction = Geometry::Normalize(this->direction);
+    this->direction.Normalize();
 
     // Derived mean values
     this->angularFrequency = 2.0 * M_PI / this->period;

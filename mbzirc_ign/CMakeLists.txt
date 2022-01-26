@@ -30,7 +30,6 @@ configure_file(
 
 # Waves
 add_library(Waves SHARED
-    src/Geometry.cc
     src/PhysicalConstants.cc
     src/Physics.cc
     src/Utilities.cc
