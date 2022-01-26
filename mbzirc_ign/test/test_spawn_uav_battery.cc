@@ -29,7 +29,7 @@ TEST_F(MBZIRCTestFixture, SpawnUAVTest)
 {
   /// This test checks that the UAV is spawned correctly.
   std::vector<std::pair<std::string,std::string>> params{
-    {"name", "x3"},
+    {"name", "quadrotor"},
     {"world", "faster_than_realtime"},
     {"model", "mbzirc_quadrotor"},
     {"type",  "uav"},
@@ -52,7 +52,7 @@ TEST_F(MBZIRCTestFixture, SpawnUAVTest)
     ignition::gazebo::World world(worldEntity);
 
     /// Check for model
-    auto modelEntity = world.ModelByName(_ecm, "x3");
+    auto modelEntity = world.ModelByName(_ecm, "quadrotor");
     if (modelEntity != ignition::gazebo::kNullEntity)
     {
       spawnedSuccessfully = true;
@@ -77,15 +77,18 @@ TEST_F(MBZIRCTestFixture, SpawnUAVTest)
   ASSERT_TRUE(spawnedSuccessfully);
 }
 
-
 TEST_F(MBZIRCTestFixture, TestBatteryDuration)
 {
+  // clean up test log dir
+  std::string logPath = "mbzirc_logs";
+  ignition::common::removeAll(logPath);
+
   using namespace std::literals::chrono_literals;
 
   /// This test checks that the UAV battery gets drained in one minute after
   /// setting the time to one minute.
   std::vector<std::pair<std::string,std::string>> params{
-    {"name", "x3"},
+    {"name", "quadrotor"},
     {"world", "faster_than_realtime"},
     {"model", "mbzirc_quadrotor"},
     {"type",  "uav"},
@@ -96,7 +99,7 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
   };
 
   ignition::transport::Node node;
-  auto pub = node.Advertise<ignition::msgs::Twist>("/model/x3/cmd_vel");
+  auto pub = node.Advertise<ignition::msgs::Twist>("/model/quadrotor/cmd_vel");
 
   bool spawnedSuccessfully = false, publisherReady = false;
 
@@ -116,7 +119,7 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
         fullyDischarged = true;
       }
     };
-  node.Subscribe("/model/x3/battery/linear_battery/state", batteryCb);
+  node.Subscribe("/model/quadrotor/battery/linear_battery/state", batteryCb);
 
   SetMaxIter(1000);
 
@@ -128,7 +131,7 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
     auto worldEntity = ignition::gazebo::worldEntity(_ecm);
     ignition::gazebo::World world(worldEntity);
 
-    auto modelEntity = world.ModelByName(_ecm, "x3");
+    auto modelEntity = world.ModelByName(_ecm, "quadrotor");
     if (modelEntity != ignition::gazebo::kNullEntity)
     {
       if (!spawnedSuccessfully)
@@ -179,4 +182,25 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
   ASSERT_TRUE(fullyDischarged);
   ASSERT_NEAR(
     std::chrono::duration<double>(dischargedAt - firstSpawned).count(), 30, 5);
+
+  // check that dead battery event is logged
+  std::string eventsLogPath =
+      ignition::common::joinPaths(logPath, "events.yml");
+  EXPECT_TRUE(ignition::common::isFile(eventsLogPath));
+  int sleep = 0;
+  int maxSleep = 10;
+  bool eventFound = false;
+  while(!eventFound && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+    eventFound = eventsBuffer.str().find("type: dead_battery") != std::string::npos
+        && eventsBuffer.str().find("robot: quadrotor") != std::string::npos;
+  }
+  EXPECT_TRUE(eventFound);
+  ignition::common::removeAll(logPath);
 }
