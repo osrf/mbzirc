@@ -22,6 +22,8 @@
 #ifndef IGNITION_GAZEBO_SYSTEMS_PHYSICAL_CONSTANTS_HH_
 #define IGNITION_GAZEBO_SYSTEMS_PHYSICAL_CONSTANTS_HH_
 
+#include <ignition/gazebo/config.hh>
+
 namespace ignition
 {
 namespace gazebo

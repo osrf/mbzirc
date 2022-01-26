@@ -25,6 +25,9 @@
 
 #include <ignition/math/Vector2.hh>
 #include <ignition/math/Vector3.hh>
+
+#include <ignition/gazebo/config.hh>
+
 #include <sdf/sdf.hh>
 
 namespace ignition
