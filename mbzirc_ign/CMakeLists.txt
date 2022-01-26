@@ -30,8 +30,6 @@ configure_file(
 
 # Waves
 add_library(Waves SHARED
-    src/PhysicalConstants.cc
-    src/Physics.cc
     src/Utilities.cc
     src/Wavefield.cc
     src/WavefieldEntity.cc

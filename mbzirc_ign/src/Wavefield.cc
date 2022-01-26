@@ -27,7 +27,6 @@
 #include <ignition/math/Vector2.hh>
 #include <ignition/math/Vector3.hh>
 
-#include "Physics.hh"
 #include "Utilities.hh"
 #include "Wavefield.hh"
 
@@ -63,8 +62,8 @@ class ignition::gazebo::systems::WaveParametersPrivate
     phase(0.0),
     direction(1, 0),
     angularFrequency(2.0*M_PI),
-    wavelength(2*M_PI/Physics::DeepWaterDispersionToWavenumber(2.0*M_PI)),
-    wavenumber(Physics::DeepWaterDispersionToWavenumber(2.0*M_PI)),
+    wavelength(2*M_PI/this->DeepWaterDispersionToWavenumber(2.0*M_PI)),
+    wavenumber(this->DeepWaterDispersionToWavenumber(2.0*M_PI)),
     tau(2.0),
     gain(1)
   {
@@ -139,7 +138,7 @@ class ignition::gazebo::systems::WaveParametersPrivate
     // Derived mean values
     this->angularFrequency = 2.0 * M_PI / this->period;
     this->wavenumber = \
-      Physics::DeepWaterDispersionToWavenumber(this->angularFrequency);
+      this->DeepWaterDispersionToWavenumber(this->angularFrequency);
     this->wavelength = 2.0 * M_PI / this->wavenumber;
 
     // Update components
@@ -156,7 +155,7 @@ class ignition::gazebo::systems::WaveParametersPrivate
       const double scaleFactor = std::pow(this->scale, n);
       const double a = scaleFactor * this->amplitude;
       const double k = this->wavenumber / scaleFactor;
-      const double omega = Physics::DeepWaterDispersionToOmega(k);
+      const double omega = this->DeepWaterDispersionToOmega(k);
       const double phi = this->phase;
       double q = 0.0;
       if (a != 0)
@@ -203,7 +202,7 @@ class ignition::gazebo::systems::WaveParametersPrivate
     // Derived mean values
     this->angularFrequency = 2.0 * M_PI / this->period;
     this->wavenumber = \
-      Physics::DeepWaterDispersionToWavenumber(this->angularFrequency);
+      this->DeepWaterDispersionToWavenumber(this->angularFrequency);
     this->wavelength = 2.0 * M_PI / this->wavenumber;
 
     // Update components
@@ -228,7 +227,7 @@ class ignition::gazebo::systems::WaveParametersPrivate
       const double omega = this->angularFrequency*scaleFactor;
       const double pms = pm(omega, this->angularFrequency);
       const double a = this->gain*std::sqrt(2.0*pms*omega_spacing[i]);
-      const double k = Physics::DeepWaterDispersionToWavenumber(omega);
+      const double k = this->DeepWaterDispersionToWavenumber(omega);
       const double phi = this->phase;
       double q = 0.0;
       if (a != 0)
@@ -278,6 +277,20 @@ class ignition::gazebo::systems::WaveParametersPrivate
             << "> which is not one of the two supported wavefield models: "
             << "PMS or CWR!!!" << std::endl;
     }
+  }
+
+  /////////////////////////////////////////////////
+  private: double DeepWaterDispersionToOmega(double _wavenumber)
+  {
+    const double g = std::fabs(-9.8);
+    return std::sqrt(g * _wavenumber);
+  }
+
+  /////////////////////////////////////////////////
+  private: double DeepWaterDispersionToWavenumber(double _omega)
+  {
+    const double g = std::fabs(-9.8);
+    return _omega * _omega / g;
   }
 };
 
