@@ -21,6 +21,8 @@
 #ifndef IGNITION_GAZEBO_SYSTEMS_PHYSICS_HH_
 #define IGNITION_GAZEBO_SYSTEMS_PHYSICS_HH_
 
+#include <ignition/gazebo/config.hh>
+
 namespace ignition
 {
 namespace gazebo

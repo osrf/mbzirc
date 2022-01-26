@@ -285,7 +285,7 @@ class ignition::gazebo::systems::WaveParametersPrivate
 /////////////////////////////////////////////////////////////////////////////
 // WaveParameters
 WaveParameters::WaveParameters()
-  : data(new WaveParametersPrivate())
+  : data(std::make_unique<WaveParametersPrivate>())
 {
   this->data->Recalculate();
 }
