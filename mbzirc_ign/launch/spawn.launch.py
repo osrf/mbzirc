@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from http.server import executable
 import os
 
 from ament_index_python.packages import get_package_share_directory
@@ -206,7 +207,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
 
   if model_path == "mbzirc_fixed_wing":
     # Left Flap
-    ros2_ign_left_flap = Node(
+    ros2_ign_left_flap_bridge = Node(
       package='ros_ign_bridge',
       executable='parameter_bridge',
       output='screen',
@@ -214,12 +215,19 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       remappings=[('/model/' + model_name + '/joint/left_flap_joint/cmd_pos', 'cmd/left_flap')]
     )
     # Right Flap
-    ros2_ign_right_flap = Node(
+    ros2_ign_right_flap_bridge = Node(
       package='ros_ign_bridge',
       executable='parameter_bridge',
       output='screen',
       arguments=['/model/' + model_name + '/joint/right_flap_joint/cmd_pos@std_msgs/msg/Float64@ignition.msgs.Double'],
       remappings=[('/model/' + model_name + '/joint/right_flap_joint/cmd_pos', 'cmd/right_flap')]
+    )
+    # Propeller
+    ros2_ign_propeller_bridge = Node(
+      package='mbzirc_ign',
+      executable='MavBridge',
+      output='screen',
+      parameters=[{'output_topic': '/model/zephyr/command/motor_speed'}]
     )
   else:
     # twist
@@ -266,8 +274,9 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
           ros2_ign_imu_bridge,
           ros2_ign_magnetometer_bridge,
           ros2_ign_air_pressure_bridge,
-          ros2_ign_left_flap,
-          ros2_ign_right_flap,
+          ros2_ign_left_flap_bridge,
+          ros2_ign_right_flap_bridge,
+          ros2_ign_propeller_bridge,
           ros2_ign_pose_bridge,
           ros2_ign_pose_static_bridge,
           ros2_tf_broadcaster,
