@@ -200,12 +200,9 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
   this->dataPtr->eventManager = &_eventMgr;
 
   // Check if the game logic plugin has a <logging> element.
-  // The <logging> element can contain a <filename_prefix> child element.
-  // The <filename_prefix> is used to specify the log filename prefix. For
   // example:
   // <logging>
   //   <path>/tmp</path>
-  //   <filename_prefix>mbzirc_</filename_prefix>
   // </logging>
   const sdf::ElementPtr loggingElem =
     const_cast<sdf::Element *>(_sdf.get())->GetElement("logging");
@@ -269,8 +266,6 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
     ignmsg << "Setup duration set to " << this->dataPtr->setupTimeSec
            << " seconds.\n";
   }
-
-
 
   this->dataPtr->node.Advertise("/mbzirc/start",
       &GameLogicPluginPrivate::OnStartCall, this->dataPtr.get());
