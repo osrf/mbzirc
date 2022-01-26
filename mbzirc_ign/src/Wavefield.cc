@@ -54,20 +54,20 @@ class ignition::gazebo::systems::WaveParametersPrivate
 {
   /// \brief Constructor.
   public: WaveParametersPrivate():
-    model(""),
-    number(1),
-    scale(2.0),
+    model("PMS"),
+    number(3),
+    scale(2.5),
     angle(2.0*M_PI/10.0),
     steepness(1.0),
     amplitude(0.0),
-    period(1.0),
+    period(5.0),
     phase(0.0),
     direction(1, 0),
     angularFrequency(2.0*M_PI),
     wavelength(2*M_PI/Physics::DeepWaterDispersionToWavenumber(2.0*M_PI)),
     wavenumber(Physics::DeepWaterDispersionToWavenumber(2.0*M_PI)),
-    tau(1.0),
-    gain(1.0)
+    tau(2.0),
+    gain(1)
   {
   }
 

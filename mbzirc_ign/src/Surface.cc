@@ -246,7 +246,10 @@ void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
       double simTime = std::chrono::duration<double>(_info.simTime).count();
       auto waveParams = this->dataPtr->wavefieldEntity->Parameters();
       double depth = 0;
-      depth = WavefieldSampler::ComputeDepthSimply(*waveParams, X, simTime);
+      if (waveParams)
+      {
+        depth = WavefieldSampler::ComputeDepthSimply(*waveParams, X, simTime);
+      }
 
       // Vertical wave displacement.
       double dz = depth + X.Z();
