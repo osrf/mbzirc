@@ -15,8 +15,10 @@
  *
  */
 #include <ignition/msgs/wrench.pb.h>
+#include <chrono>
 #include <string>
 #include <ignition/common/Profiler.hh>
+#include <ignition/common/Time.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector3.hh>
 #include <ignition/plugin/Register.hh>
@@ -30,6 +32,8 @@
 #include "ignition/gazebo/World.hh"
 
 #include "Surface.hh"
+#include "Wavefield.hh"
+#include "WavefieldEntity.hh"
 
 using namespace ignition;
 using namespace gazebo;
@@ -63,6 +67,19 @@ class ignition::gazebo::systems::SurfacePrivate
 
   /// \brief The world's gravity [m/s^2].
   public: ignition::math::Vector3d gravity;
+
+  /// Waves.
+  /// \brief WavefieldEntity pointer.
+  public: std::unique_ptr<WavefieldEntity> wavefieldEntity;
+
+  /// \brief Set the wavefield to be static [false].
+  public: bool isStatic;
+
+  /// \brief Update rate [30].
+  public: double updateRate;
+
+  /// \brief Previous update time.
+  public: std::chrono::steady_clock::duration prevTime;
 };
 
 
@@ -145,6 +162,19 @@ void Surface::Configure(const Entity &_entity,
   }
   this->dataPtr->gravity = *gravityOpt;
 
+  // Waves.
+  this->dataPtr->isStatic = _sdf->Get<bool>("static", false).first;
+  this->dataPtr->updateRate = _sdf->Get<bool>("update_rate", 30.0).first;
+
+  // Wavefield
+  this->dataPtr->wavefieldEntity.reset(new WavefieldEntity());
+  this->dataPtr->wavefieldEntity->Load(_sdf);
+
+  // // Generate the entity name and add as a child
+  // this->data->wavefieldEntity->SetName(
+  //   WavefieldEntity::MakeName(this->data->model->GetName()));
+  // this->data->model->AddChild(this->data->wavefieldEntity);
+
   // Create necessary components if not present.
   enableComponent<components::Inertial>(_ecm, this->dataPtr->link.Entity());
   enableComponent<components::WorldPose>(_ecm, this->dataPtr->link.Entity());
@@ -161,7 +191,7 @@ void Surface::Configure(const Entity &_entity,
 }
 
 //////////////////////////////////////////////////
-void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &/*_info*/,
+void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
     ignition::gazebo::EntityComponentManager &_ecm)
 {
   IGN_PROFILE("Surface::PreUpdate");
@@ -213,7 +243,10 @@ void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &/*_info*/,
 
       // Compute the depth at the grid point.
       // ToDo: Add wave height here.
+      double simTime = std::chrono::duration<double>(_info.simTime).count();
+      auto waveParams = this->dataPtr->wavefieldEntity->Parameters();
       double depth = 0;
+      depth = WavefieldSampler::ComputeDepthSimply(*waveParams, X, simTime);
 
       // Vertical wave displacement.
       double dz = depth + X.Z();

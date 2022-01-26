@@ -25,6 +25,24 @@ configure_file(
 
 
 #============================================================================
+
+# Waves
+add_library(Waves SHARED
+    src/Geometry.cc
+    src/PhysicalConstants.cc
+    src/Physics.cc
+    src/Utilities.cc
+    src/Wavefield.cc
+    src/WavefieldEntity.cc
+)
+target_link_libraries(Waves PUBLIC
+    ignition-gazebo${IGN_GAZEBO_VER}::core
+    ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
+)
+install(
+  TARGETS Waves
+  DESTINATION lib)
+
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
   SimpleHydrodynamics
@@ -36,6 +54,7 @@ foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
   target_link_libraries(${PLUGIN} PUBLIC
      ignition-gazebo${IGN_GAZEBO_VER}::core
      ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
+     Waves
   )
 endforeach()
 
