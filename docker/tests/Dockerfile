@@ -70,8 +70,8 @@ RUN git clone https://github.com/ignitionrobotics/ign-rendering -b ign-rendering
  && mkdir build \
  && cd build \
  && cmake .. \
- && make \
- && make test
+ && make -j3 INTEGRATION_camera \
+ && make test ARGS="-VV -R INTEGRATION_camera"
 
 # install rosdep
 RUN apt update \
