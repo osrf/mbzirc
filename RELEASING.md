@@ -44,7 +44,7 @@ The timestamp includes hour/minute so more than one release can be done in the s
 The Github Action for releasing mainly does the following:
 
  1. Setup docker and sources
- 2. Use the `build.sh` script to create the docker image from the commit
+ 2. Use the `build.bash` script to create the docker image from the commit
     corresponding to the initial tag that triggered the action.
  3. Create the docker tags: one is called `mbzric_sim_latest` and the other
     `mbzirc_sim_${timestamp}`. Timestamp includes date and hour-minute.

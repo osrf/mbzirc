@@ -63,8 +63,8 @@ To build a docker image of the simulator locally:
 1. Navigate to the `docker` directory and build the `mbzirc_sim` Docker image
 
     ```
-    cd mbzirc/docker
-    bash build.bash mbzirc_sim
+    cd mbzirc
+    bash docker/build.bash mbzirc_sim
     ```
 
 1.  The process can take a few minutes. Once it is done, you can launch the
