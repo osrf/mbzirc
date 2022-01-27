@@ -10,13 +10,15 @@ jobs:
         uses: actions/checkout@v2
       - name: Install and run xvfb
         run: |
-          sudo apt-get install -y xvfb
+          sudo apt-get install -y xvfb python3-pip
           Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 &
       - name: Build base image
         run: docker build -t mbzirc_sim . -f docker/tests/Dockerfile
+      - name: install rocker
+        run: pip3 install rocker
       - name: Run tests
         run: |
-          docker run -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix \
+          rocker --x11  \
               mbzirc_sim /bin/bash -c \
                 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
                  colcon test --merge-install \
