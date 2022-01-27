@@ -19,9 +19,9 @@ jobs:
       - name: Run tests
         run: |
           rocker --x11  \
-              mbzirc_sim /bin/bash -c \
+              mbzirc_sim "/bin/bash -c \
                 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
                  colcon test --merge-install \
                              --event-handlers console_direct+ \
                              --packages-select mbzirc_ros && \
-                 colcon test-result'
+                 colcon test-result'"
