@@ -49,7 +49,7 @@ Docker images are available on Docker Hub: https://hub.docker.com/repository/doc
     docker pull osrf/mbzirc:mbzirc_sim_latest
     ```
 
-1. Clone the repo and launch a Docker container from the image using the `run.bash` script. Note: requires `nvidia-docker`.
+1. Clone the repo and launch a Docker container from the image using the `run.bash` script. Note: requires `nvidia-docker2`
 
     ```
     git clone https://github.com/osrf/mbzirc.git
@@ -73,7 +73,7 @@ To build a docker image of the simulator locally:
     ```
     bash run.bash mbzirc_sim
     ```
-  
+
 ## Running the simulator
 
 Please see the wiki:  https://github.com/osrf/mbzirc/wiki
