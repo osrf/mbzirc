@@ -66,6 +66,14 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && apt-get clean -qq
 
+RUN git clone https://github.com/ignitionrobotics/ign-rendering -b ign-rendering6 \
+ && cd ign-rendering \
+ && mkdir build \
+ && cd build \
+ && cmake .. \
+ && make \
+ && make test
+
 # install rosdep
 RUN apt-get update \
   && apt install -y python3-rosdep \
