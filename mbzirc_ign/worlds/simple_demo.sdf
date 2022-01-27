@@ -146,6 +146,14 @@
             </box>
           </geometry>
         </collision>
+        <collision name="ceiling">
+          <pose>0 0 146.42 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>5000 5000 1</size>
+            </box>
+          </geometry>
+        </collision>
       </link>
     </model>
 
