@@ -65,6 +65,14 @@ RUN apt-get update \
   &&  apt-get install -y ignition-fortress \
   && apt-get clean
 
+RUN git clone https://github.com/ignitionrobotics/ign-rendering -b ign-rendering6 \
+ && cd ign-rendering \
+ && mkdir build \
+ && cd build \
+ && cmake .. \
+ && make \
+ && make test
+
 # install rosdep
 RUN apt update \
   && apt install -y python3-rosdep \
