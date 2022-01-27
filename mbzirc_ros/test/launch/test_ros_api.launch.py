@@ -51,8 +51,9 @@ def generate_test_description():
                'model' : 'mbzirc_quadrotor',
                'type'  : 'uav',
                'z'     : '0.08',}
-    if display_test == '1':
-        arguments['slot0'] = 'mbzirc_hd_camera'
+    # if display_test == '1':
+    arguments['slot0'] = 'mbzirc_hd_camera'
+
     spawn_quadrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -71,8 +72,8 @@ def generate_test_description():
                'type'  : 'uav',
                'x'     : '2',
                'z'     : '0.08',}
-    if display_test == '1':
-        arguments['slot0'] = 'mbzirc_rgbd_camera'
+    # if display_test == '1':
+    #     arguments['slot0'] = 'mbzirc_rgbd_camera'
     spawn_hexrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -87,7 +88,7 @@ def generate_test_description():
     return LaunchDescription([
         gazebo,
         delay_launch_quadrotor,
-        delay_launch_hexrotor,
+        # delay_launch_hexrotor,
         process_under_test,
         launch_testing.util.KeepAliveProc(),
         launch_testing.actions.ReadyToTest(),

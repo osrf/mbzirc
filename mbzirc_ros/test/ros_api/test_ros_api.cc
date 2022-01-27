@@ -133,8 +133,8 @@ TEST(RosApiTest, UAVTopics)
 
   // rendering tests are disabled as it causes a crash on CI
   // \todo enable
-  const char *var = std::getenv("DISPLAY_TEST");
-  if (var && std::string(var) == "1")
+  // const char *var = std::getenv("DISPLAY_TEST");
+  // if (var && std::string(var) == "1")
   {
     // image_raw
     MyTestClass<sensor_msgs::msg::Image> image(
@@ -164,6 +164,7 @@ TEST(RosApiTest, UAVTopics)
       node, cameraInfoOptical.callbackExecuted, 10ms, 500);
     EXPECT_TRUE(cameraInfoOptical.callbackExecuted);
 
+/*
     // rgbd - color
     MyTestClass<sensor_msgs::msg::Image> rgbdImage(
         "/hexrotor/slot0/image_raw");
@@ -212,6 +213,7 @@ TEST(RosApiTest, UAVTopics)
     waitUntilBoolVarAndSpin(
       node, rgbdOpticalDepth.callbackExecuted, 10ms, 500);
     EXPECT_TRUE(rgbdOpticalDepth.callbackExecuted);
+*/
   }
 
   // \todo check cmd_vel and points (lidar) topics
