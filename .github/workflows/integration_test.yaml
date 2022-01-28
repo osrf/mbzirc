@@ -14,7 +14,7 @@ jobs:
         #  Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 &
       - name: Build base image
         run: docker build -t mbzirc_sim . -f docker/tests/Dockerfile
-      - name: compile ign-rendering
+      - name: compile ign-rendering without MESA_GL_VERSION_OVERRIDE
         run: |
           docker run \
               mbzirc_sim /bin/bash -c \
@@ -28,7 +28,21 @@ jobs:
                  && cmake .. \
                  && make -j3 INTEGRATION_camera \
                  && make test ARGS="-VV -R INTEGRATION_camera"'
-      # && export MESA_GL_VERSION_OVERRIDE=3.3 \
+      - name: compile ign-rendering with xvfb-run
+        run: |
+          docker run \
+              mbzirc_sim /bin/bash -c \
+                'xvfb-run --auto-servernum --server-num=1 --server-args="-screen 0 1280x1024x24" \
+                 && export DISPLAY=:1.0 \
+                 && export RENDER_ENGINE_VALUES=ogre2 \
+                 && export MESA_GL_VERSION_OVERRIDE=3.3 \
+                 && git clone https://github.com/ignitionrobotics/ign-rendering -b ign-rendering6 \
+                 && cd ign-rendering \
+                 && mkdir build \
+                 && cd build \
+                 && cmake .. \
+                 && make -j3 INTEGRATION_camera \
+                 && make test ARGS="-VV -R INTEGRATION_camera"'
       - name: Run tests
         run: |
           docker run \
