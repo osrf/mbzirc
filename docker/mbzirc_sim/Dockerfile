@@ -105,26 +105,16 @@ RUN mkdir ~/workspaces ~/other
 # When running a container start in the developer's home folder
 WORKDIR /home/$USERNAME
 
-# Input ARG mbzirc_sha_commit to build a given git ref in the source code
-ARG mbzirc_sha_commit
-# Input ARG to allow using forks for testing. Default to osrf/mbzirc
-ARG mbzirc_repo_url=https://github.com/osrf/mbzirc
-
-# clone mbzirc sim
-RUN mkdir -p mbzirc_ws/src \
- && cd mbzirc_ws/src \
- && git config --global http.postBuffer 1048576000 \
- && git clone ${mbzirc_repo_url} mbzirc \
- && if [ "${mbzirc_sha_commit}" != "" ]; then \
-       echo "Using: SHA ${mbzirc_sha_commit}" && \
-       git --git-dir mbzirc/.git checkout "${mbzirc_sha_commit}"; \
-    fi
+# Prepare the colcon workspace
+RUN mkdir -p mbzirc_ws/src
 
 # clone ros_ign bridge
 RUN cd /home/$USERNAME/mbzirc_ws/src \
  && git clone https://github.com/osrf/ros_ign.git -b ros2
 
 WORKDIR /home/$USERNAME/mbzirc_ws
+
+COPY . src/mbzric
 
 ENV IGNITION_VERSION fortress
 
@@ -134,9 +124,12 @@ RUN sudo apt-get update \
   && sudo rm -rf /var/lib/apt/lists/* \
   && sudo apt-get clean -qq
 
+# Be sure that mbzirc_ros is present in the compilation by calling info
 RUN /bin/bash -c 'source /opt/ros/galactic/setup.bash \
+  && colcon info mbzirc_ros \
   && colcon build --merge-install' \
   && rm -fr build/ log/
+
 RUN /bin/sh -c 'echo ". /opt/ros/galactic/setup.bash" >> ~/.bashrc' \
  && /bin/sh -c 'echo ". ~/mbzirc_ws/install/setup.sh" >> ~/.bashrc'
 
