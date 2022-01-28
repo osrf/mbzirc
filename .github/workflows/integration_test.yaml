@@ -17,11 +17,11 @@ jobs:
       - name: compile ign-rendering
         run: |
           docker run \
+              # && export MESA_GL_VERSION_OVERRIDE=3.3 \
               mbzirc_sim /bin/bash -c \
                 'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 & \
                  export DISPLAY=:1.0 \
                  && export RENDER_ENGINE_VALUES=ogre2 \
-                 && export MESA_GL_VERSION_OVERRIDE=3.3 \
                  && git clone https://github.com/ignitionrobotics/ign-rendering -b ign-rendering6 \
                  && cd ign-rendering \
                  && mkdir build \
@@ -31,12 +31,12 @@ jobs:
                  && make test ARGS="-VV -R INTEGRATION_camera"'
       - name: Run tests
         run: |
+          # && export MESA_GL_VERSION_OVERRIDE=3.3 \
           docker run \
               mbzirc_sim /bin/bash -c \
                 'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 & \
                  export DISPLAY=:1.0 \
                  && export RENDER_ENGINE_VALUES=ogre2 \
-                 && export MESA_GL_VERSION_OVERRIDE=3.3 \
                  && source /home/$USERNAME/mbzirc_ws/install/setup.bash \
                  && colcon test --merge-install \
                              --event-handlers console_direct+ \
