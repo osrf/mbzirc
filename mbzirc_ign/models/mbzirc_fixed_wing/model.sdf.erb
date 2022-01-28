@@ -16,7 +16,7 @@ end
     </include>
 
     <!-- Multicopter motor for the propeller -->
-    <plugin filename="libignition-gazebo-multicopter-motor-model-system.so"
+    <!--<plugin filename="libignition-gazebo-multicopter-motor-model-system.so"
       name="ignition::gazebo::systems::MulticopterMotorModel">
       <robotNamespace>model/<%= $model_name%></robotNamespace>
       <jointName>propeller_joint</jointName>
@@ -34,26 +34,31 @@ end
       <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
       <motorType>velocity</motorType>
-    </plugin>
+    </plugin>-->
 
     <!-- Joints -->
     <plugin
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
-      <joint_name>left_flap_joint</joint_name>
-      <p_gain>1</p_gain>
+      <joint_name>flap_left_joint</joint_name>
+      <use_velocity_commands>true</use_velocity_commands>
       <topic>/model/<%= $model_name%>/joint/left_flap_joint/cmd_pos</topic>
     </plugin>
     <plugin
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
-      <joint_name>right_flap_joint</joint_name>
-      <p_gain>1</p_gain>
+      <joint_name>flap_right_joint</joint_name>
+      <use_velocity_commands>true</use_velocity_commands>
       <topic>/model/<%= $model_name%>/joint/right_flap_joint/cmd_pos</topic>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-joint-controller-system"
+      name="ignition::gazebo::systems::JointController">
+      <joint_name>propeller_joint</joint_name>
     </plugin>
 
     <!-- LiftDrag plugins -->
-    <plugin
+    <!--<plugin
       filename="ignition-gazebo-lift-drag-system"
       name="ignition::gazebo::systems::LiftDrag">
       <a0>0.13</a0>
@@ -114,7 +119,7 @@ end
         right_flap_joint
       </control_joint_name>
       <control_joint_rad_to_cl>-5.0</control_joint_rad_to_cl>
-    </plugin>
+    </plugin>-->
 
     <!-- Battery plugin -->
     <!-- Since we are interested in using time as the limiting factor -->

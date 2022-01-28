@@ -224,10 +224,11 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
     )
     # Propeller
     ros2_ign_propeller_bridge = Node(
-      package='mbzirc_ign',
-      executable='MavBridge',
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
       output='screen',
-      parameters=[{'output_topic': '/model/zephyr/command/motor_speed'}]
+      arguments=['/model/' + model_name + '/joint/propeller_joint/cmd_vel@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[('/model/' + model_name + '/joint/propeller_joint/cmd_vel', '/model/' + model_name + '/command/motor_speed')]
     )
   else:
     # twist

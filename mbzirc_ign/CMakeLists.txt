@@ -47,19 +47,6 @@ install(
   DESTINATION lib)
 
 #============================================================================
-# ROS Bridge
-add_executable(MavBridge src/MavBridge.cc)
-ament_target_dependencies(MavBridge
-    rclcpp
-    std_msgs
-    ignition-transport11
-    ignition-msgs8
-  )
-install(
-  TARGETS MavBridge
-  DESTINATION lib/${PROJECT_NAME})
-
-#============================================================================
 # Resources
 install(DIRECTORY
   worlds
