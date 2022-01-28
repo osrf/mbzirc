@@ -26,11 +26,6 @@ jobs:
               ${{ steps.build_docker.outputs.name }} \
               /bin/bash -c \
                 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
-                 echo "PWD $PWD" && \
-                 find . -name mbzirc_ros && \
-                 cd /home/$USERNAME/mbzirc_ws && \
-                 find . -name mbzirc_ros && \
-                 colcon list && \
                  colcon test --merge-install \
                              --event-handlers console_direct+ \
                              --packages-select mbzirc_ros && \
