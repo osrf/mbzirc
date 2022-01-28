@@ -17,6 +17,7 @@ jobs:
       - name: install rocker
         run: pip3 install rocker
       - name: Run tests
+        shell: 'script --return --quiet --command "bash {0}"'
         run: |
           rocker --x11  \
               mbzirc_sim "/bin/bash -c \
