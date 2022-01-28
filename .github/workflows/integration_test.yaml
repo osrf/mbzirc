@@ -17,7 +17,6 @@ jobs:
       - name: compile ign-rendering
         run: |
           docker run \
-              # && export MESA_GL_VERSION_OVERRIDE=3.3 \
               mbzirc_sim /bin/bash -c \
                 'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 & \
                  export DISPLAY=:1.0 \
@@ -29,9 +28,9 @@ jobs:
                  && cmake .. \
                  && make -j3 INTEGRATION_camera \
                  && make test ARGS="-VV -R INTEGRATION_camera"'
+      # && export MESA_GL_VERSION_OVERRIDE=3.3 \
       - name: Run tests
         run: |
-          # && export MESA_GL_VERSION_OVERRIDE=3.3 \
           docker run \
               mbzirc_sim /bin/bash -c \
                 'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 & \
@@ -42,3 +41,4 @@ jobs:
                              --event-handlers console_direct+ \
                              --packages-select mbzirc_ros \
                  && colcon test-result'
+      # && export MESA_GL_VERSION_OVERRIDE=3.3 \
