@@ -197,11 +197,13 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                   prefix + '/camera/image@sensor_msgs/msg/Image@ignition.msgs.Image',
                   prefix + '/camera/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo',
                   prefix + '/camera/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked',
+                  prefix + '/camera/depth_image@sensor_msgs/msg/Image@ignition.msgs.Image',
               ],
               remappings=[
                   (prefix + '/camera/image', f'slot{idx}/image_raw'),
                   (prefix + '/camera/points', f'slot{idx}/points'),
                   (prefix + '/camera/camera_info', f'slot{idx}/camera_info'),
+                  (prefix + '/camera/depth_image', f'slot{idx}/depth'),
               ]
           )
 
@@ -216,8 +218,18 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                          ]
           )
 
+          depth_image_optical_frame = Node(
+              package='mbzirc_ros',
+              executable='optical_frame_publisher',
+              arguments=['0'],
+              remappings=[('input/image',  f'slot{idx}/depth'),
+                          ('output/image', f'slot{idx}/optical/depth'),
+                         ]
+          )
+
           payloads.append(rgbd_pointcloud_bridge)
           payloads.append(image_optical_frame)
+          payloads.append(depth_image_optical_frame)
       else:
           print('Unknown payload: ', payload)
 
