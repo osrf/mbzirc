@@ -11,10 +11,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      - name: Install and run xvfb
-        run: |
-          sudo apt-get install -y xvfb
-          Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 &
       - name: Run build script
         id: build_docker
         run: |
@@ -22,10 +18,12 @@ jobs:
             echo "::set-output name=name::${{ matrix.image_name }}:latest"
       - name: Run tests
         run: |
-          docker run -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix \
-              ${{ steps.build_docker.outputs.name }} \
-              /bin/bash -c \
-                'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
+          docker run \
+              mbzirc_sim /bin/bash -c \
+                'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 & \
+                 export DISPLAY=:1.0 && \
+                 export RENDER_ENGINE_VALUES=ogre2 && \
+                 source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
                  colcon test --merge-install \
                              --event-handlers console_direct+ \
                              --packages-select mbzirc_ros && \
