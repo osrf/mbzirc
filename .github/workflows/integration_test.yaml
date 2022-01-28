@@ -26,6 +26,7 @@ jobs:
               ${{ steps.build_docker.outputs.name }} \
               /bin/bash -c \
                 'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
+                 cd /home/$USERNAME/mbzirc_ws && \
                  colcon test --merge-install \
                              --event-handlers console_direct+ \
                              --packages-select mbzirc_ros && \
