@@ -127,8 +127,9 @@ RUN sudo apt-get update \
 # Be sure that mbzirc_ros is present in the compilation by calling info
 RUN /bin/bash -c 'source /opt/ros/galactic/setup.bash \
   && colcon info mbzirc_ros \
-  && colcon build --merge-install' \
-  && rm -fr build/ log/
+  && colcon build --merge-install'
+# TOOD: implement build arg to clean build/ log/ while releasing
+# && rm -fr build/ log/
 
 RUN /bin/sh -c 'echo ". /opt/ros/galactic/setup.bash" >> ~/.bashrc' \
  && /bin/sh -c 'echo ". ~/mbzirc_ws/install/setup.sh" >> ~/.bashrc'
