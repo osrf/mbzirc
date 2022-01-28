@@ -28,10 +28,7 @@ jobs:
       - name: Run build script
         id: build_docker
         run: |
-            cd docker
-            bash -xe ./build.bash ${{ matrix.image_name }} \
-              ${{ github.server_url }}/${{ github.repository }} \
-              ${{ github.sha }}
+            bash -xe ./docker/build.bash ${{ matrix.image_name }}
             echo "::set-output name=name::${{ matrix.image_name }}:latest"
 
       - name: Create latest version tag

@@ -52,5 +52,25 @@ install(DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/hooks
   DESTINATION share/${PROJECT_NAME})
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  # Build-time constants
+  set("PROJECT_BINARY_PATH" ${CMAKE_CURRENT_BINARY_DIR})
+  set("PROJECT_SOURCE_PATH" ${CMAKE_CURRENT_SOURCE_DIR})
+  configure_file(test/helper/TestConstants.hh.in TestConstants.hh @ONLY)
+
+  foreach(TEST_TARGET
+    test_spawn_uav_battery)
+    ament_add_gtest(
+      ${TEST_TARGET}
+      test/${TEST_TARGET}.cc
+    )
+    target_include_directories(${TEST_TARGET} 
+      PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto )
+    target_link_libraries(${TEST_TARGET} ignition-gazebo6::ignition-gazebo6)
+    set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
+  endforeach()
+endif()
 
 ament_package()
