@@ -8,17 +8,21 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      - name: Install and run xvfb
-        run: |
-          sudo apt-get install -y xvfb
-          Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 &
+        #      - name: Install and run xvfb
+        #run: |
+        #  sudo apt-get install -y xvfb
+        #  Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 &
       - name: Build base image
         run: docker build -t mbzirc_sim . -f docker/tests/Dockerfile
       - name: compile ign-rendering
         run: |
-          docker run -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix \
+          docker run \
               mbzirc_sim /bin/bash -c \
-                'git clone https://github.com/ignitionrobotics/ign-rendering -b ign-rendering6 \
+                'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 & \
+                 export DISPLAY=:1.0 \
+                 && export RENDER_ENGINE_VALUES=ogre2 \
+                 && export MESA_GL_VERSION_OVERRIDE=3.3 \
+                 && git clone https://github.com/ignitionrobotics/ign-rendering -b ign-rendering6 \
                  && cd ign-rendering \
                  && mkdir build \
                  && cd build \
@@ -27,10 +31,14 @@ jobs:
                  && make test ARGS="-VV -R INTEGRATION_camera"'
       - name: Run tests
         run: |
-          docker run -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix \
+          docker run \
               mbzirc_sim /bin/bash -c \
-                'source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
-                 colcon test --merge-install \
+                'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 & \
+                 export DISPLAY=:1.0 \
+                 && export RENDER_ENGINE_VALUES=ogre2 \
+                 && export MESA_GL_VERSION_OVERRIDE=3.3 \
+                 && source /home/$USERNAME/mbzirc_ws/install/setup.bash \
+                 && colcon test --merge-install \
                              --event-handlers console_direct+ \
-                             --packages-select mbzirc_ros && \
-                 colcon test-result'
+                             --packages-select mbzirc_ros \
+                 && colcon test-result'
