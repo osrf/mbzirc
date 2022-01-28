@@ -47,11 +47,19 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   slot1_payload = LaunchConfiguration('slot1').perform(context)
   slot2_payload = LaunchConfiguration('slot2').perform(context)
   slot3_payload = LaunchConfiguration('slot3').perform(context)
+  slot4_payload = LaunchConfiguration('slot4').perform(context)
+  slot5_payload = LaunchConfiguration('slot5').perform(context)
+  slot6_payload = LaunchConfiguration('slot6').perform(context)
+  slot7_payload = LaunchConfiguration('slot7').perform(context)
 
   slot0_rpy = LaunchConfiguration('slot0_rpy').perform(context)
   slot1_rpy = LaunchConfiguration('slot1_rpy').perform(context)
   slot2_rpy = LaunchConfiguration('slot2_rpy').perform(context)
   slot3_rpy = LaunchConfiguration('slot3_rpy').perform(context)
+  slot4_rpy = LaunchConfiguration('slot4_rpy').perform(context)
+  slot5_rpy = LaunchConfiguration('slot5_rpy').perform(context)
+  slot6_rpy = LaunchConfiguration('slot6_rpy').perform(context)
+  slot7_rpy = LaunchConfiguration('slot7_rpy').perform(context)
 
   # calculate battery capacity from time
   # capacity (Ah) = flight time (in hours) * load (watts) / voltage
@@ -75,6 +83,14 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   if slot2_rpy: command.append(f'slot2_pos={slot2_rpy}')
   if slot3_payload: command.append(f'slot3={slot3_payload}')
   if slot3_rpy: command.append(f'slot3_pos={slot3_rpy}')
+  if slot4_payload: command.append(f'slot4={slot4_payload}')
+  if slot4_rpy: command.append(f'slot4_pos={slot4_rpy}')
+  if slot5_payload: command.append(f'slot5={slot5_payload}')
+  if slot5_rpy: command.append(f'slot5_pos={slot5_rpy}')
+  if slot6_payload: command.append(f'slot6={slot6_payload}')
+  if slot6_rpy: command.append(f'slot6_pos={slot6_rpy}')
+  if slot7_payload: command.append(f'slot7={slot7_payload}')
+  if slot7_rpy: command.append(f'slot7_pos={slot7_rpy}')
 
   command.append(model_file)
 
@@ -130,7 +146,8 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   )
 
   payloads = []
-  check = [slot0_payload, slot1_payload, slot2_payload, slot3_payload]
+  check = [slot0_payload, slot1_payload, slot2_payload, slot3_payload,
+           slot4_payload, slot5_payload, slot6_payload, slot7_payload]
 
   for idx in range(0, 4):
       payload = check[idx]
@@ -439,6 +456,38 @@ def generate_launch_description():
             description='Payload mounted to slot 3'),
         DeclareLaunchArgument(
             'slot3_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot4',
+            default_value='',
+            description='Payload mounted to slot 4'),
+        DeclareLaunchArgument(
+            'slot4_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot5',
+            default_value='',
+            description='Payload mounted to slot 5'),
+        DeclareLaunchArgument(
+            'slot5_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot6',
+            default_value='',
+            description='Payload mounted to slot 6'),
+        DeclareLaunchArgument(
+            'slot6_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot7',
+            default_value='',
+            description='Payload mounted to slot 7'),
+        DeclareLaunchArgument(
+            'slot7_rpy',
             default_value='0 0 0',
             description='Roll, Pitch, Yaw in degrees of payload mount'),
         # launch setup
