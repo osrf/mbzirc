@@ -21,11 +21,10 @@ from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 
 from launch.actions import IncludeLaunchDescription
-from launch.actions import EmitEvent
 from launch.actions import ExecuteProcess
+from launch.actions import RegisterEventHandler
 from launch.actions import TimerAction
-from launch.events import matches_action
-from launch.events.process import ShutdownProcess
+from launch.event_handlers import OnShutdown
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
@@ -41,11 +40,15 @@ def generate_test_description():
     )
 
     # launch empty_platform world
-    gazebo = ExecuteProcess(
-        cmd=['ign gazebo --headless-rendering -v 4 --iterations 15000 -s -r empty_platform.sdf'],
-        output='screen',
-        shell=True
-    )
+    ign_args = '--headless-rendering -v 4 -s -r empty_platform.sdf'
+    arguments={'ign_args'  : ign_args}
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('ros_ign_gazebo'),
+                'launch/ign_gazebo.launch.py')
+        ),
+        launch_arguments=arguments.items())
 
     display_test = os.getenv('DISPLAY_TEST')
     # spawn quadrotor
@@ -64,7 +67,7 @@ def generate_test_description():
         ),
         launch_arguments=arguments.items())
     delay_launch_quadrotor = TimerAction(
-            period=8.0,
+            period=10.0,
             actions=[spawn_quadrotor])
 
     # spawn hexrotor
@@ -84,24 +87,32 @@ def generate_test_description():
         ),
         launch_arguments=arguments.items())
     delay_launch_hexrotor = TimerAction(
-            period=10.0,
+            period=13.0,
             actions=[spawn_hexrotor])
 
-    kill_proc = EmitEvent(
-        event=ShutdownProcess(
-            process_matcher=matches_action(gazebo)
+    # ros launch does not bring down the ign gazebo process so manually kill it
+    # \todo(anyone) figure out a proper way to terminate the ign gazebo process
+    pid = 'ps aux | grep -v grep | grep \'ign gazebo ' + ign_args + '\' | awk \'{print $2}\''
+    kill_gazebo = ExecuteProcess(
+        cmd=['kill `' + pid +'`'],
+        output='screen',
+        shell=True
+    )
+
+    kill_proc_handler = RegisterEventHandler(
+        OnShutdown(
+            on_shutdown=[
+               kill_gazebo
+            ]
         )
     )
-    delay_kill_proc = TimerAction(
-            period=120.0,
-            actions=[kill_proc])
 
     return LaunchDescription([
         gazebo,
         delay_launch_quadrotor,
         delay_launch_hexrotor,
         process_under_test,
-        delay_kill_proc,
+        kill_proc_handler,
         launch_testing.util.KeepAliveProc(),
         launch_testing.actions.ReadyToTest(),
     ]), locals()
@@ -109,10 +120,8 @@ def generate_test_description():
 
 class RosApiTest(unittest.TestCase):
 
-    def test_termination(self, process_under_test, gazebo, proc_info):
+    def test_termination(self, process_under_test, proc_info):
         proc_info.assertWaitForShutdown(process=process_under_test, timeout=200)
-        proc_info.assertWaitForShutdown(process=gazebo, timeout=200)
-
 
 @launch_testing.post_shutdown_test()
 class RosApiTestAfterShutdown(unittest.TestCase):
