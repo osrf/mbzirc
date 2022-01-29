@@ -134,8 +134,8 @@ TEST(RosApiTest, UAVTopics)
 
   // rendering tests are disabled as it causes a crash on CI
   // \todo enable
-//  const char *var = std::getenv("DISPLAY_TEST");
-//  if (var && std::string(var) == "1")
+  const char *var = std::getenv("DISPLAY_TEST");
+  if (var && std::string(var) == "1")
   {
     // image_raw
     MyTestClass<sensor_msgs::msg::Image> image(

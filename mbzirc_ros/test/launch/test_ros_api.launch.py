@@ -28,7 +28,7 @@ from launch_ros.actions import Node
 
 import launch_testing
 
-# launch simple_demo and spawn quadrotor and hexrotor UAVs
+# launch empty_platform and spawn quadrotor and hexrotor UAVs
 def generate_test_description():
 
     process_under_test = Node(
@@ -37,9 +37,9 @@ def generate_test_description():
         output='screen'
     )
 
-    # launch simple_demo world
+    # launch empty_platform world
     gazebo = ExecuteProcess(
-        cmd=['ign gazebo --headless-rendering -v 4 --iterations 20000 -s -r simple_demo.sdf'],
+        cmd=['ign gazebo --headless-rendering -v 4 --iterations 20000 -s -r empty_platform.sdf'],
         output='screen',
         shell=True
     )
@@ -47,12 +47,12 @@ def generate_test_description():
     display_test = os.getenv('DISPLAY_TEST')
     # spawn quadrotor
     arguments={'name'  : 'quadrotor',
-               'world' : 'simple_demo',
+               'world' : 'empty_platform',
                'model' : 'mbzirc_quadrotor',
                'type'  : 'uav',
                'z'     : '0.08',}
-#    if display_test == '1':
-    arguments['slot0'] = 'mbzirc_hd_camera'
+    if display_test == '1':
+        arguments['slot0'] = 'mbzirc_hd_camera'
     spawn_quadrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -66,13 +66,13 @@ def generate_test_description():
 
     # spawn hexrotor
     arguments={'name'  : 'hexrotor',
-               'world' : 'simple_demo',
+               'world' : 'empty_platform',
                'model' : 'mbzirc_hexrotor',
                'type'  : 'uav',
                'x'     : '2',
                'z'     : '0.08',}
-    #if display_test == '1':
-    #    arguments['slot0'] = 'mbzirc_rgbd_camera'
+    if display_test == '1':
+        arguments['slot0'] = 'mbzirc_rgbd_camera'
     spawn_hexrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
