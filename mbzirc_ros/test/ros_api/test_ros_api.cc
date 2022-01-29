@@ -15,6 +15,7 @@
  *
  */
 
+#include <fstream>
 #include <gtest/gtest.h>
 
 #include <rclcpp/rclcpp.hpp>
@@ -133,8 +134,8 @@ TEST(RosApiTest, UAVTopics)
 
   // rendering tests are disabled as it causes a crash on CI
   // \todo enable
-  const char *var = std::getenv("DISPLAY_TEST");
-  if (var && std::string(var) == "1")
+//  const char *var = std::getenv("DISPLAY_TEST");
+//  if (var && std::string(var) == "1")
   {
     // image_raw
     MyTestClass<sensor_msgs::msg::Image> image(
@@ -212,6 +213,16 @@ TEST(RosApiTest, UAVTopics)
     waitUntilBoolVarAndSpin(
       node, rgbdOpticalDepth.callbackExecuted, 10ms, 500);
     EXPECT_TRUE(rgbdOpticalDepth.callbackExecuted);
+  }
+
+  const char *env = std::getenv("HOME");
+  if (env)
+  {
+    std::ifstream file;
+    file.open(std::string(env) + "/.ignition/rendering/ogre2.log");
+    std::stringstream ss;
+    ss << file.rdbuf();
+    std::cerr << ss.str() << std::endl;
   }
 
   // \todo check cmd_vel and points (lidar) topics
