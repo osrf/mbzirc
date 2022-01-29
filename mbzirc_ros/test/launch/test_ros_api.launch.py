@@ -21,8 +21,11 @@ from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 
 from launch.actions import IncludeLaunchDescription
+from launch.actions import EmitEvent
 from launch.actions import ExecuteProcess
 from launch.actions import TimerAction
+from launch.events import matches_action
+from launch.events.process import ShutdownProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
@@ -84,11 +87,21 @@ def generate_test_description():
             period=10.0,
             actions=[spawn_hexrotor])
 
+    kill_proc = EmitEvent(
+        event=ShutdownProcess(
+            process_matcher=matches_action(gazebo)
+        )
+    )
+    delay_kill_proc = TimerAction(
+            period=40.0,
+            actions=[kill_proc])
+
     return LaunchDescription([
         gazebo,
         delay_launch_quadrotor,
         delay_launch_hexrotor,
         process_under_test,
+        delay_kill_proc,
         launch_testing.util.KeepAliveProc(),
         launch_testing.actions.ReadyToTest(),
     ]), locals()
