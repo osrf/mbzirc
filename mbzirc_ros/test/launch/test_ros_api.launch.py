@@ -93,7 +93,7 @@ def generate_test_description():
         )
     )
     delay_kill_proc = TimerAction(
-            period=40.0,
+            period=120.0,
             actions=[kill_proc])
 
     return LaunchDescription([
