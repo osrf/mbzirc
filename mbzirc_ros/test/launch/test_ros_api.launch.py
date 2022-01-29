@@ -39,7 +39,7 @@ def generate_test_description():
 
     # launch empty_platform world
     gazebo = ExecuteProcess(
-        cmd=['ign gazebo --headless-rendering -v 4 --iterations 20000 -s -r empty_platform.sdf'],
+        cmd=['ign gazebo --headless-rendering -v 4 --iterations 15000 -s -r empty_platform.sdf'],
         output='screen',
         shell=True
     )
@@ -61,7 +61,7 @@ def generate_test_description():
         ),
         launch_arguments=arguments.items())
     delay_launch_quadrotor = TimerAction(
-            period=10.0,
+            period=8.0,
             actions=[spawn_quadrotor])
 
     # spawn hexrotor
@@ -81,7 +81,7 @@ def generate_test_description():
         ),
         launch_arguments=arguments.items())
     delay_launch_hexrotor = TimerAction(
-            period=13.0,
+            period=10.0,
             actions=[spawn_hexrotor])
 
     return LaunchDescription([
@@ -97,8 +97,8 @@ def generate_test_description():
 class RosApiTest(unittest.TestCase):
 
     def test_termination(self, process_under_test, gazebo, proc_info):
-        proc_info.assertWaitForShutdown(process=process_under_test, timeout=300)
-        proc_info.assertWaitForShutdown(process=gazebo, timeout=300)
+        proc_info.assertWaitForShutdown(process=process_under_test, timeout=200)
+        proc_info.assertWaitForShutdown(process=gazebo, timeout=200)
 
 
 @launch_testing.post_shutdown_test()
