@@ -215,16 +215,6 @@ TEST(RosApiTest, UAVTopics)
     EXPECT_TRUE(rgbdOpticalDepth.callbackExecuted);
   }
 
-  const char *env = std::getenv("HOME");
-  if (env)
-  {
-    std::ifstream file;
-    file.open(std::string(env) + "/.ignition/rendering/ogre2.log");
-    std::stringstream ss;
-    ss << file.rdbuf();
-    std::cerr << ss.str() << std::endl;
-  }
-
   // \todo check cmd_vel and points (lidar) topics
 }
 

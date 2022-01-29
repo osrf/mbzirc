@@ -27,5 +27,5 @@ jobs:
                  source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
                  colcon test --merge-install \
                              --event-handlers console_direct+ \
-                             --packages-select mbzirc_ros && \
+                             --packages-select mbzirc_ros mbzirc_ign && \
                  colcon test-result'

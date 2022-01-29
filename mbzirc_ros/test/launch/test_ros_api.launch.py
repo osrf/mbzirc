@@ -87,7 +87,7 @@ def generate_test_description():
     return LaunchDescription([
         gazebo,
         delay_launch_quadrotor,
-        # delay_launch_hexrotor,
+        delay_launch_hexrotor,
         process_under_test,
         launch_testing.util.KeepAliveProc(),
         launch_testing.actions.ReadyToTest(),
