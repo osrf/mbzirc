@@ -50,19 +50,19 @@ class ignition::gazebo::systems::WavefieldPrivate
     size({1000, 1000}),
     cellCount({50, 50}),
     model("PMS"),
-    number(3),
-    scale(2.5),
+    number(1),
+    scale(2),
     angle(2.0*M_PI/10.0),
     steepness(1.0),
     amplitude(0.0),
-    period(5.0),
+    period(1.0),
     phase(0.0),
     direction(1, 0),
     angularFrequency(2.0*M_PI),
     wavelength(2*M_PI/this->DeepWaterDispersionToWavenumber(2.0*M_PI)),
     wavenumber(this->DeepWaterDispersionToWavenumber(2.0*M_PI)),
-    tau(2.0),
-    gain(0.7)
+    tau(1.0),
+    gain(1.0)
   {
   }
 
@@ -313,14 +313,19 @@ Wavefield::~Wavefield()
 ///////////////////////////////////////////////////////////////////////////////
 void Wavefield::Load(const std::shared_ptr<const sdf::Element> &_sdf)
 {
-  this->data->size = _sdf->Get<ignition::math::Vector2d>("size",
+  if (!_sdf->HasElement("wavefield"))
+    return;
+
+  auto ptr = const_cast<sdf::Element *>(_sdf.get());
+  auto sdfWavefield = ptr->GetElement("wavefield");
+
+  this->data->size = sdfWavefield->Get<ignition::math::Vector2d>("size",
     this->data->size).first;
-  this->data->cellCount = _sdf->Get<ignition::math::Vector2d>("cell_count",
+  this->data->cellCount = sdfWavefield->Get<ignition::math::Vector2d>("cell_count",
     this->data->cellCount).first;
-  if (_sdf->HasElement("wave"))
+  if (sdfWavefield->HasElement("wave"))
   {
-    auto ptr = const_cast<sdf::Element *>(_sdf.get());
-    auto sdfWave = ptr->GetElement("wave");
+    auto sdfWave = sdfWavefield->GetElement("wave");
 
     this->data->model = sdfWave->Get<std::string>("model", "PMS").first;
     this->data->number =
