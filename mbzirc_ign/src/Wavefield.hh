@@ -52,13 +52,11 @@ namespace systems
     /// \brief Destructor.
     public: virtual ~Wavefield();
 
-    /// \brief Load.
-    public: void Load(const std::shared_ptr<const sdf::Element> &_sdf);
-
     /// \brief Set the parameters from an SDF Element tree.
     ///
-    /// \param[in] _sdf   The SDF Element tree containing the wave parameters.
-    public: void SetFromSDF(sdf::Element& _sdf);
+    /// \param[in] _sdf   The SDF Element tree containing the wavefield
+    /// parameters.
+    public: void Load(const std::shared_ptr<const sdf::Element> &_sdf);
 
     /// \brief The number of wave components (3 max if visualisation required).
     public: size_t Number() const;

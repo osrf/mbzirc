@@ -296,20 +296,18 @@
     <fluid_level>-1</fluid_level>
 
     <!-- waves -->
-    <static>false</static>
-    <update_rate>30</update_rate>
     <size>1000 1000</size>
     <cell_count>50 50</cell_count>
     <wave>
       <model>PMS</model>
-      <period>${period}</period>
+      <period>5</period>
       <number>3</number>
-      <scale>${scale}</scale>
-      <gain>${gain}</gain>
-      <direction>${direction_x} ${direction_y}</direction>
-      <angle>${angle}</angle>
+      <scale>1.5</scale>
+      <gain>1</gain>
+      <direction>1 0</direction>
+      <angle>0.4</angle>
       <tau>2.0</tau>
-      <amplitude>0.0</amplitude>  <!-- No effect for the PMS model -->
+      <amplitude>0.0</amplitude>
       <steepness>0.0</steepness>
     </wave>
   </plugin>

@@ -67,15 +67,8 @@ class ignition::gazebo::systems::SurfacePrivate
   /// \brief The world's gravity [m/s^2].
   public: ignition::math::Vector3d gravity;
 
-  /// Waves.
   /// \brief Wavefield pointer.
   public: std::unique_ptr<Wavefield> wavefield;
-
-  /// \brief Set the wavefield to be static [false].
-  public: bool isStatic;
-
-  /// \brief Update rate [30].
-  public: double updateRate;
 
   /// \brief Previous update time.
   public: std::chrono::steady_clock::duration prevTime;
@@ -161,18 +154,9 @@ void Surface::Configure(const Entity &_entity,
   }
   this->dataPtr->gravity = *gravityOpt;
 
-  // Waves.
-  this->dataPtr->isStatic = _sdf->Get<bool>("static", false).first;
-  this->dataPtr->updateRate = _sdf->Get<bool>("update_rate", 30.0).first;
-
   // Wavefield
   this->dataPtr->wavefield.reset(new Wavefield());
   this->dataPtr->wavefield->Load(_sdf);
-
-  // // Generate the entity name and add as a child
-  // this->data->wavefieldEntity->SetName(
-  //   WavefieldEntity::MakeName(this->data->model->GetName()));
-  // this->data->model->AddChild(this->data->wavefieldEntity);
 
   // Create necessary components if not present.
   enableComponent<components::Inertial>(_ecm, this->dataPtr->link.Entity());
