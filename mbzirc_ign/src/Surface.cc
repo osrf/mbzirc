@@ -33,7 +33,6 @@
 
 #include "Surface.hh"
 #include "Wavefield.hh"
-#include "WavefieldEntity.hh"
 
 using namespace ignition;
 using namespace gazebo;
@@ -69,8 +68,8 @@ class ignition::gazebo::systems::SurfacePrivate
   public: ignition::math::Vector3d gravity;
 
   /// Waves.
-  /// \brief WavefieldEntity pointer.
-  public: std::unique_ptr<WavefieldEntity> wavefieldEntity;
+  /// \brief Wavefield pointer.
+  public: std::unique_ptr<Wavefield> wavefield;
 
   /// \brief Set the wavefield to be static [false].
   public: bool isStatic;
@@ -167,8 +166,8 @@ void Surface::Configure(const Entity &_entity,
   this->dataPtr->updateRate = _sdf->Get<bool>("update_rate", 30.0).first;
 
   // Wavefield
-  this->dataPtr->wavefieldEntity.reset(new WavefieldEntity());
-  this->dataPtr->wavefieldEntity->Load(_sdf);
+  this->dataPtr->wavefield.reset(new Wavefield());
+  this->dataPtr->wavefield->Load(_sdf);
 
   // // Generate the entity name and add as a child
   // this->data->wavefieldEntity->SetName(
@@ -242,14 +241,8 @@ void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
       X.Y() = (*kPose).Pos().Y() + bpntW.Y();
 
       // Compute the depth at the grid point.
-      // ToDo: Add wave height here.
       double simTime = std::chrono::duration<double>(_info.simTime).count();
-      auto waveParams = this->dataPtr->wavefieldEntity->Parameters();
-      double depth = 0;
-      if (waveParams)
-      {
-        depth = WavefieldSampler::ComputeDepthSimply(*waveParams, X, simTime);
-      }
+      double depth = this->dataPtr->wavefield->ComputeDepthSimply(X, simTime);
 
       // Vertical wave displacement.
       double dz = depth + X.Z();

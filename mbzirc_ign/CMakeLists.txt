@@ -30,14 +30,13 @@ configure_file(
 
 # Waves
 add_library(Waves SHARED
-    src/Wavefield.cc
-    src/WavefieldEntity.cc
+  src/Wavefield.cc
 )
 target_link_libraries(Waves PUBLIC
-    ignition-common${IGN_COMMON_VER}::ignition-common${IGN_COMMON_VER}
-    ignition-gazebo${IGN_GAZEBO_VER}::core
-    ignition-math${IGN_MATH_VER}
-    ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
+  ignition-common${IGN_COMMON_VER}::ignition-common${IGN_COMMON_VER}
+  ignition-gazebo${IGN_GAZEBO_VER}::core
+  ignition-math${IGN_MATH_VER}
+  ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
 )
 install(
   TARGETS Waves

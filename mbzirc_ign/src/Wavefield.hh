@@ -39,19 +39,21 @@ namespace gazebo
 inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
 namespace systems
 {
-  // WaveParameters
-  /// \brief Class to hold private data for WaveParameters.
-  class WaveParametersPrivate;
+  /// \brief Class to hold private data for Wavefield.
+  class WavefieldPrivate;
 
   /// \brief A class to manage the parameters for generating a wave
   /// in a wave field.
-  class WaveParameters
+  class Wavefield
   {
     /// \brief Constructor.
-    public: WaveParameters();
+    public: Wavefield();
 
     /// \brief Destructor.
-    public: virtual ~WaveParameters();
+    public: virtual ~Wavefield();
+
+    /// \brief Load.
+    public: void Load(const std::shared_ptr<const sdf::Element> &_sdf);
 
     /// \brief Set the parameters from an SDF Element tree.
     ///
@@ -175,48 +177,27 @@ namespace systems
     /// \brief Print a summary of the wave parameters to the gzmsg stream.
     public: void DebugPrint() const;
 
-    /// \internal
-    /// \brief Pointer to the class private data.
-    private: std::shared_ptr<WaveParametersPrivate> data;
-  };
-
-///////////////////////////////////////////////////////////////////////////////
-// WavefieldSampler
-
-  /// \brief A class to manage sampling depths from a wave field.
-  class WavefieldSampler
-  {
-    /// \brief Compute the depth at a point directly
-    /// (no sampling or interpolation).
-    ///
-    /// This method solves for (x, y) that when input into the
-    /// Gerstner wave function
-    /// gives the coordinates of the supplied parameter
-    /// _point (_point.x(), _point.y()),
-    /// and also computes the wave height pz at this point.
-    /// The depth h = pz - point.z().
-    /// This is a numerical method that uses a multi-variate
-    /// Newton solver to solve
-    /// the two dimensional non-linear system. In general it is not as fast as
-    /// sampling from a discretised wave field with an efficient
-    /// line intersection algorithm.
-    ///
-    /// \param[in] _waveParams  Gerstner wave parameters.
-    /// \param[in] _point       The point at which we want the depth.
-    /// \return                 The depth 'h' at the point.
-    public: static double ComputeDepthDirectly(
-      const WaveParameters& _waveParams,
-      const ignition::math::Vector3d& _point,
-      double time, double time_init = 0);
+    /// A simpler version of determining wave height at a point.
+    /// This method enforces that q (steepness) = 0 which allows us
+    /// to caculate the wave height exactly for a given 2D point without the
+    /// need to interatively solve for the position/height.
+    public: double ComputeDepthSimply(
+            const ignition::math::Vector3d& _point,
+            double time,
+            double time_init = 0);
 
     /// A simpler version of determining wave height at a point.
     /// This method enforces that q (steepness) = 0 which allows us
     /// to caculate the wave height exactly for a given 2D point without the
     /// need to interatively solve for the position/height.
-    public: static double ComputeDepthSimply(
-            const WaveParameters& _waveParams,
+    public: double ComputeDepthDirectly(
       const ignition::math::Vector3d& _point,
-            double time, double time_init = 0);
+      double time,
+      double time_init = 0);
+
+    /// \internal
+    /// \brief Pointer to the class private data.
+    private: std::unique_ptr<WavefieldPrivate> data;
   };
   }
 }

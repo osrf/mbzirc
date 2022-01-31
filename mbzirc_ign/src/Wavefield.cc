@@ -15,13 +15,12 @@
  *
 */
 
-#include <Eigen/Dense>
-
 #include <array>
 #include <cmath>
 #include <iostream>
 #include <string>
 
+#include <Eigen/Dense>
 #include <ignition/common/Console.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector2.hh>
@@ -43,14 +42,13 @@ std::ostream& operator<<(std::ostream& os, const std::vector<double>& _vec)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// WaveParametersPrivate
-
-/// \internal
 /// \brief Private data for the WavefieldParameters.
-class ignition::gazebo::systems::WaveParametersPrivate
+class ignition::gazebo::systems::WavefieldPrivate
 {
   /// \brief Constructor.
-  public: WaveParametersPrivate():
+  public: WavefieldPrivate():
+    size({1000, 1000}),
+    cellCount({50, 50}),
     model("PMS"),
     number(3),
     scale(2.5),
@@ -67,6 +65,13 @@ class ignition::gazebo::systems::WaveParametersPrivate
     gain(0.7)
   {
   }
+
+  /// \brief The size of the wavefield. Default value is [1000 1000].
+  public: ignition::math::Vector2d size{1000, 1000};
+
+  /// \brief The number of grid cells in the wavefield.
+  /// Default value is [50 50].
+  public: ignition::math::Vector2d cellCount{50, 50};
 
   /// \brief Name of wavefield model to use - must be "PMS" or "CWR"
   public: std::string model;
@@ -294,20 +299,39 @@ class ignition::gazebo::systems::WaveParametersPrivate
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// WaveParameters
-WaveParameters::WaveParameters()
-  : data(std::make_unique<WaveParametersPrivate>())
+Wavefield::Wavefield()
+  : data(std::make_unique<WavefieldPrivate>())
 {
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-WaveParameters::~WaveParameters()
+Wavefield::~Wavefield()
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetFromSDF(sdf::Element& _sdf)
+void Wavefield::Load(const std::shared_ptr<const sdf::Element> &_sdf)
+{
+  this->data->model = _sdf->Get<std::string>("model", "PMS").first;
+  this->data->number = _sdf->Get<double>("number", this->data->number).first;
+  this->data->amplitude = _sdf->Get<double>("amplitude",
+    this->data->amplitude).first;
+  this->data->period =  _sdf->Get<double>("period", this->data->period).first;
+  this->data->phase = _sdf->Get<double>("phase", this->data->phase).first;
+  this->data->direction = _sdf->Get<ignition::math::Vector2d>("direction",
+    this->data->direction).first;
+  this->data->scale = _sdf->Get<double>("scale", this->data->scale).first;
+  this->data->angle = _sdf->Get<double>("angle", this->data->angle).first;
+  this->data->steepness = _sdf->Get<double>("steepness",
+    this->data->steepness).first;
+  this->data->tau = _sdf->Get<double>("tau", this->data->tau).first;
+  this->data->gain = _sdf->Get<double>("gain", this->data->gain).first;
+  this->data->Recalculate();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Wavefield::SetFromSDF(sdf::Element& _sdf)
 {
   this->data->model = _sdf.Get<std::string>("model", "PMS").first;
   this->data->number = _sdf.Get<double>("number", this->data->number).first;
@@ -327,190 +351,190 @@ void WaveParameters::SetFromSDF(sdf::Element& _sdf)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-size_t WaveParameters::Number() const
+size_t Wavefield::Number() const
 {
   return this->data->number;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WaveParameters::Angle() const
+double Wavefield::Angle() const
 {
   return this->data->angle;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WaveParameters::Scale() const
+double Wavefield::Scale() const
 {
   return this->data->scale;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WaveParameters::Steepness() const
+double Wavefield::Steepness() const
 {
   return this->data->steepness;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WaveParameters::AngularFrequency() const
+double Wavefield::AngularFrequency() const
 {
   return this->data->angularFrequency;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WaveParameters::Amplitude() const
+double Wavefield::Amplitude() const
 {
   return this->data->amplitude;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WaveParameters::Period() const
+double Wavefield::Period() const
 {
   return this->data->period;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WaveParameters::Phase() const
+double Wavefield::Phase() const
 {
   return this->data->phase;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WaveParameters::Wavelength() const
+double Wavefield::Wavelength() const
 {
   return this->data->wavelength;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WaveParameters::Wavenumber() const
+double Wavefield::Wavenumber() const
 {
   return this->data->wavenumber;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-float WaveParameters::Tau() const
+float Wavefield::Tau() const
 {
   return this->data->tau;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-float WaveParameters::Gain() const
+float Wavefield::Gain() const
 {
   return this->data->gain;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-ignition::math::Vector2d WaveParameters::Direction() const
+ignition::math::Vector2d Wavefield::Direction() const
 {
   return this->data->direction;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetNumber(size_t _number)
+void Wavefield::SetNumber(size_t _number)
 {
   this->data->number = _number;
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetAngle(double _angle)
+void Wavefield::SetAngle(double _angle)
 {
   this->data->angle = _angle;
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetScale(double _scale)
+void Wavefield::SetScale(double _scale)
 {
   this->data->scale = _scale;
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetSteepness(double _steepness)
+void Wavefield::SetSteepness(double _steepness)
 {
   this->data->steepness = _steepness;
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetAmplitude(double _amplitude)
+void Wavefield::SetAmplitude(double _amplitude)
 {
   this->data->amplitude = _amplitude;
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetPeriod(double _period)
+void Wavefield::SetPeriod(double _period)
 {
   this->data->period = _period;
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetPhase(double _phase)
+void Wavefield::SetPhase(double _phase)
 {
   this->data->phase = _phase;
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetTau(double _tau)
+void Wavefield::SetTau(double _tau)
 {
   this->data->tau = _tau;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetGain(double _gain)
+void Wavefield::SetGain(double _gain)
 {
   this->data->gain = _gain;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::SetDirection(const ignition::math::Vector2d& _direction)
+void Wavefield::SetDirection(const ignition::math::Vector2d& _direction)
 {
   this->data->direction = _direction;
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& WaveParameters::AngularFrequency_V() const
+const std::vector<double>& Wavefield::AngularFrequency_V() const
 {
   return this->data->angularFrequencies;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& WaveParameters::Amplitude_V() const
+const std::vector<double>& Wavefield::Amplitude_V() const
 {
   return this->data->amplitudes;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& WaveParameters::Phase_V() const
+const std::vector<double>& Wavefield::Phase_V() const
 {
   return this->data->phases;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& WaveParameters::Steepness_V() const
+const std::vector<double>& Wavefield::Steepness_V() const
 {
   return this->data->steepnesses;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& WaveParameters::Wavenumber_V() const
+const std::vector<double>& Wavefield::Wavenumber_V() const
 {
   return this->data->wavenumbers;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 const std::vector<ignition::math::Vector2d>& \
-WaveParameters::Direction_V() const
+Wavefield::Direction_V() const
 {
   return this->data->directions;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void WaveParameters::DebugPrint() const
+void Wavefield::DebugPrint() const
 {
   ignmsg << "Input Parameters:" << std::endl;
   ignmsg << "model:     " << this->data->model << std::endl;
@@ -543,40 +567,32 @@ void WaveParameters::DebugPrint() const
   ignmsg << std::endl;
 }
 
-///////////////////////////////////////////////////////////////////////////
-// WavefieldSampler
 ///////////////////////////////////////////////////////////////////////////////
-double WavefieldSampler::ComputeDepthSimply(
-  const WaveParameters& _waveParams,
-  const ignition::math::Vector3d& _point,
-  double time,
-  double time_init /*=0*/
+double Wavefield::ComputeDepthSimply(const ignition::math::Vector3d& _point,
+  double time, double time_init /*=0*/
 )
 {
   double h = 0.0;
-  for (std::size_t ii = 0; ii < _waveParams.Number(); ++ii)
+  for (std::size_t i = 0; i < this->Number(); ++i)
   {
-    double k = _waveParams.Wavenumber_V()[ii];
-    double a = _waveParams.Amplitude_V()[ii];
-    double dx =  _waveParams.Direction_V()[ii].X();
-    double dy =  _waveParams.Direction_V()[ii].Y();
+    double k = this->Wavenumber_V()[i];
+    double a = this->Amplitude_V()[i];
+    double dx =  this->Direction_V()[i].X();
+    double dy =  this->Direction_V()[i].Y();
     double dot = _point.X()*dx + _point.Y()*dy;
-    double omega = _waveParams.AngularFrequency_V()[ii];
+    double omega = this->AngularFrequency_V()[i];
     double theta = k*dot - omega*time;
     double c = cos(theta);
     h += a*c;
   }
 
   // Exponentially grow the waves
-  return h*(1-exp(-1.0*(time-time_init)/_waveParams.Tau()));
+  return h*(1-exp(-1.0*(time-time_init)/this->Tau()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double WavefieldSampler::ComputeDepthDirectly(
-  const WaveParameters& _waveParams,
-  const ignition::math::Vector3d& _point,
-  double time,
-  double time_init)
+double Wavefield::ComputeDepthDirectly(const ignition::math::Vector3d& _point,
+  double time, double time_init)
 {
   // Struture for passing wave parameters to lambdas
   struct WaveParams
@@ -636,7 +652,7 @@ double WavefieldSampler::ComputeDepthDirectly(
       J(1, 1) += df2y;
     }
     // Exponentially grow the waves
-    return pz * (1-exp(-1.0*(time-time_init)/_waveParams.Tau()));
+    return pz * (1-exp(-1.0*(time-time_init)/this->Tau()));
   };
 
   // Simple multi-variate Newton solver -
@@ -665,12 +681,12 @@ double WavefieldSampler::ComputeDepthDirectly(
 
   // Set up parameter references
   WaveParams wp(
-    _waveParams.Amplitude_V(),
-    _waveParams.Wavenumber_V(),
-    _waveParams.AngularFrequency_V(),
-    _waveParams.Phase_V(),
-    _waveParams.Steepness_V(),
-    _waveParams.Direction_V());
+    this->Amplitude_V(),
+    this->Wavenumber_V(),
+    this->AngularFrequency_V(),
+    this->Phase_V(),
+    this->Steepness_V(),
+    this->Direction_V());
 
   // Tolerances etc.
   const double tol = 1.0E-10;
