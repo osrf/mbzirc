@@ -27,7 +27,6 @@
 #include <ignition/math/Vector2.hh>
 #include <ignition/math/Vector3.hh>
 
-#include "Utilities.hh"
 #include "Wavefield.hh"
 
 using namespace ignition;
@@ -65,7 +64,7 @@ class ignition::gazebo::systems::WaveParametersPrivate
     wavelength(2*M_PI/this->DeepWaterDispersionToWavenumber(2.0*M_PI)),
     wavenumber(this->DeepWaterDispersionToWavenumber(2.0*M_PI)),
     tau(2.0),
-    gain(1)
+    gain(0.7)
   {
   }
 
@@ -310,27 +309,20 @@ WaveParameters::~WaveParameters()
 ///////////////////////////////////////////////////////////////////////////////
 void WaveParameters::SetFromSDF(sdf::Element& _sdf)
 {
-  this->data->model = Utilities::SdfParamString(_sdf, "model", "default");
-  this->data->number = Utilities::SdfParamSizeT(_sdf, "number", \
-                                                this->data->number);
-  this->data->amplitude = Utilities::SdfParamDouble(_sdf, "amplitude", \
-                                                    this->data->amplitude);
-  this->data->period = Utilities::SdfParamDouble(_sdf, "period", \
-                                                 this->data->period);
-  this->data->phase = Utilities::SdfParamDouble(_sdf, "phase", \
-                                                this->data->phase);
-  this->data->direction = Utilities::SdfParamVector2(_sdf, "direction", \
-                                                     this->data->direction);
-  this->data->scale = Utilities::SdfParamDouble(_sdf, "scale", \
-                                                this->data->scale);
-  this->data->angle = Utilities::SdfParamDouble(_sdf, "angle", \
-                                                this->data->angle);
-  this->data->steepness = Utilities::SdfParamDouble(_sdf, "steepness", \
-                                                    this->data->steepness);
-  this->data->tau = Utilities::SdfParamDouble(_sdf, "tau", \
-                                              this->data->tau);
-  this->data->gain = Utilities::SdfParamDouble(_sdf, "gain", \
-                                               this->data->gain);
+  this->data->model = _sdf.Get<std::string>("model", "PMS").first;
+  this->data->number = _sdf.Get<double>("number", this->data->number).first;
+  this->data->amplitude = _sdf.Get<double>("amplitude",
+    this->data->amplitude).first;
+  this->data->period =  _sdf.Get<double>("period", this->data->period).first;
+  this->data->phase = _sdf.Get<double>("phase", this->data->phase).first;
+  this->data->direction = _sdf.Get<ignition::math::Vector2d>("direction",
+    this->data->direction).first;
+  this->data->scale = _sdf.Get<double>("scale", this->data->scale).first;
+  this->data->angle = _sdf.Get<double>("angle", this->data->angle).first;
+  this->data->steepness = _sdf.Get<double>("steepness",
+    this->data->steepness).first;
+  this->data->tau = _sdf.Get<double>("tau", this->data->tau).first;
+  this->data->gain = _sdf.Get<double>("gain", this->data->gain).first;
   this->data->Recalculate();
 }
 

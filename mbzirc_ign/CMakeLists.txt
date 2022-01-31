@@ -30,7 +30,6 @@ configure_file(
 
 # Waves
 add_library(Waves SHARED
-    src/Utilities.cc
     src/Wavefield.cc
     src/WavefieldEntity.cc
 )

@@ -22,7 +22,6 @@
 
 #include "WavefieldEntity.hh"
 #include "Wavefield.hh"
-#include "Utilities.hh"
 
 using namespace ignition;
 using namespace gazebo;
@@ -57,10 +56,10 @@ WavefieldEntity::WavefieldEntity()
 void WavefieldEntity::Load(const std::shared_ptr<const sdf::Element> &_sdf)
 {
   // Wavefield Parameters
-  // this->dataPtr->size = Utilities::SdfParamVector2(*_sdf, "size", \
-  //                                ignition::math::Vector2d(1000, 1000));
-  // this->dataPtr->cellCount = Utilities::SdfParamVector2(*_sdf, "cell_count", \
-  //                                ignition::math::Vector2d(50, 50));
+  // this->dataPtr->size = _sdf->Get<ignition::math::Vector2d>("size",
+  //   this->dataPtr->size).first;
+  // this->dataPtr->cellCount = _sdf->Get<ignition::math::Vector2d>("cell_count",
+  //   this->dataPtr->cellCount).first;
 
   // Wave Parameters
   ignmsg << "WavefieldEntity: Loading WaveParameters from SDF" <<  std::endl;
