@@ -15,7 +15,6 @@
  *
 */
 
-#include <array>
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -34,11 +33,11 @@ using namespace systems;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Utilities
-std::ostream& operator<<(std::ostream& os, const std::vector<double>& _vec)
+std::ostream& operator<<(std::ostream &_os, const std::vector<double> &_vec)
 {
   for (auto&& v : _vec ) // NOLINT
-    os << v << ", ";
-  return os;
+    _os << v << ", ";
+  return _os;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -59,19 +58,18 @@ class ignition::gazebo::systems::WavefieldPrivate
     phase(0.0),
     direction(1, 0),
     angularFrequency(2.0*M_PI),
-    wavelength(2*M_PI/this->DeepWaterDispersionToWavenumber(2.0*M_PI)),
-    wavenumber(this->DeepWaterDispersionToWavenumber(2.0*M_PI)),
+    wavelength(2 * M_PI / this->DeepWaterDispersionToWavenumber(2.0 * M_PI)),
+    wavenumber(this->DeepWaterDispersionToWavenumber(2.0 * M_PI)),
     tau(1.0),
     gain(1.0)
   {
   }
 
-  /// \brief The size of the wavefield. Default value is [1000 1000].
-  public: ignition::math::Vector2d size{1000, 1000};
+  /// \brief The size of the wavefield.
+  public: ignition::math::Vector2d size;
 
   /// \brief The number of grid cells in the wavefield.
-  /// Default value is [50 50].
-  public: ignition::math::Vector2d cellCount{50, 50};
+  public: ignition::math::Vector2d cellCount;
 
   /// \brief Name of wavefield model to use - must be "PMS" or "CWR"
   public: std::string model;
@@ -155,7 +153,7 @@ class ignition::gazebo::systems::WavefieldPrivate
 
     for (size_t i = 0; i < this->number; ++i)
     {
-      const int n = i - this->number/2;
+      const int n = i - this->number / 2;
       const double scaleFactor = std::pow(this->scale, n);
       const double a = scaleFactor * this->amplitude;
       const double k = this->wavenumber / scaleFactor;
@@ -176,11 +174,7 @@ class ignition::gazebo::systems::WavefieldPrivate
       // Direction
       const double c = std::cos(n * this->angle);
       const double s = std::sin(n * this->angle);
-      // const TransformMatrix T(
-      //   c, -s,
-      //   s,  c
-      // );
-      // const ignition::math::Vector2d d = T(this->direction);
+
       const ignition::math::Vector2d d(
         c * this->direction.X() - s * this->direction.Y(),
         s * this->direction.X() + c * this->direction.Y());
@@ -189,12 +183,12 @@ class ignition::gazebo::systems::WavefieldPrivate
   }
 
   // \brief Pierson-Moskowitz wave spectrum
-  public: double pm(double omega, double omega_p)
+  public: double pm(double _omega, double _omegaP)
   {
     double alpha = 0.0081;
     double g = 9.81;
-    return alpha*std::pow(g, 2.0)/std::pow(omega, 5.0)* \
-      std::exp(-(5.0/4.0)*std::pow(omega_p/omega, 4.0));
+    return alpha * std::pow(g, 2.0) / std::pow(_omega, 5.0) * \
+      std::exp(-(5.0 / 4.0) * std::pow(_omegaP / _omega, 4.0));
   }
 
   /// \brief Recalculate for Pierson-Moskowitz spectrum sampling model
@@ -218,19 +212,19 @@ class ignition::gazebo::systems::WavefieldPrivate
     this->directions.clear();
 
     // Vector for spaceing
-    std::vector<double> omega_spacing;
-    omega_spacing.push_back(this->angularFrequency*(1.0-1.0/this->scale));
-    omega_spacing.push_back(this->angularFrequency* \
-                            (this->scale-1.0/this->scale)/2.0);
-    omega_spacing.push_back(this->angularFrequency*(this->scale-1.0));
+    std::vector<double> omegaSpacing;
+    omegaSpacing.push_back(this->angularFrequency * (1.0 - 1.0 / this->scale));
+    omegaSpacing.push_back(this->angularFrequency * \
+                            (this->scale - 1.0 / this->scale) / 2.0);
+    omegaSpacing.push_back(this->angularFrequency * (this->scale - 1.0));
 
     for (size_t i = 0; i < this->number; ++i)
     {
       const int n = i - 1;
       const double scaleFactor = std::pow(this->scale, n);
-      const double omega = this->angularFrequency*scaleFactor;
+      const double omega = this->angularFrequency * scaleFactor;
       const double pms = pm(omega, this->angularFrequency);
-      const double a = this->gain*std::sqrt(2.0*pms*omega_spacing[i]);
+      const double a = this->gain * std::sqrt(2.0 * pms * omegaSpacing[i]);
       const double k = this->DeepWaterDispersionToWavenumber(omega);
       const double phi = this->phase;
       double q = 0.0;
@@ -248,11 +242,7 @@ class ignition::gazebo::systems::WavefieldPrivate
       // Direction
       const double c = std::cos(n * this->angle);
       const double s = std::sin(n * this->angle);
-      // const TransformMatrix T(
-      //   c, -s,
-      //   s,  c
-      // );
-      // const ignition::math::Vector2d d = T(this->direction);
+
       const ignition::math::Vector2d d(
         c * this->direction.X() - s * this->direction.Y(),
         s * this->direction.X() + c * this->direction.Y());
@@ -568,9 +558,8 @@ void Wavefield::DebugPrint() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double Wavefield::ComputeDepthSimply(const ignition::math::Vector3d& _point,
-  double time, double time_init /*=0*/
-)
+double Wavefield::ComputeDepthSimply(const ignition::math::Vector3d &_point,
+  double _time, double _timeInit)
 {
   double h = 0.0;
   for (std::size_t i = 0; i < this->Number(); ++i)
@@ -579,20 +568,20 @@ double Wavefield::ComputeDepthSimply(const ignition::math::Vector3d& _point,
     double a = this->Amplitude_V()[i];
     double dx =  this->Direction_V()[i].X();
     double dy =  this->Direction_V()[i].Y();
-    double dot = _point.X()*dx + _point.Y()*dy;
+    double dot = _point.X() * dx + _point.Y() * dy;
     double omega = this->AngularFrequency_V()[i];
-    double theta = k*dot - omega*time;
+    double theta = k * dot - omega * _time;
     double c = cos(theta);
     h += a*c;
   }
 
   // Exponentially grow the waves
-  return h*(1-exp(-1.0*(time-time_init)/this->Tau()));
+  return h * (1 - exp(-1.0 * (_time - _timeInit) / this->Tau()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-double Wavefield::ComputeDepthDirectly(const ignition::math::Vector3d& _point,
-  double time, double time_init)
+double Wavefield::ComputeDepthDirectly(const ignition::math::Vector3d &_point,
+  double _time, double _timeInit)
 {
   // Struture for passing wave parameters to lambdas
   struct WaveParams
@@ -652,7 +641,7 @@ double Wavefield::ComputeDepthDirectly(const ignition::math::Vector3d& _point,
       J(1, 1) += df2y;
     }
     // Exponentially grow the waves
-    return pz * (1-exp(-1.0*(time-time_init)/this->Tau()));
+    return pz * (1 - exp(-1.0 * (_time - _timeInit) / this->Tau()));
   };
 
   // Simple multi-variate Newton solver -
@@ -695,7 +684,7 @@ double Wavefield::ComputeDepthDirectly(const ignition::math::Vector3d& _point,
   // Use the target point as the initial guess
   // (this is within sum{amplitudes} of the solution)
   Eigen::Vector2d p2(_point.X(), _point.Y());
-  const double pz = solver(wave_fdf, p2, p2, time, wp, tol, nmax);
+  const double pz = solver(wave_fdf, p2, p2, _time, wp, tol, nmax);
   // Removed so that height is reported relative to mean water level
   // const double h = pz - _point.Z();
   const double h = pz;

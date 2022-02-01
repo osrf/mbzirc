@@ -546,6 +546,24 @@
     <vehicle_width>3.3</vehicle_width>
     <hull_radius>0.27</hull_radius>
     <fluid_level>-0.55</fluid_level>
+
+    <!-- Waves -->
+    <wavefield>
+      <size>1000 1000</size>
+      <cell_count>50 50</cell_count>
+      <wave>
+        <model>PMS</model>
+        <period>5</period>
+        <number>3</number>
+        <scale>1.5</scale>
+        <gain>0.1</gain>
+        <direction>1 0</direction>
+        <angle>0.4</angle>
+        <tau>2.0</tau>
+        <amplitude>0.0</amplitude>
+        <steepness>0.0</steepness>
+      </wave>
+    </wavefield>
   </plugin>
 
   <plugin
