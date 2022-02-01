@@ -303,7 +303,7 @@ def spawn_usv(context, model_path, model_name):
   model_file = os.path.join(
       get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
   model_output_file = os.path.join(
-      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.tmp..sdf')
+      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.tmp.sdf')
 
   print("spawning USV file: " + model_file)
 
