@@ -1,8 +1,16 @@
+<%
+if !defined?(name) || name== nil || name.empty?
+  $model_name = 'usv'
+else
+  $model_name = name
+end
+%>
+
 <?xml version="1.0"?>
 
 <sdf version='1.6'>
 <!-- Basic model of the 16' WAM-V USV -->
-<model name="wam-v">
+<model name="<%= $model_name%>">
   <static>false</static>
   <link name="base_link">
     <inertial>
@@ -263,7 +271,7 @@
     name="ignition::gazebo::systems::JointPositionController">
     <joint_name>left_chasis_engine_joint</joint_name>
     <use_velocity_commands>true</use_velocity_commands>
-    <topic>usv/left/thruster/joint/cmd_pos</topic>
+    <topic><%= $model_name%>/left/thruster/joint/cmd_pos</topic>
   </plugin>
 
   <plugin
@@ -281,7 +289,7 @@
     name="ignition::gazebo::systems::JointPositionController">
     <joint_name>right_chasis_engine_joint</joint_name>
     <use_velocity_commands>true</use_velocity_commands>
-    <topic>usv/right/thruster/joint/cmd_pos</topic>
+    <topic><%= $model_name%>/right/thruster/joint/cmd_pos</topic>
   </plugin>
 
   <plugin
