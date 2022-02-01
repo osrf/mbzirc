@@ -22,13 +22,15 @@ from launch import LaunchDescription
 
 from launch.actions import IncludeLaunchDescription
 from launch.actions import ExecuteProcess
+from launch.actions import RegisterEventHandler
 from launch.actions import TimerAction
+from launch.event_handlers import OnShutdown
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
 import launch_testing
 
-# launch simple_demo and spawn quadrotor and hexrotor UAVs
+# launch empty_platform and spawn quadrotor and hexrotor UAVs
 def generate_test_description():
 
     process_under_test = Node(
@@ -37,22 +39,25 @@ def generate_test_description():
         output='screen'
     )
 
-    # launch simple_demo world
-    gazebo = ExecuteProcess(
-        cmd=['ign gazebo --headless-rendering -v 4 --iterations 20000 -s -r simple_demo.sdf'],
-        output='screen',
-        shell=True
-    )
+    # launch empty_platform world
+    ign_args = '--headless-rendering -v 4 -s -r empty_platform.sdf'
+    arguments={'ign_args'  : ign_args}
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('ros_ign_gazebo'),
+                'launch/ign_gazebo.launch.py')
+        ),
+        launch_arguments=arguments.items())
 
-    display_test = os.getenv('DISPLAY_TEST')
     # spawn quadrotor
     arguments={'name'  : 'quadrotor',
-               'world' : 'simple_demo',
+               'world' : 'empty_platform',
                'model' : 'mbzirc_quadrotor',
                'type'  : 'uav',
                'z'     : '0.08',}
-    if display_test == '1':
-        arguments['slot0'] = 'mbzirc_hd_camera'
+    # add hd camera
+    arguments['slot0'] = 'mbzirc_hd_camera'
     spawn_quadrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -66,13 +71,13 @@ def generate_test_description():
 
     # spawn hexrotor
     arguments={'name'  : 'hexrotor',
-               'world' : 'simple_demo',
+               'world' : 'empty_platform',
                'model' : 'mbzirc_hexrotor',
                'type'  : 'uav',
                'x'     : '2',
                'z'     : '0.08',}
-    if display_test == '1':
-        arguments['slot0'] = 'mbzirc_rgbd_camera'
+    # add rgbd camera
+    arguments['slot0'] = 'mbzirc_rgbd_camera'
     spawn_hexrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -84,11 +89,29 @@ def generate_test_description():
             period=13.0,
             actions=[spawn_hexrotor])
 
+    # ros launch does not bring down the ign gazebo process so manually kill it
+    # \todo(anyone) figure out a proper way to terminate the ign gazebo process
+    pid = 'ps aux | grep -v grep | grep \'ign gazebo ' + ign_args + '\' | awk \'{print $2}\''
+    kill_gazebo = ExecuteProcess(
+        cmd=['kill `' + pid +'`'],
+        output='screen',
+        shell=True
+    )
+
+    kill_proc_handler = RegisterEventHandler(
+        OnShutdown(
+            on_shutdown=[
+               kill_gazebo
+            ]
+        )
+    )
+
     return LaunchDescription([
         gazebo,
         delay_launch_quadrotor,
         delay_launch_hexrotor,
         process_under_test,
+        kill_proc_handler,
         launch_testing.util.KeepAliveProc(),
         launch_testing.actions.ReadyToTest(),
     ]), locals()
@@ -96,10 +119,8 @@ def generate_test_description():
 
 class RosApiTest(unittest.TestCase):
 
-    def test_termination(self, process_under_test, gazebo, proc_info):
-        proc_info.assertWaitForShutdown(process=process_under_test, timeout=300)
-        proc_info.assertWaitForShutdown(process=gazebo, timeout=300)
-
+    def test_termination(self, process_under_test, proc_info):
+        proc_info.assertWaitForShutdown(process=process_under_test, timeout=200)
 
 @launch_testing.post_shutdown_test()
 class RosApiTestAfterShutdown(unittest.TestCase):
