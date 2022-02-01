@@ -22,7 +22,6 @@ jobs:
               mbzirc_sim /bin/bash -c \
                 'Xvfb :1 -ac -noreset -core -screen 0 1280x1024x24 & \
                  export DISPLAY=:1.0 && \
-                 export DISPLAY_TEST=1 && \
                  export RENDER_ENGINE_VALUES=ogre2 && \
                  source /home/$USERNAME/mbzirc_ws/install/setup.bash && \
                  colcon test --merge-install \
