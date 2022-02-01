@@ -50,15 +50,14 @@ def generate_test_description():
         ),
         launch_arguments=arguments.items())
 
-    display_test = os.getenv('DISPLAY_TEST')
     # spawn quadrotor
     arguments={'name'  : 'quadrotor',
                'world' : 'empty_platform',
                'model' : 'mbzirc_quadrotor',
                'type'  : 'uav',
                'z'     : '0.08',}
-    if display_test == '1':
-        arguments['slot0'] = 'mbzirc_hd_camera'
+    # add hd camera
+    arguments['slot0'] = 'mbzirc_hd_camera'
     spawn_quadrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -77,8 +76,8 @@ def generate_test_description():
                'type'  : 'uav',
                'x'     : '2',
                'z'     : '0.08',}
-    if display_test == '1':
-        arguments['slot0'] = 'mbzirc_rgbd_camera'
+    # add rgbd camera
+    arguments['slot0'] = 'mbzirc_rgbd_camera'
     spawn_hexrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
