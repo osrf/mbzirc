@@ -36,7 +36,6 @@ target_link_libraries(Waves PUBLIC
   ignition-common${IGN_COMMON_VER}::ignition-common${IGN_COMMON_VER}
   ignition-gazebo${IGN_GAZEBO_VER}::core
   ignition-math${IGN_MATH_VER}
-  ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
 )
 install(
   TARGETS Waves

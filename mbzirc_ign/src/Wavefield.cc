@@ -29,7 +29,6 @@
 
 using namespace ignition;
 using namespace gazebo;
-using namespace systems;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Utilities
@@ -42,7 +41,7 @@ std::ostream& operator<<(std::ostream &_os, const std::vector<double> &_vec)
 
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Private data for the WavefieldParameters.
-class ignition::gazebo::systems::WavefieldPrivate
+class ignition::gazebo::WavefieldPrivate
 {
   /// \brief Constructor.
   public: WavefieldPrivate():
@@ -606,7 +605,7 @@ double Wavefield::ComputeDepthDirectly(const ignition::math::Vector3d &_point,
   // Compute the target function and Jacobian. Also calculate pz,
   // the z-component of the Gerstner wave, which we essentially get for free.
   // cppcheck-suppress constParameter
-  auto wave_fdf = [=](auto x, auto p, auto t, auto& wp, auto& F, auto& J)
+  auto wave_fdf = [=](auto x, auto p, auto t, auto &wp, auto &F, auto &J)
   {
     double pz = 0;
     F(0) = p.x() - x.x();

@@ -32,8 +32,6 @@ namespace gazebo
 {
 // Inline bracket to help doxygen filtering.
 inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
-namespace systems
-{
   /// \brief Class to hold private data for Wavefield.
   class WavefieldPrivate;
 
@@ -274,7 +272,6 @@ namespace systems
     /// \brief Pointer to the class private data.
     private: std::unique_ptr<WavefieldPrivate> data;
   };
-  }
 }
 }
 }
