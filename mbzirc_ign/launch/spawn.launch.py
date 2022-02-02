@@ -301,14 +301,30 @@ def spawn_usv(context, model_path, model_name):
   y_rot = LaunchConfiguration('Y').perform(context)
 
   model_file = os.path.join(
-      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf')
+      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
+  model_output_file = os.path.join(
+      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.tmp.sdf')
+
   print("spawning USV file: " + model_file)
+
+  # run erb
+  command = ['erb']
+  command.append(f'name={model_name}')
+  command.append(model_file)
+
+  process = subprocess.Popen(command, stdout=subprocess.PIPE)
+  stdout = process.communicate()[0]
+  str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
+  f = open(model_output_file, 'w')
+  f.write(str_output)
+
+  print(command, str_output)
 
   ignition_spawn_entity = Node(
       package='ros_ign_gazebo',
       executable='create',
       output='screen',
-      arguments=['-file', model_file,
+      arguments=['-file', model_output_file,
                  '-name', model_name,
                  '-allow_renaming', 'false',
                  '-x', x_pos,
@@ -334,10 +350,14 @@ def spawn_usv(context, model_path, model_name):
   )
 
   # thrust joint pos cmd
+  # ROS naming policy indicates that first character of a name must be an alpha
+  # character. In the case below, the ign topic has the joint index 0 as the
+  # first char so the following topics fail to be created on the ROS end
   # left_joint_topic = '/model/' + model_name + '/joint/left_chasis_engine_joint/0/cmd_pos'
   # right_joint_topic = '/model/' + model_name + '/joint/right_chasis_engine_joint/0/cmd_pos'
-  left_joint_topic = '/usv/left/thruster/joint/cmd_pos'
-  right_joint_topic = '/usv/right/thruster/joint/cmd_pos'
+  # For now, use erb to generate unique topic names in model.sdf.erb
+  left_joint_topic = model_name + '/left/thruster/joint/cmd_pos'
+  right_joint_topic = model_name + '/right/thruster/joint/cmd_pos'
 
   ros2_ign_thrust_joint_bridge = Node(
       package='ros_ign_bridge',
