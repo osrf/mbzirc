@@ -8,37 +8,70 @@ end
 $slot0_payload = nil
 $slot0_rpy = '0 0 0'
 $slot1_payload = nil
-$slot1_rpy = '0 0 0' 
+$slot1_rpy = '0 0 0'
 $slot2_payload = nil
-$slot2_rpy = '0 0 0' 
+$slot2_rpy = '0 0 0'
 $slot3_payload = nil
 $slot3_rpy = '0 0 0'
+$slot4_payload = nil
+$slot4_rpy = '0 0 0'
+$slot5_payload = nil
+$slot5_rpy = '0 0 0'
+$slot6_payload = nil
+$slot6_rpy = '0 0 0'
+$slot7_payload = nil
+$slot7_rpy = '0 0 0'
 
-if defined?(slot0) 
+if defined?(slot0)
   $slot0_payload = slot0
 end
-if defined?(slot0_pos) 
+if defined?(slot0_pos)
   $slot0_rpy = slot0_pos
 end
 if defined?(slot1)
   $slot1_payload = slot1
 end
-if defined?(slot1_pos) 
+if defined?(slot1_pos)
   $slot1_rpy = slot1_pos
 end
 if defined?(slot2)
   $slot2_payload = slot2
 end
-if defined?(slot2_pos) 
+if defined?(slot2_pos)
   $slot2_rpy = slot2_pos
 end
 if defined?(slot3)
   $slot3_payload = slot3
 end
-if defined?(slot3_pos) 
+if defined?(slot3_pos)
   $slot3_rpy = slot3_pos
 end
+if defined?(slot4)
+  $slot4_payload = slot4
+end
+if defined?(slot4_pos)
+  $slot4_rpy = slot4_pos
+end
+if defined?(slot5)
+  $slot5_payload = slot5
+end
+if defined?(slot5_pos)
+  $slot5_rpy = slot5_pos
+end
+if defined?(slot6)
+  $slot6_payload = slot6
+end
+if defined?(slot6_pos)
+  $slot6_rpy = slot6_pos
+end
+if defined?(slot7)
+  $slot7_payload = slot7
+end
+if defined?(slot7_pos)
+  $slot7_rpy = slot7_pos
+end
 %>
+
 <?xml version="1.0"?>
 <sdf version='1.9'>
   <model name="<%= $model_name%>">
@@ -109,6 +142,70 @@ end
     <joint name="slot_3_joint" type="fixed">
       <parent>slot_3</parent>
       <child>sensor_3::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot4_payload != nil%>
+    <!-- Payload slot4 -->
+    <include>
+      <name>sensor_4</name>
+      <uri>model://sensors/<%= $slot4_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_4" degrees="true">
+        0 0 0 <%= $slot4_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_4_joint" type="fixed">
+      <parent>slot_4</parent>
+      <child>sensor_4::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot5_payload != nil%>
+    <!-- Payload slot5 -->
+    <include>
+      <name>sensor_5</name>
+      <uri>model://sensors/<%= $slot5_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_5" degrees="true">
+        0 0 0 <%= $slot5_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_5_joint" type="fixed">
+      <parent>slot_5</parent>
+      <child>sensor_5::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot6_payload != nil%>
+    <!-- Payload slot6 -->
+    <include>
+      <name>sensor_6</name>
+      <uri>model://sensors/<%= $slot6_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_6" degrees="true">
+        0 0 0 <%= $slot6_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_6_joint" type="fixed">
+      <parent>slot_6</parent>
+      <child>sensor_6::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot7_payload != nil%>
+    <!-- Payload slot7 -->
+    <include>
+      <name>sensor_7</name>
+      <uri>model://sensors/<%= $slot7_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_7" degrees="true">
+        0 0 0 <%= $slot7_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_7_joint" type="fixed">
+      <parent>slot_7</parent>
+      <child>sensor_7::mount_point</child>
     </joint>
     <% end %>
     <plugin filename="libignition-gazebo-pose-publisher-system.so"

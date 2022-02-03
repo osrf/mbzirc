@@ -47,11 +47,19 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   slot1_payload = LaunchConfiguration('slot1').perform(context)
   slot2_payload = LaunchConfiguration('slot2').perform(context)
   slot3_payload = LaunchConfiguration('slot3').perform(context)
+  slot4_payload = LaunchConfiguration('slot4').perform(context)
+  slot5_payload = LaunchConfiguration('slot5').perform(context)
+  slot6_payload = LaunchConfiguration('slot6').perform(context)
+  slot7_payload = LaunchConfiguration('slot7').perform(context)
 
   slot0_rpy = LaunchConfiguration('slot0_rpy').perform(context)
   slot1_rpy = LaunchConfiguration('slot1_rpy').perform(context)
   slot2_rpy = LaunchConfiguration('slot2_rpy').perform(context)
   slot3_rpy = LaunchConfiguration('slot3_rpy').perform(context)
+  slot4_rpy = LaunchConfiguration('slot4_rpy').perform(context)
+  slot5_rpy = LaunchConfiguration('slot5_rpy').perform(context)
+  slot6_rpy = LaunchConfiguration('slot6_rpy').perform(context)
+  slot7_rpy = LaunchConfiguration('slot7_rpy').perform(context)
 
   # calculate battery capacity from time
   # capacity (Ah) = flight time (in hours) * load (watts) / voltage
@@ -75,6 +83,14 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   if slot2_rpy: command.append(f'slot2_pos={slot2_rpy}')
   if slot3_payload: command.append(f'slot3={slot3_payload}')
   if slot3_rpy: command.append(f'slot3_pos={slot3_rpy}')
+  if slot4_payload: command.append(f'slot4={slot4_payload}')
+  if slot4_rpy: command.append(f'slot4_pos={slot4_rpy}')
+  if slot5_payload: command.append(f'slot5={slot5_payload}')
+  if slot5_rpy: command.append(f'slot5_pos={slot5_rpy}')
+  if slot6_payload: command.append(f'slot6={slot6_payload}')
+  if slot6_rpy: command.append(f'slot6_pos={slot6_rpy}')
+  if slot7_payload: command.append(f'slot7={slot7_payload}')
+  if slot7_rpy: command.append(f'slot7_pos={slot7_rpy}')
 
   command.append(model_file)
 
@@ -130,7 +146,8 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   )
 
   payloads = []
-  check = [slot0_payload, slot1_payload, slot2_payload, slot3_payload]
+  check = [slot0_payload, slot1_payload, slot2_payload, slot3_payload,
+           slot4_payload, slot5_payload, slot6_payload, slot7_payload]
 
   for idx in range(0, 4):
       payload = check[idx]
@@ -180,11 +197,13 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                   prefix + '/camera/image@sensor_msgs/msg/Image@ignition.msgs.Image',
                   prefix + '/camera/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo',
                   prefix + '/camera/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked',
+                  prefix + '/camera/depth_image@sensor_msgs/msg/Image@ignition.msgs.Image',
               ],
               remappings=[
                   (prefix + '/camera/image', f'slot{idx}/image_raw'),
                   (prefix + '/camera/points', f'slot{idx}/points'),
                   (prefix + '/camera/camera_info', f'slot{idx}/camera_info'),
+                  (prefix + '/camera/depth_image', f'slot{idx}/depth'),
               ]
           )
 
@@ -199,8 +218,18 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                          ]
           )
 
+          depth_image_optical_frame = Node(
+              package='mbzirc_ros',
+              executable='optical_frame_publisher',
+              arguments=['0'],
+              remappings=[('input/image',  f'slot{idx}/depth'),
+                          ('output/image', f'slot{idx}/optical/depth'),
+                         ]
+          )
+
           payloads.append(rgbd_pointcloud_bridge)
           payloads.append(image_optical_frame)
+          payloads.append(depth_image_optical_frame)
       else:
           print('Unknown payload: ', payload)
 
@@ -272,14 +301,30 @@ def spawn_usv(context, model_path, model_name):
   y_rot = LaunchConfiguration('Y').perform(context)
 
   model_file = os.path.join(
-      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf')
+      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
+  model_output_file = os.path.join(
+      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.tmp.sdf')
+
   print("spawning USV file: " + model_file)
+
+  # run erb
+  command = ['erb']
+  command.append(f'name={model_name}')
+  command.append(model_file)
+
+  process = subprocess.Popen(command, stdout=subprocess.PIPE)
+  stdout = process.communicate()[0]
+  str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
+  f = open(model_output_file, 'w')
+  f.write(str_output)
+
+  print(command, str_output)
 
   ignition_spawn_entity = Node(
       package='ros_ign_gazebo',
       executable='create',
       output='screen',
-      arguments=['-file', model_file,
+      arguments=['-file', model_output_file,
                  '-name', model_name,
                  '-allow_renaming', 'false',
                  '-x', x_pos,
@@ -305,10 +350,14 @@ def spawn_usv(context, model_path, model_name):
   )
 
   # thrust joint pos cmd
+  # ROS naming policy indicates that first character of a name must be an alpha
+  # character. In the case below, the ign topic has the joint index 0 as the
+  # first char so the following topics fail to be created on the ROS end
   # left_joint_topic = '/model/' + model_name + '/joint/left_chasis_engine_joint/0/cmd_pos'
   # right_joint_topic = '/model/' + model_name + '/joint/right_chasis_engine_joint/0/cmd_pos'
-  left_joint_topic = '/usv/left/thruster/joint/cmd_pos'
-  right_joint_topic = '/usv/right/thruster/joint/cmd_pos'
+  # For now, use erb to generate unique topic names in model.sdf.erb
+  left_joint_topic = model_name + '/left/thruster/joint/cmd_pos'
+  right_joint_topic = model_name + '/right/thruster/joint/cmd_pos'
 
   ros2_ign_thrust_joint_bridge = Node(
       package='ros_ign_bridge',
@@ -427,6 +476,38 @@ def generate_launch_description():
             description='Payload mounted to slot 3'),
         DeclareLaunchArgument(
             'slot3_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot4',
+            default_value='',
+            description='Payload mounted to slot 4'),
+        DeclareLaunchArgument(
+            'slot4_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot5',
+            default_value='',
+            description='Payload mounted to slot 5'),
+        DeclareLaunchArgument(
+            'slot5_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot6',
+            default_value='',
+            description='Payload mounted to slot 6'),
+        DeclareLaunchArgument(
+            'slot6_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'slot7',
+            default_value='',
+            description='Payload mounted to slot 7'),
+        DeclareLaunchArgument(
+            'slot7_rpy',
             default_value='0 0 0',
             description='Roll, Pitch, Yaw in degrees of payload mount'),
         # launch setup
