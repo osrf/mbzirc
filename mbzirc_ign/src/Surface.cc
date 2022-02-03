@@ -15,8 +15,10 @@
  *
  */
 #include <ignition/msgs/wrench.pb.h>
+#include <chrono>
 #include <string>
 #include <ignition/common/Profiler.hh>
+#include <ignition/common/Time.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector3.hh>
 #include <ignition/plugin/Register.hh>
@@ -30,6 +32,7 @@
 #include "ignition/gazebo/World.hh"
 
 #include "Surface.hh"
+#include "Wavefield.hh"
 
 using namespace ignition;
 using namespace gazebo;
@@ -63,6 +66,9 @@ class ignition::gazebo::systems::SurfacePrivate
 
   /// \brief The world's gravity [m/s^2].
   public: ignition::math::Vector3d gravity;
+
+  /// \brief The wavefield.
+  public: Wavefield wavefield;
 };
 
 
@@ -145,6 +151,9 @@ void Surface::Configure(const Entity &_entity,
   }
   this->dataPtr->gravity = *gravityOpt;
 
+  // Wavefield
+  this->dataPtr->wavefield.Load(_sdf);
+
   // Create necessary components if not present.
   enableComponent<components::Inertial>(_ecm, this->dataPtr->link.Entity());
   enableComponent<components::WorldPose>(_ecm, this->dataPtr->link.Entity());
@@ -161,7 +170,7 @@ void Surface::Configure(const Entity &_entity,
 }
 
 //////////////////////////////////////////////////
-void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &/*_info*/,
+void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
     ignition::gazebo::EntityComponentManager &_ecm)
 {
   IGN_PROFILE("Surface::PreUpdate");
@@ -207,16 +216,17 @@ void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &/*_info*/,
 
       // Find vertical displacement of wave field
       // World location of grid point
-      ignition::math::Vector3d X;
-      X.X() = (*kPose).Pos().X() + bpntW.X();
-      X.Y() = (*kPose).Pos().Y() + bpntW.Y();
+      ignition::math::Vector3d point;
+      point.X() = (*kPose).Pos().X() + bpntW.X();
+      point.Y() = (*kPose).Pos().Y() + bpntW.Y();
 
       // Compute the depth at the grid point.
-      // ToDo: Add wave height here.
-      double depth = 0;
+      double simTime = std::chrono::duration<double>(_info.simTime).count();
+      double depth =
+        this->dataPtr->wavefield.ComputeDepthSimply(point, simTime);
 
       // Vertical wave displacement.
-      double dz = depth + X.Z();
+      double dz = depth + point.Z();
 
       // Total z location of boat grid point relative to fluid surface
       double deltaZ = (this->dataPtr->fluidLevel + dz) - kDdz;

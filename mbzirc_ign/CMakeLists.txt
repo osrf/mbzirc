@@ -8,8 +8,10 @@ find_package(ignition-gazebo6 REQUIRED)
 set(IGN_GAZEBO_VER ${ignition-gazebo6_VERSION_MAJOR})
 
 find_package(ignition-common4 REQUIRED COMPONENTS graphics)
+set(IGN_COMMON_VER ${ignition-common4_VERSION_MAJOR})
 find_package(ignition-fuel_tools7 REQUIRED)
 find_package(ignition-math6 REQUIRED)
+set(IGN_MATH_VER ${ignition-math6_VERSION_MAJOR})
 find_package(ignition-msgs8 REQUIRED)
 find_package(ignition-transport11 REQUIRED)
 find_package(ignition-plugin1 REQUIRED COMPONENTS loader register)
@@ -25,6 +27,20 @@ configure_file(
 
 
 #============================================================================
+
+# Waves
+add_library(Waves SHARED
+  src/Wavefield.cc
+)
+target_link_libraries(Waves PUBLIC
+  ignition-common${IGN_COMMON_VER}::ignition-common${IGN_COMMON_VER}
+  ignition-gazebo${IGN_GAZEBO_VER}::core
+  ignition-math${IGN_MATH_VER}
+)
+install(
+  TARGETS Waves
+  DESTINATION lib)
+
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
   SimpleHydrodynamics
@@ -36,6 +52,7 @@ foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
   target_link_libraries(${PLUGIN} PUBLIC
      ignition-gazebo${IGN_GAZEBO_VER}::core
      ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
+     Waves
   )
 endforeach()
 
