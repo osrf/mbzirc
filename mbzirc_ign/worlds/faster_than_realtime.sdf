@@ -129,5 +129,15 @@
       </uri>
     </include>
 
+    <!-- The MBZIRC competition logic plugin -->
+    <plugin filename="libGameLogicPlugin.so"
+            name="mbzirc::GameLogicPlugin">
+      <run_duration_seconds>60</run_duration_seconds>
+      <setup_duration_seconds>30</setup_duration_seconds>
+      <logging>
+        <path>mbzirc_logs</path>
+      </logging>
+    </plugin>
+
   </world>
 </sdf>

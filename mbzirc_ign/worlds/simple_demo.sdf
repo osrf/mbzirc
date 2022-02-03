@@ -146,6 +146,14 @@
             </box>
           </geometry>
         </collision>
+        <collision name="ceiling">
+          <pose>0 0 146.42 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>5000 5000 1</size>
+            </box>
+          </geometry>
+        </collision>
       </link>
     </model>
 
@@ -161,5 +169,18 @@
       <pose>25 25 -1 0 0.0 -1.0</pose>
       <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel A</uri>
     </include>
+
+    <!-- The MBZIRC competition logic plugin -->
+    <plugin filename="libGameLogicPlugin.so"
+            name="mbzirc::GameLogicPlugin">
+      <run_duration_seconds>3600</run_duration_seconds>
+      <setup_duration_seconds>120</setup_duration_seconds>
+      <logging>
+        <!-- Use the <path> element to control where to record the log file.
+             The HOME path is used by default -->
+        <path>/tmp/ign/mbzirc/logs</path>
+      </logging>
+    </plugin>
+
   </world>
 </sdf>
