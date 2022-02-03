@@ -43,6 +43,7 @@ install(
 
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
+  GameLogicPlugin
   SimpleHydrodynamics
   Surface
 )
@@ -78,12 +79,12 @@ if(BUILD_TESTING)
   configure_file(test/helper/TestConstants.hh.in TestConstants.hh @ONLY)
 
   foreach(TEST_TARGET
-    test_spawn_uav_battery)
+    test_spawn_uav_battery test_game_logic)
     ament_add_gtest(
       ${TEST_TARGET}
       test/${TEST_TARGET}.cc
     )
-    target_include_directories(${TEST_TARGET} 
+    target_include_directories(${TEST_TARGET}
       PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto )
     target_link_libraries(${TEST_TARGET} ignition-gazebo6::ignition-gazebo6)
     set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
