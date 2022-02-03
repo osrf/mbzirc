@@ -67,11 +67,8 @@ class ignition::gazebo::systems::SurfacePrivate
   /// \brief The world's gravity [m/s^2].
   public: ignition::math::Vector3d gravity;
 
-  /// \brief Wavefield pointer.
-  public: std::unique_ptr<Wavefield> wavefield;
-
-  /// \brief Previous update time.
-  public: std::chrono::steady_clock::duration prevTime;
+  /// \brief The wavefield.
+  public: Wavefield wavefield;
 };
 
 
@@ -155,8 +152,7 @@ void Surface::Configure(const Entity &_entity,
   this->dataPtr->gravity = *gravityOpt;
 
   // Wavefield
-  this->dataPtr->wavefield.reset(new Wavefield());
-  this->dataPtr->wavefield->Load(_sdf);
+  this->dataPtr->wavefield.Load(_sdf);
 
   // Create necessary components if not present.
   enableComponent<components::Inertial>(_ecm, this->dataPtr->link.Entity());
@@ -220,16 +216,17 @@ void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
 
       // Find vertical displacement of wave field
       // World location of grid point
-      ignition::math::Vector3d X;
-      X.X() = (*kPose).Pos().X() + bpntW.X();
-      X.Y() = (*kPose).Pos().Y() + bpntW.Y();
+      ignition::math::Vector3d point;
+      point.X() = (*kPose).Pos().X() + bpntW.X();
+      point.Y() = (*kPose).Pos().Y() + bpntW.Y();
 
       // Compute the depth at the grid point.
       double simTime = std::chrono::duration<double>(_info.simTime).count();
-      double depth = this->dataPtr->wavefield->ComputeDepthSimply(X, simTime);
+      double depth =
+        this->dataPtr->wavefield.ComputeDepthSimply(point, simTime);
 
       // Vertical wave displacement.
-      double dz = depth + X.Z();
+      double dz = depth + point.Z();
 
       // Total z location of boat grid point relative to fluid surface
       double deltaZ = (this->dataPtr->fluidLevel + dz) - kDdz;

@@ -63,7 +63,8 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
   ///   1 being steepest.
   ///
   /// * `<amplitude>` (double, default: 0.0)
-  ///   The amplitude of the mean wave in [m].
+  ///   The amplitude of the mean wave in [m]. This parameter is only used when
+  ///   model is CWR.
   ///
   /// * `<period>` (double, default: 1.0)
   ///   The period of the mean wave in [s].
@@ -211,22 +212,22 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     public: void SetDirection(const ignition::math::Vector2d &_direction);
 
     /// \brief Access the component angular frequencies.
-    public: const std::vector<double>& AngularFrequency_V() const;
+    public: const std::vector<double> &AngularFrequency_V() const;
 
     /// \brief Access the component amplitudes.
-    public: const std::vector<double>& Amplitude_V() const;
+    public: const std::vector<double> &Amplitude_V() const;
 
     /// \brief Access the component phases.
-    public: const std::vector<double>& Phase_V() const;
+    public: const std::vector<double> &Phase_V() const;
 
     /// \brief Access the steepness components.
-    public: const std::vector<double>& Steepness_V() const;
+    public: const std::vector<double> &Steepness_V() const;
 
     /// \brief Access the component wavenumbers.
-    public: const std::vector<double>& Wavenumber_V() const;
+    public: const std::vector<double> &Wavenumber_V() const;
 
     /// \brief Access the component directions.
-    public: const std::vector<ignition::math::Vector2d>& Direction_V() const;
+    public: const std::vector<ignition::math::Vector2d> &Direction_V() const;
 
     /// \brief Print a summary of the wave parameters to the gzmsg stream.
     public: void DebugPrint() const;

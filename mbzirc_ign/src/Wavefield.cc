@@ -131,7 +131,7 @@ class ignition::gazebo::WavefieldPrivate
   public: std::vector<ignition::math::Vector2d> directions;
 
   /// \brief Recalculate for constant wavelength-amplitude ratio
-  public: void RecalculateCmr()
+  public: void RecalculateCwr()
   {
     // Normalize direction
     this->direction.Normalize();
@@ -159,7 +159,7 @@ class ignition::gazebo::WavefieldPrivate
       const double omega = this->DeepWaterDispersionToOmega(k);
       const double phi = this->phase;
       double q = 0.0;
-      if (a != 0)
+      if (!ignition::math::equal(a, 0.0))
       {
         q = std::min(1.0, this->steepness / (a * k * this->number));
       }
@@ -227,7 +227,7 @@ class ignition::gazebo::WavefieldPrivate
       const double k = this->DeepWaterDispersionToWavenumber(omega);
       const double phi = this->phase;
       double q = 0.0;
-      if (a != 0)
+      if (!ignition::math::equal(a, 0.0))
       {
         q = std::min(1.0, this->steepness / (a * k * this->number));
       }
@@ -262,7 +262,7 @@ class ignition::gazebo::WavefieldPrivate
     {
       ignmsg << "Using Constant wavelength-ampltude ratio wavefield model "
             << std::endl;
-      this->RecalculateCmr();
+      this->RecalculateCwr();
     }
     else
     {
@@ -479,45 +479,44 @@ void Wavefield::SetGain(double _gain)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void Wavefield::SetDirection(const ignition::math::Vector2d& _direction)
+void Wavefield::SetDirection(const ignition::math::Vector2d &_direction)
 {
   this->data->direction = _direction;
   this->data->Recalculate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& Wavefield::AngularFrequency_V() const
+const std::vector<double> &Wavefield::AngularFrequency_V() const
 {
   return this->data->angularFrequencies;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& Wavefield::Amplitude_V() const
+const std::vector<double> &Wavefield::Amplitude_V() const
 {
   return this->data->amplitudes;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& Wavefield::Phase_V() const
+const std::vector<double> &Wavefield::Phase_V() const
 {
   return this->data->phases;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& Wavefield::Steepness_V() const
+const std::vector<double> &Wavefield::Steepness_V() const
 {
   return this->data->steepnesses;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<double>& Wavefield::Wavenumber_V() const
+const std::vector<double> &Wavefield::Wavenumber_V() const
 {
   return this->data->wavenumbers;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const std::vector<ignition::math::Vector2d>& \
-Wavefield::Direction_V() const
+const std::vector<ignition::math::Vector2d> &Wavefield::Direction_V() const
 {
   return this->data->directions;
 }
