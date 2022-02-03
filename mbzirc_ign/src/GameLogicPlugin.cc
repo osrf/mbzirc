@@ -115,7 +115,10 @@ class mbzirc::GameLogicPluginPrivate
   public: ignition::msgs::Time startSimTime;
 
   /// \brief Number of simulation seconds allowed.
-  public: std::chrono::seconds runDuration{0};
+  public: std::chrono::seconds runDuration{3600};
+
+  /// \brief Thread on which scores are published
+  public: std::unique_ptr<std::thread> scoreThread = nullptr;
 
   /// \brief Thread on which scores are published
   /// \brief Whether the task has started.
@@ -127,7 +130,7 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Start time used for scoring.
   public: std::chrono::steady_clock::time_point startTime;
 
-  /// \brief A mutex.
+  /// \brief Mutex to protect log stream.
   public: std::mutex logMutex;
 
   /// \brief Log file output stream.
@@ -138,6 +141,9 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Mutex to protect the eventStream.
   public: std::mutex eventMutex;
+
+  /// \brief Mutex to protect total score.
+  public: std::mutex scoreMutex;
 
   /// \brief Ignition transport competition clock publisher.
   public: transport::Node::Publisher competitionClockPub;
@@ -164,7 +170,7 @@ class mbzirc::GameLogicPluginPrivate
   public: std::set<std::string> deadBatteries;
 
   /// \brief Amount of allowed setup time in seconds.
-  public: int setupTimeSec = 900;
+  public: int setupTimeSec = 600;
 
   /// \brief Mutex to protect the eventCounter.
   public: std::mutex eventCounterMutex;
@@ -173,7 +179,7 @@ class mbzirc::GameLogicPluginPrivate
   public: int eventCounter = 0;
 
   /// \brief Total score.
-  public: double totalScore = 0.0;
+  public: double totalScore = IGN_DBL_INF;
 };
 
 //////////////////////////////////////////////////
@@ -189,6 +195,9 @@ GameLogicPlugin::~GameLogicPlugin()
   // pause sim
   this->dataPtr->eventManager = nullptr;
   this->dataPtr->Finish(this->dataPtr->simTime);
+
+  if (this->dataPtr->scoreThread)
+    this->dataPtr->scoreThread->join();
 }
 
 //////////////////////////////////////////////////
@@ -247,7 +256,7 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
       (common::joinPaths(this->dataPtr->logPath, "events.yml")).c_str(),
       std::ios::out);
 
-  // Get the duration seconds.
+  // Get the run duration seconds.
   if (_sdf->HasElement("run_duration_seconds"))
   {
     this->dataPtr->runDuration = std::chrono::seconds(
@@ -257,7 +266,7 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
            << " seconds.\n";
   }
 
-  // Get the duration seconds.
+  // Get the setup duration seconds.
   if (_sdf->HasElement("setup_duration_seconds"))
   {
     this->dataPtr->setupTimeSec = std::chrono::seconds(
@@ -273,8 +282,12 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
   this->dataPtr->node.Advertise("/mbzirc/finish",
       &GameLogicPluginPrivate::OnFinishCall, this->dataPtr.get());
 
+  this->dataPtr->scoreThread.reset(new std::thread(
+        &GameLogicPluginPrivate::PublishScore, this->dataPtr.get()));
+
   this->dataPtr->competitionClockPub =
     this->dataPtr->node.Advertise<ignition::msgs::Clock>("/mbzirc/run_clock");
+
 
   ignmsg << "Starting MBZIRC" << std::endl;
 
@@ -464,7 +477,10 @@ void GameLogicPluginPrivate::PublishScore()
 
   while (!this->finished)
   {
-    msg.set_data(this->totalScore);
+    {
+      std::lock_guard<std::mutex> lock(this->scoreMutex);
+      msg.set_data(this->totalScore);
+    }
 
     scorePub.Publish(msg);
     IGN_SLEEP_S(1);
@@ -561,6 +577,13 @@ void GameLogicPluginPrivate::Finish(const ignition::msgs::Time &_simTime)
 
   if (this->started)
   {
+
+    double score = 0.0;
+    {
+      std::lock_guard<std::mutex> lock(this->scoreMutex);
+      score = this->totalScore;
+    }
+
     realElapsed = std::chrono::duration_cast<std::chrono::seconds>(
         currTime - this->startTime).count();
 
@@ -574,7 +597,7 @@ void GameLogicPluginPrivate::Finish(const ignition::msgs::Time &_simTime)
       << " s." << std::endl;
     this->Log(_simTime) << "finished_elapsed_sim_time " << simElapsed
       << " s." << std::endl;
-    this->Log(_simTime) << "finished_score " << this->totalScore << std::endl;
+    this->Log(_simTime) << "finished_score " << score << std::endl;
     this->logStream.flush();
 
     {
@@ -587,7 +610,7 @@ void GameLogicPluginPrivate::Finish(const ignition::msgs::Time &_simTime)
         << "  time_sec: " << _simTime.sec() << "\n"
         << "  elapsed_real_time: " << realElapsed << "\n"
         << "  elapsed_sim_time: " << simElapsed << "\n"
-        << "  total_score: " << this->totalScore << std::endl;
+        << "  total_score: " << score << std::endl;
       this->LogEvent(stream.str());
       this->eventCounter++;
     }
@@ -625,9 +648,12 @@ std::chrono::steady_clock::time_point GameLogicPluginPrivate::UpdateScoreFiles(
   summary.flush();
 
   // Output a score file with just the final score
-  std::ofstream score(this->logPath + "/score.yml", std::ios::out);
-  score << totalScore << std::endl;
-  score.flush();
+  std::ofstream scoreFile(this->logPath + "/score.yml", std::ios::out);
+  {
+    std::lock_guard<std::mutex> lock(this->scoreMutex);
+    scoreFile << this->totalScore << std::endl;
+  }
+  scoreFile.flush();
 
   this->lastUpdateScoresTime = currTime;
   return currTime;
