@@ -41,7 +41,7 @@ TEST_F(MBZIRCTestFixture, SpawnUAVTest)
 
   bool spawnedSuccessfully = false;
 
-  SetMaxIter(1000);
+  SetMaxIter(10000);
 
   LoadWorld("faster_than_realtime.sdf");
 
@@ -121,7 +121,7 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
     };
   node.Subscribe("/model/quadrotor/battery/linear_battery/state", batteryCb);
 
-  SetMaxIter(1000);
+  SetMaxIter(10000);
 
   LoadWorld("faster_than_realtime.sdf");
 
