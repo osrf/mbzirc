@@ -21,7 +21,6 @@
 #include <list>
 #include <chrono>
 #include <mutex>
-#include <vector>
 #include <string>
 
 #include <ignition/common/Profiler.hh>
@@ -230,6 +229,7 @@ void WaveVisualPrivate::OnUpdate()
   if (!this->material)
     return;
 
+  // params that only need to be set once
   if (!this->paramsSet)
   {
     auto vsParams = this->material->VertexShaderParams();
@@ -319,6 +319,8 @@ void WaveVisualPrivate::OnUpdate()
     (*fsParams)["deepColor"].InitializeBuffer(4);
     (*fsParams)["deepColor"].UpdateBuffer(deepColor);
 
+    // \todo(anyone) find a more generic way of getting path to the textures
+    // than using hard coded material paths
     std::string bumpMapPath = common::findFile(
         asFullPath("materials/textures/wave_normals.dds",
         this->modelPath));

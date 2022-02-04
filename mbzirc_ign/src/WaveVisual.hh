@@ -38,35 +38,10 @@ namespace systems
   /// Plugin parameters:
   ///
   /// <shader>
-  ///   <vertex>   Path to vertex program
-  ///   <fragment> Path to fragment program
-  /// <param>      Shader parameter - can be repeated within plugin SDF element
-  ///   <name>     Name of uniform variable bound to the shader
-  ///   <shader>   Type of shader, i.e. vertex, fragment
-  ///   <type>     Variable type: float, int, float_array, int_array
-  ///   <value>    Value to set the shader parameter to. The vallue string can
-  ///              be an int, float, or a space delimited array of ints or
-  ///              floats. It can also be 'TIME', in which case the value will
-  ///              be bound to sim time.
+  ///   <vertex>   Path to wave vertex program
+  ///   <fragment> Path to wave fragment program
+  /// <wavefield>  Wavefield parameters - see Wavefield.hh
   ///
-  /// Example usage:
-  ///
-  /// \verbatim
-  ///     <plugin filename="ignition-gazebo-wave-visual-system"
-  ///             name="ignition::gazebo::systems::WaveVisual">
-  ///        <shader>
-  ///          <vertex>materials/my_vs.glsl</vertex>
-  ///          <fragment>materials/my_fs.glsl</fragment>
-  ///        </shader>
-  ///        <!-- Sets a fragment shader variable named "ambient" to red -->
-  ///        <param>
-  ///          <name>ambient</name>
-  ///          <shader>fragment</shader>
-  ///          <type>float_array</type>
-  ///          <value>1.0 0.0 0.0 1.0</value>
-  ///        </param>
-  ///    </plugin>
-  /// \endverbatim
   class WaveVisual
       : public System,
         public ISystemConfigure,
