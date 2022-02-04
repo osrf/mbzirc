@@ -234,6 +234,8 @@ void WaveVisualPrivate::OnUpdate()
   {
     auto vsParams = this->material->VertexShaderParams();
 
+    (*vsParams)["worldviewproj_matrix"] = 1;
+
     (*vsParams)["Nwaves"] = static_cast<int>(this->wavefield.Number());
     (*vsParams)["rescale"] = 0.5f;
 
