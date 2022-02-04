@@ -4,6 +4,11 @@ if !defined?(name) || name== nil || name.empty?
 else
   $model_name = name
 end
+  x_uu = 72.4 # Hydrodynamic quadratic coefficient
+  x_u = 51.3 # Hydrodynamic linear coefficient
+  max_velocity_knots = 8 # Maximum velocity in knots. Taken from the USV specification.
+  max_velocity_mps = max_velocity_knots * 0.5144 # convert knots to m/s
+  max_total_thrust = (x_u + x_uu * max_velocity_mps) * max_velocity_mps
 %>
 <?xml version="1.0"?>
 
@@ -515,6 +520,7 @@ end
     <fluid_density>1000</fluid_density>
     <propeller_diameter>0.2</propeller_diameter>
     <velocity_control>true</velocity_control>
+    <max_thrust_cmd><%= max_total_thrust/2 %></max_thrust_cmd>
   </plugin>
 
   <plugin
@@ -533,6 +539,7 @@ end
     <fluid_density>1000</fluid_density>
     <propeller_diameter>0.2</propeller_diameter>
     <velocity_control>true</velocity_control>
+    <max_thrust_cmd><%= max_total_thrust/2 %><</max_thrust_cmd>
   </plugin>
 
   <plugin
@@ -580,8 +587,8 @@ end
     <yDotV>0.0</yDotV>
     <nDotR>0.0</nDotR>
     <!-- Linear and quadratic drag -->
-    <xU>51.3</xU>
-    <xUU>72.4</xUU>
+    <xU><%=x_u%></xU>
+    <xUU><%=x_uu%></xUU>
     <yV>40.0</yV>
     <yVV>0.0</yVV>
     <zW>500.0</zW>
