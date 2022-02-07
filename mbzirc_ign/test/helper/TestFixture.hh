@@ -109,6 +109,22 @@ class MBZIRCTestFixture : public ::testing::Test
       });
   }
 
+    /// \brief Sets the OnPostupdate condition to be checked.
+  /// \param[in] func - the callback function to be run every step.
+  public: void OnPreUpdate(
+    std::function<void(
+      const ignition::gazebo::UpdateInfo &,
+      ignition::gazebo::EntityComponentManager &)> func)
+  {
+    this->preUpdateFunc = func;
+    this->fixture->OnPreUpdate(
+      [&](const ignition::gazebo::UpdateInfo &_info,
+      ignition::gazebo::EntityComponentManager &_ecm)
+      {
+        this->preUpdateFunc(_info, _ecm);
+      });
+  }
+
   /// \brief Start the simulation in a background thread and run up to maxIter
   /// steps.
   public: void StartSim()
@@ -195,6 +211,11 @@ class MBZIRCTestFixture : public ::testing::Test
   private: std::function<void(
       const ignition::gazebo::UpdateInfo &,
       const ignition::gazebo::EntityComponentManager &)> postUpdateFunc;
+
+  /// \brief Callback function for PreUpdate
+  private: std::function<void(
+      const ignition::gazebo::UpdateInfo &,
+      ignition::gazebo::EntityComponentManager &)> preUpdateFunc;
 };
 
 #endif
