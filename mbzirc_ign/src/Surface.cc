@@ -175,6 +175,9 @@ void Surface::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
 {
   IGN_PROFILE("Surface::PreUpdate");
 
+  if (_info.paused)
+    return;
+
   // Vehicle frame transform
   const auto kPose = this->dataPtr->link.WorldPose(_ecm);
   // std::optional<ignition::math::Pose3d> kPose;

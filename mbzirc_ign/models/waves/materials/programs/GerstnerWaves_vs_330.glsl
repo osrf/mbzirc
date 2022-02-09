@@ -38,12 +38,13 @@
 
 in vec4 vertex;
 in vec4 uv0;
+
+// worldviewproj_matrix is a predefined constant
 uniform mat4 worldviewproj_matrix;
 
 /////////// Input parameters //////////
 // Waves
 uniform int Nwaves;
-uniform vec3 camera_position_object_space;
 uniform float rescale;
 uniform vec2 bumpScale;
 uniform vec2 bumpSpeed;
@@ -56,6 +57,8 @@ uniform vec2 dir0;
 uniform vec2 dir1;
 uniform vec2 dir2;
 uniform float tau;
+// camera_position_object_space is a predefined constant
+uniform vec3 camera_position_object_space;
 
 /////////// Output variables to fragment shader //////////
 out block
@@ -139,7 +142,6 @@ void main()
   outVs.rotMatrix = mat3(B, T, N);
 
   gl_Position = worldviewproj_matrix * P;
-  // gl_Position = worldviewproj_matrix * vertex;
 
   // Compute texture coordinates for bump map
   outVs.bumpCoord = uv0.xy*bumpScale + t*bumpSpeed;
