@@ -101,7 +101,7 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
   });
 
   double maxVel{0};
-  double prevVel{0}, currVel{0};
+  double currVel{0};
 
   OnPostupdate([&](const ignition::gazebo::UpdateInfo &_info,
           const ignition::gazebo::EntityComponentManager &_ecm)
@@ -149,7 +149,6 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
     }
 
     maxVel = std::max(maxVel, linearVel->X());
-    prevVel = currVel;
     currVel = linearVel->X();
   });
 
@@ -166,7 +165,7 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
 
   ASSERT_TRUE(spawnedSuccessfully) << "USV not spawned";
   ASSERT_TRUE(startedSuccessfully) << "Model did not start moving";
-  ASSERT_NEAR(currVel,  8 * 0.5144, 1e-2) << "final velocity exceeds 8 knots";
-  ASSERT_LE(prevVel, currVel) << "Hydrodynamics is not being damped";
+  /// wide tolerance thanks to surface plugin
+  ASSERT_NEAR(currVel,  8 * 0.5144, 1e-1) << "final velocity exceeds 8 knots";
   ASSERT_LE(maxVel, 5) << "Model is moving too fast";
 }
