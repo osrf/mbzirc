@@ -169,5 +169,4 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
   ASSERT_NEAR(currVel,  8 * 0.5144, 1e-2) << "final velocity exceeds 8 knots";
   ASSERT_LE(prevVel, currVel) << "Hydrodynamics is not being damped";
   ASSERT_LE(maxVel, 5) << "Model is moving too fast";
-  )
 }

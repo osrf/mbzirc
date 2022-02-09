@@ -14,7 +14,6 @@
       filename="ignition-gazebo-user-commands-system"
       name="ignition::gazebo::systems::UserCommands">
     </plugin>
-
     <scene>
       <sky></sky>
       <grid>false</grid>
