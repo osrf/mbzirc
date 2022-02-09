@@ -88,10 +88,23 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
       }
       auto linkVal = ignition::gazebo::Link(linkEntity);
       linkVal.EnableVelocityChecks(_ecm);
-      linkVal.SetLinearVelocity(_ecm, ignition::math::Vector3d(4, 0, 0));
+      /// 50000N / 500 kg = 100ms^-2
+      /// 100ms^-2 * 0.02s = 2m/s
+      ///linkVal.AddWorldForce(_ecm, ignition::math::Vector3d(50000, 0, 0));
       initialVelocitySet = true;
     }
+
+    /// Publish an arbitrarily large thrust to the thrusters, it should be
+    /// clamped down to a certain thrust
+    ignition::msgs::Double thrust;
+    thrust.set_data(1000000);
+
+    thruster_pub1.Publish(thrust);
+    thruster_pub2.Publish(thrust);
   });
+
+  double maxVel{0};
+  double prevVel{0}, currVel{0};
 
   OnPostupdate([&](const ignition::gazebo::UpdateInfo &_info,
           const ignition::gazebo::EntityComponentManager &_ecm)
@@ -113,14 +126,6 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
       return;
     }
 
-    /// Publish an arbitrarily large thrust to the thrusters, it should be
-    /// clamped down to a certain thrust
-    ignition::msgs::Double thrust;
-    thrust.set_data(1000000);
-
-    thruster_pub1.Publish(thrust);
-    thruster_pub2.Publish(thrust);
-
     /// Try to get the model speed
     auto modelVal = ignition::gazebo::Model(modelEntity);
     auto linkEntity = modelVal.LinkByName(_ecm, "base_link");
@@ -140,10 +145,10 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
       return;
     }
 
-    if (linearVel->Length() >0)
-    igndbg << linearVel.value().X() << " "
-           << linearVel.value().Y() << " "
-           << linearVel.value().Z() << std::endl;
+    //if (linearVel->Length() >0)
+    //igndbg << linearVel.value().X() << " "
+    //       << linearVel.value().Y() << " "
+    //       << linearVel.value().Z() << std::endl;
 
     /// Check that the model is moving
     if (linearVel->X() > 0.5)
@@ -152,8 +157,11 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
     }
 
     /// Make sure that the model is moving forward at less than 8 knots
-    ///ASSERT_TRUE(linearVel->X() < 8 * 0.5144)
-    ///  << "Model is moving too fast " << linearVel->X() << "m/s\n";
+    //ASSERT_TRUE(linearVel->X() <= 8 * 0.5144 + 1e-3)
+    //  << "Model is moving too fast " << linearVel->X() << "m/s\n";
+    maxVel = std::max(maxVel, linearVel->X());
+    prevVel = currVel;
+    currVel = linearVel->X();
   });
 
   StartSim();
@@ -167,6 +175,8 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
 
   StopLaunchFile(launchHandle);
 
-  ASSERT_TRUE(spawnedSuccessfully);
-  //ASSERT_TRUE(startedSuccessfully);
+  ASSERT_TRUE(spawnedSuccessfully) << "USV not spawned";
+  ASSERT_TRUE(startedSuccessfully) << "Model did not start moving";
+  ASSERT_NEAR(maxVel,  8 * 0.5144, 1e-2) << "Max vel exceeds 8 knots";
+  ASSERT_LE(prevVel, currVel) << "Hydrodynamics is not being damped";
 }
