@@ -88,9 +88,6 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
       }
       auto linkVal = ignition::gazebo::Link(linkEntity);
       linkVal.EnableVelocityChecks(_ecm);
-      /// 50000N / 500 kg = 100ms^-2
-      /// 100ms^-2 * 0.02s = 2m/s
-      ///linkVal.AddWorldForce(_ecm, ignition::math::Vector3d(50000, 0, 0));
       initialVelocitySet = true;
     }
 
@@ -145,20 +142,12 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
       return;
     }
 
-    //if (linearVel->Length() >0)
-    //igndbg << linearVel.value().X() << " "
-    //       << linearVel.value().Y() << " "
-    //       << linearVel.value().Z() << std::endl;
-
     /// Check that the model is moving
     if (linearVel->X() > 0.5)
     {
       startedSuccessfully = true;
     }
 
-    /// Make sure that the model is moving forward at less than 8 knots
-    //ASSERT_TRUE(linearVel->X() <= 8 * 0.5144 + 1e-3)
-    //  << "Model is moving too fast " << linearVel->X() << "m/s\n";
     maxVel = std::max(maxVel, linearVel->X());
     prevVel = currVel;
     currVel = linearVel->X();
