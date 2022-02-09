@@ -166,6 +166,6 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
   ASSERT_TRUE(spawnedSuccessfully) << "USV not spawned";
   ASSERT_TRUE(startedSuccessfully) << "Model did not start moving";
   /// wide tolerance thanks to surface plugin
-  ASSERT_NEAR(currVel,  8 * 0.5144, 1e-1) << "final velocity exceeds 8 knots";
+  ASSERT_NEAR(currVel,  8 * 0.5144, 1) << "final velocity exceeds 8 knots";
   ASSERT_LE(maxVel, 5) << "Model is moving too fast";
 }
