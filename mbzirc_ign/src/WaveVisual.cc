@@ -137,6 +137,7 @@ void WaveVisual::Configure(const Entity &_entity,
   {
     ignerr << "<shader> must have <vertex> and <fragment> sdf elements"
            << std::endl;
+     return;
   }
   else
   {
@@ -173,7 +174,6 @@ void WaveVisual::PreUpdate(
 //////////////////////////////////////////////////
 void WaveVisualPrivate::OnUpdate()
 {
-  std::lock_guard<std::mutex> lock(this->mutex);
   if (this->visualName.empty())
     return;
 
@@ -236,17 +236,22 @@ void WaveVisualPrivate::OnUpdate()
 
     (*vsParams)["worldviewproj_matrix"] = 1;
 
-    (*vsParams)["Nwaves"] = static_cast<int>(this->wavefield.Number());
+    // bump map parameters
+    // rescale - scale x and y components of normals
     (*vsParams)["rescale"] = 0.5f;
 
+    // size of bump map
     float bumpScale[2] = {25.0f, 25.0f};
     (*vsParams)["bumpScale"].InitializeBuffer(2);
     (*vsParams)["bumpScale"].UpdateBuffer(bumpScale);
 
+    // bump map speed in x and y
     float bumpSpeed[2] = {0.01f, 0.01f};
     (*vsParams)["bumpSpeed"].InitializeBuffer(2);
     (*vsParams)["bumpSpeed"].UpdateBuffer(bumpSpeed);
 
+    // wavefield parameters:
+    (*vsParams)["Nwaves"] = static_cast<int>(this->wavefield.Number());
     float amplitudeV[3] = {
         static_cast<float>(this->wavefield.Amplitude_V()[0]),
         static_cast<float>(this->wavefield.Amplitude_V()[1]),
@@ -305,12 +310,15 @@ void WaveVisualPrivate::OnUpdate()
     // set fragment shader params
     auto fsParams = this->material->FragmentShaderParams();
 
+    // HDR effect
     float hdrMultiplier = 0.4f;
     (*fsParams)["hdrMultiplier"] = hdrMultiplier;
 
+    // Fresnel power - refraction
     float fresnelPower = 5.0f;
     (*fsParams)["fresnelPower"] = fresnelPower;
 
+    // water color:
     float shallowColor[4] = {0.0f, 0.1f, 0.3f, 1.0f};
     (*fsParams)["shallowColor"].InitializeBuffer(4);
     (*fsParams)["shallowColor"].UpdateBuffer(shallowColor);
@@ -335,11 +343,14 @@ void WaveVisualPrivate::OnUpdate()
   }
 
   // time variables need to be updated every iteration
-  float floatValue = (std::chrono::duration_cast<std::chrono::nanoseconds>(
-      this->currentSimTime).count()) * 1e-9;
-  rendering::ShaderParamsPtr params;
-  params = this->material->VertexShaderParams();
-  (*params)["t"] = floatValue;
+  {
+    std::lock_guard<std::mutex> lock(this->mutex);
+    float floatValue = (std::chrono::duration_cast<std::chrono::nanoseconds>(
+        this->currentSimTime).count()) * 1e-9;
+    rendering::ShaderParamsPtr params;
+    params = this->material->VertexShaderParams();
+    (*params)["t"] = floatValue;
+  }
 }
 
 IGNITION_ADD_PLUGIN(WaveVisual,
