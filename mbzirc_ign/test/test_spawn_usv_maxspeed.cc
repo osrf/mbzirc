@@ -177,6 +177,8 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
 
   ASSERT_TRUE(spawnedSuccessfully) << "USV not spawned";
   ASSERT_TRUE(startedSuccessfully) << "Model did not start moving";
-  ASSERT_NEAR(maxVel,  8 * 0.5144, 1e-2) << "Max vel exceeds 8 knots";
+  ASSERT_NEAR(currVel,  8 * 0.5144, 1e-2) << "final velocity exceeds 8 knots";
   ASSERT_LE(prevVel, currVel) << "Hydrodynamics is not being damped";
+  ASSERT_LE(maxVel, 5) << "Model is moving too fast";
+  )
 }
