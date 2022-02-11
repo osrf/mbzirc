@@ -40,7 +40,10 @@ end
         </mesh>
       </geometry>
     </visual>
+  </link>
 
+  <link name="base_collision">
+    <pose>0 0 0.0 0 0 1.57079</pose>
     <collision name="box_collision001">
       <pose>0.0 0.0 0.389269 0.0 0.0 0.0</pose>
       <geometry>
@@ -451,6 +454,11 @@ end
     </collision>
 
   </link>
+
+  <joint name="base_joint" type="fixed">
+    <parent>base_link</parent>
+    <child>base_collision</child>
+  </joint>
 
   <joint name="left_chassis_engine_joint" type="revolute">
     <axis>
