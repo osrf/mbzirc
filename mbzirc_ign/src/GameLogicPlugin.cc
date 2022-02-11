@@ -87,22 +87,22 @@ class mbzirc::GameLogicPluginPrivate
           };
 
   /// \brief A map of penalty type and time penalties.
-  public: const std::map<PenaltyType, double> kTimePenalties = {
-          {TARGET_VESSEL_ID_1, 180.0},
-          {TARGET_VESSEL_ID_2, 240.0},
-          {TARGET_VESSEL_ID_3, IGN_DBL_INF},
-          {SMALL_OBJECT_ID_1, 180.0},
-          {SMALL_OBJECT_ID_2, 240.0},
-          {SMALL_OBJECT_ID_3, IGN_DBL_INF},
-          {LARGE_OBJECT_ID_1, 180.0},
-          {LARGE_OBJECT_ID_2, 240.0},
-          {LARGE_OBJECT_ID_3, IGN_DBL_INF},
-          {SMALL_OBJECT_RETRIEVE_1, 120.0},
-          {SMALL_OBJECT_RETRIEVE_2, IGN_DBL_INF},
-          {LARGE_OBJECT_RETRIEVE_1, 120.0},
-          {LARGE_OBJECT_RETRIEVE_2, IGN_DBL_INF},
-          {BOUNDARY_1, 300.0},
-          {BOUNDARY_2, IGN_DBL_INF}};
+  public: const std::map<PenaltyType, int> kTimePenalties = {
+          {TARGET_VESSEL_ID_1, 180},
+          {TARGET_VESSEL_ID_2, 240},
+          {TARGET_VESSEL_ID_3, IGN_INT32_MAX},
+          {SMALL_OBJECT_ID_1, 180},
+          {SMALL_OBJECT_ID_2, 240},
+          {SMALL_OBJECT_ID_3, IGN_INT32_MAX},
+          {LARGE_OBJECT_ID_1, 180},
+          {LARGE_OBJECT_ID_2, 240},
+          {LARGE_OBJECT_ID_3, IGN_INT32_MAX},
+          {SMALL_OBJECT_RETRIEVE_1, 120},
+          {SMALL_OBJECT_RETRIEVE_2, IGN_INT32_MAX},
+          {LARGE_OBJECT_RETRIEVE_1, 120},
+          {LARGE_OBJECT_RETRIEVE_2, IGN_INT32_MAX},
+          {BOUNDARY_1, 300},
+          {BOUNDARY_2, IGN_INT32_MAX}};
 
   /// \brief Write a simulation timestamp to a logfile.
   /// \param[in] _simTime Current sim time.
@@ -563,10 +563,11 @@ void GameLogicPlugin::PostUpdate(
               this->dataPtr->kTimePenalties.at(
               GameLogicPluginPrivate::BOUNDARY_1);
           this->dataPtr->LogEvent("exceed_boundary_1", robotName);
+          this->dataPtr->UpdateScoreFiles(this->dataPtr->simTime);
         }
         else if (this->dataPtr->geofenceBoundaryPenaltyCount >= 2)
         {
-          this->dataPtr->timePenalty +=
+          this->dataPtr->timePenalty =
               this->dataPtr->kTimePenalties.at(
               GameLogicPluginPrivate::BOUNDARY_2);
           this->dataPtr->LogEvent("exceed_boundary_2", robotName);
@@ -636,7 +637,7 @@ void GameLogicPlugin::PostUpdate(
 
   // Periodically update the score file.
   if (!this->dataPtr->finished && currentTime -
-      this->dataPtr->lastUpdateScoresTime > std::chrono::seconds(30))
+      this->dataPtr->lastUpdateScoresTime > std::chrono::seconds(1))
   {
     this->dataPtr->UpdateScoreFiles(this->dataPtr->simTime);
   }
@@ -815,13 +816,15 @@ std::chrono::steady_clock::time_point GameLogicPluginPrivate::UpdateScoreFiles(
   summary << "sim_time_duration_sec: " << simElapsed << std::endl;
   summary << "real_time_duration_sec: " << realElapsed << std::endl;
   summary << "model_count: " << this->robotNames.size() << std::endl;
+  summary << "time_penalty: " << this->timePenalty << std::endl;
   summary.flush();
 
   // Output a score file with just the final score
   std::ofstream scoreFile(this->logPath + "/score.yml", std::ios::out);
   {
     std::lock_guard<std::mutex> lock(this->scoreMutex);
-    this->totalScore = simElapsed + this->timePenalty;
+    this->totalScore = (math::equal(this->timePenalty, IGN_INT32_MAX)) ?
+        IGN_INT32_MAX : simElapsed + this->timePenalty;
 
     scoreFile << this->totalScore << std::endl;
   }
