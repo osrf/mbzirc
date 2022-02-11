@@ -147,7 +147,7 @@
           </geometry>
         </collision>
         <collision name="ceiling">
-          <pose>0 0 147.42 0 0 0</pose>
+          <pose>0 0 160 0 0 0</pose>
           <geometry>
             <box>
               <size>5000 5000 1</size>
@@ -221,13 +221,41 @@
     <plugin filename="libGameLogicPlugin.so"
             name="mbzirc::GameLogicPlugin">
       <run_duration_seconds>3600</run_duration_seconds>
-      <setup_duration_seconds>120</setup_duration_seconds>
+      <setup_duration_seconds>600</setup_duration_seconds>
       <logging>
         <!-- Use the <path> element to control where to record the log file.
              The HOME path is used by default -->
         <path>/tmp/ign/mbzirc/logs</path>
       </logging>
+      <!-- competition area -->
+      <!-- 140m x 140m
+           max flight height is 400 ft / 121.92m
+           allow 25m below water level -->
+      <geofence>
+        <center>0 0 48.46</center>
+        <size>140 140 146.92</size>
+      </geofence>
     </plugin>
 
+    <!-- uncomment to see visualization of the competition area -->
+    <!--
+    <model name="competition_area">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 0 0 0 0</pose>
+        <visual name="visual">
+          <pose>0 0 48.46 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>140 140 146.92</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0 0.5</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    -->
   </world>
 </sdf>

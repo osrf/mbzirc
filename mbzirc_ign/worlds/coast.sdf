@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <sdf version="1.6">
-  <world name="coast.sdf">
+  <world name="coast">
 
     <gui fullscreen="0">
 
@@ -445,6 +445,14 @@
              The HOME path is used by default -->
         <path>/tmp/ign/mbzirc/logs</path>
       </logging>
+      <!-- competition area -->
+      <!-- w x h = 10km2
+           max flight height is 400 ft / 121.92m
+           allow 100m below water level -->
+      <geofence>
+        <center>0 0 10.96</center>
+        <size>3162.28 3162.28 221.92</size>
+      </geofence>
     </plugin>
 
     <!-- uncomment to see visualization of the competition area -->
@@ -467,6 +475,5 @@
       </link>
     </model>
     -->
-
   </world>
 </sdf>

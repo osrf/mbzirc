@@ -291,7 +291,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
 
   return [ignition_spawn_entity, handler]
 
-def spawn_usv(context, model_path, world_name, model_name):
+def spawn_usv(context, model_path, world_name, model_name, link_name):
 
   x_pos = LaunchConfiguration('x').perform(context)
   y_pos = LaunchConfiguration('y').perform(context)
@@ -376,10 +376,21 @@ def spawn_usv(context, model_path, world_name, model_name):
                   (right_joint_topic, 'right/thrust/joint/cmd_pos')]
   )
 
+  sensor_prefix = '/world/' + world_name + '/model/' + model_name + '/link/' + link_name + '/sensor'
+  # imu
+  ros2_ign_imu_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[sensor_prefix +  '/imu_sensor/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU'],
+      remappings=[(sensor_prefix + "/imu_sensor/imu", 'imu/data')]
+  )
+
   group_action = GroupAction([
         PushRosNamespace(model_name),
         ros2_ign_thrust_bridge,
         ros2_ign_thrust_joint_bridge,
+        ros2_ign_imu_bridge,
   ])
 
   handler = RegisterEventHandler(
@@ -400,7 +411,8 @@ def launch(context, *args, **kwargs):
       link_name = 'base_link'
       return spawn_uav(context, model_path, world_name, robot_name, link_name)
   elif robot_type == 'usv':
-      return spawn_usv(context, model_path, world_name, robot_name)
+      link_name = 'base_link'
+      return spawn_usv(context, model_path, world_name, robot_name, link_name)
 
 
 
