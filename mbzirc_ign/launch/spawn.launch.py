@@ -300,7 +300,7 @@ def spawn_usv(context, model_path, world_name, model_name):
   p_rot = LaunchConfiguration('P').perform(context)
   y_rot = LaunchConfiguration('Y').perform(context)
 
-  wavefield_size = {'simple_demo': 1000, 'coast': 8000}
+  wavefield_size = {'simple_demo': 1000, 'coast': 6000}
 
   model_file = os.path.join(
       get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
