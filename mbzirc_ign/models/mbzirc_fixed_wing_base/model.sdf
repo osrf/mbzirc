@@ -186,11 +186,6 @@
             <radius>0.3</radius>
           </sphere>
         </geometry>
-        <surface>
-          <friction>
-
-          </friction>
-        </surface>
       </collision>
     </link>
 
