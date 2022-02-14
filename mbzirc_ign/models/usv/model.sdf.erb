@@ -4,6 +4,11 @@ if !defined?(name) || name== nil || name.empty?
 else
   $model_name = name
 end
+  x_uu = 72.4 # Hydrodynamic quadratic coefficient
+  x_u = 51.3 # Hydrodynamic linear coefficient
+  max_velocity_knots = 8 # Maximum velocity in knots. Taken from the USV specification.
+  max_velocity_mps = max_velocity_knots * 0.5144 # convert knots to m/s
+  max_total_thrust = (x_u + x_uu * max_velocity_mps) * max_velocity_mps
 %>
 <?xml version="1.0"?>
 
@@ -11,7 +16,6 @@ end
 <model name="<%= $model_name%>">
   <static>false</static>
   <link name="base_link">
-    <pose>0 0 0.0 0 0 1.57079</pose>
     <inertial>
       <mass>500.0</mass>
       <inertia>
@@ -25,6 +29,7 @@ end
     </inertial>
 
     <visual name="base_visual">
+      <pose>0 0 0.0 0 0 1.57079</pose>
       <geometry>
         <mesh>
           <uri>meshes/USV.dae</uri>
@@ -35,7 +40,10 @@ end
         </mesh>
       </geometry>
     </visual>
+  </link>
 
+  <link name="base_collision">
+    <pose>0 0 0.0 0 0 1.57079</pose>
     <collision name="box_collision001">
       <pose>0.0 0.0 0.389269 0.0 0.0 0.0</pose>
       <geometry>
@@ -447,6 +455,11 @@ end
 
   </link>
 
+  <joint name="base_joint" type="fixed">
+    <parent>base_link</parent>
+    <child>base_collision</child>
+  </joint>
+
   <joint name="left_chassis_engine_joint" type="revolute">
     <axis>
       <xyz>0 0 1</xyz>
@@ -515,6 +528,7 @@ end
     <fluid_density>1000</fluid_density>
     <propeller_diameter>0.2</propeller_diameter>
     <velocity_control>true</velocity_control>
+    <max_thrust_cmd><%= max_total_thrust/2 %></max_thrust_cmd>
   </plugin>
 
   <plugin
@@ -533,6 +547,7 @@ end
     <fluid_density>1000</fluid_density>
     <propeller_diameter>0.2</propeller_diameter>
     <velocity_control>true</velocity_control>
+    <max_thrust_cmd><%= max_total_thrust/2 %></max_thrust_cmd>
   </plugin>
 
   <plugin
@@ -580,8 +595,8 @@ end
     <yDotV>0.0</yDotV>
     <nDotR>0.0</nDotR>
     <!-- Linear and quadratic drag -->
-    <xU>51.3</xU>
-    <xUU>72.4</xUU>
+    <xU><%=x_u%></xU>
+    <xUU><%=x_uu%></xUU>
     <yV>40.0</yV>
     <yVV>0.0</yVV>
     <zW>500.0</zW>
