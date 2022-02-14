@@ -257,7 +257,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       executable='parameter_bridge',
       output='screen',
       arguments=['/model/' + model_name + '/joint/propeller_joint/cmd_vel@std_msgs/msg/Float64@ignition.msgs.Double'],
-      remappings=[('/model/' + model_name + '/joint/propeller_joint/cmd_vel', '/model/' + model_name + '/command/motor_speed')]
+      remappings=[('/model/' + model_name + '/joint/propeller_joint/cmd_vel', 'cmd/motor_speed')]
     )
   else:
     # twist
