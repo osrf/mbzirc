@@ -1,7 +1,14 @@
+<%
+if !defined?(name) || name== nil || name.empty?
+  $model_name = 'usv'
+else
+  $model_name = name
+end
+%>
 <?xml version="1.0"?>
 
 <sdf version='1.6'>
-<model name="usv">
+<model name="<%= $model_name%>">
   <static>false</static>
   <link name="base_link">
     <pose>0 0 0.0 0 0 1.57079</pose>
@@ -503,7 +510,6 @@
   <plugin
     filename="ignition-gazebo-thruster-system"
     name="ignition::gazebo::systems::Thruster">
-    <namespace>usv</namespace>
     <joint_name>left_engine_propeller_joint</joint_name>
     <thrust_coefficient>0.004422</thrust_coefficient>
     <fluid_density>1000</fluid_density>
@@ -516,13 +522,12 @@
     name="ignition::gazebo::systems::JointPositionController">
     <joint_name>left_chassis_engine_joint</joint_name>
     <use_velocity_commands>true</use_velocity_commands>
-    <topic>usv/left/thruster/joint/cmd_pos</topic>
+    <topic><%= $model_name%>/left/thruster/joint/cmd_pos</topic>
   </plugin>
 
   <plugin
     filename="ignition-gazebo-thruster-system"
     name="ignition::gazebo::systems::Thruster">
-    <namespace>usv</namespace>
     <joint_name>right_engine_propeller_joint</joint_name>
     <thrust_coefficient>0.004422</thrust_coefficient>
     <fluid_density>1000</fluid_density>
@@ -535,7 +540,7 @@
     name="ignition::gazebo::systems::JointPositionController">
     <joint_name>right_chassis_engine_joint</joint_name>
     <use_velocity_commands>true</use_velocity_commands>
-    <topic>usv/right/thruster/joint/cmd_pos</topic>
+    <topic><%= $model_name%>/right/thruster/joint/cmd_pos</topic>
   </plugin>
 
   <plugin
@@ -546,6 +551,24 @@
     <vehicle_width>3.3</vehicle_width>
     <hull_radius>0.27</hull_radius>
     <fluid_level>-0.55</fluid_level>
+
+    <!-- Waves -->
+    <wavefield>
+      <size>1000 1000</size>
+      <cell_count>50 50</cell_count>
+      <wave>
+        <model>PMS</model>
+        <period>5</period>
+        <number>3</number>
+        <scale>1.5</scale>
+        <gain>0.1</gain>
+        <direction>1 0</direction>
+        <angle>0.4</angle>
+        <tau>2.0</tau>
+        <amplitude>0.0</amplitude>
+        <steepness>0.0</steepness>
+      </wave>
+    </wavefield>
   </plugin>
 
   <plugin

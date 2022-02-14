@@ -33,3 +33,5 @@
 *.out
 *.app
 
+# Python objects
+*.pyc
