@@ -54,95 +54,6 @@
           </box>
         </geometry>
       </collision>
-      <!-- save for debugging use
-      <visual name="LDcanard">
-        <pose>0 -0.1 0.0 0 0 0</pose>
-        <geometry>
-          <sphere>
-            <radius>0.03</radius>
-          </sphere>
-        </geometry>
-      </visual>
-      <visual name="LDleft_wing">
-        <pose>0.7 0.20 0.0 0 0 0</pose>
-        <geometry>
-          <sphere>
-            <radius>0.03</radius>
-          </sphere>
-        </geometry>
-      </visual>
-      <visual name="LDright_wing">
-        <pose>-0.7 0.20 0.0 0 0 0</pose>
-        <geometry>
-          <sphere>
-            <radius>0.03</radius>
-          </sphere>
-        </geometry>
-      </visual>
-      <visual name="LD3">
-        <pose>0.76 0.30 0.025 0 0 0</pose>
-        <geometry>
-          <sphere>
-            <radius>0.03</radius>
-          </sphere>
-        </geometry>
-      </visual>
-      <visual name="LD4">
-        <pose>-0.76 0.30 0.025 0 0 0</pose>
-        <geometry>
-          <sphere>
-            <radius>0.03</radius>
-          </sphere>
-        </geometry>
-      </visual>
-      -->
-      <!--<sensor name="gps_sensor" type="gps">
-        <pose>0 0 0  0 0 0</pose>
-        <update_rate>10.0</update_rate>
-        <always_on>true</always_on>
-        <gps>
-          <position_sensing>
-            <horizontal>
-              <noise type="gaussian_quantized">
-                <mean>0</mean>
-                <stddev>1</stddev>
-                <bias_mean>3</bias_mean>
-                <bias_stddev>1</bias_stddev>
-                <precision>0.5</precision>
-              </noise>
-            </horizontal>
-            <vertical>
-              <noise type="gaussian_quantized">
-                <mean>0</mean>
-                <stddev>1</stddev>
-                <bias_mean>3</bias_mean>
-                <bias_stddev>1</bias_stddev>
-                <precision>1.0</precision>
-              </noise>
-            </vertical>
-          </position_sensing>
-          <velocity_sensing>
-            <horizontal>
-              <noise type="gaussian_quantized">
-                <mean>0</mean>
-                <stddev>0.1</stddev>
-                <bias_mean>0.1</bias_mean>
-                <bias_stddev>0.1</bias_stddev>
-                <precision>0.1</precision>
-              </noise>
-            </horizontal>
-            <vertical>
-              <noise type="gaussian_quantized">
-                <mean>0</mean>
-                <stddev>0.2</stddev>
-                <bias_mean>0.2</bias_mean>
-                <bias_stddev>0.2</bias_stddev>
-                <precision>0.2</precision>
-              </noise>
-            </vertical>
-          </velocity_sensing>
-        </gps>
-      </sensor>-->
     </link>
 
     <link name="propeller">
@@ -186,24 +97,6 @@
           </box>
         </geometry>
       </collision>
-      <!-- save for debugging use
-      <visual name="LD1">
-        <pose>0 0 0.074205 0 0  0.3</pose>
-        <geometry>
-         <sphere>
-            <radius>0.02</radius>
-          </sphere>
-        </geometry>
-      </visual>
-      <visual name="LD2">
-        <pose>0 0 -0.074205 0 0  -0.3</pose>
-        <geometry>
-          <sphere>
-            <radius>0.02</radius>
-          </sphere>
-        </geometry>
-      </visual>
-      -->
     </link>
 
     <link name="flap_left">
@@ -275,6 +168,37 @@
         </geometry>
       </collision>
     </link>
+
+    <!-- This skid is added for launch purposes it makes sure the vehicle is
+    facing slightly upwards-->
+    <link name="skid">
+      <pose>0 -0.3 -0.1 0 0 0</pose>
+      <!--<visual name="visual">
+        <geometry>
+          <sphere>
+            <radius>0.3</radius>
+          </sphere>
+        </geometry>
+      </visual>-->
+      <collision name="collision">
+        <geometry>
+          <sphere>
+            <radius>0.3</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+
+          </friction>
+        </surface>
+      </collision>
+    </link>
+
+    <joint name="skid_joint" type="fixed">
+      <parent>wing</parent>
+      <child>skid</child>
+      <pose>0 0 0 0 0 0</pose>
+    </joint>
 
     <joint name="propeller_joint" type="revolute">
       <parent>wing</parent>
