@@ -16,6 +16,8 @@ find_package(ignition-msgs8 REQUIRED)
 find_package(ignition-transport11 REQUIRED)
 find_package(ignition-plugin1 REQUIRED COMPONENTS loader register)
 set(IGN_PLUGIN_VER ${ignition-plugin1_VERSION_MAJOR})
+find_package(ignition-rendering6 REQUIRED)
+set(IGN_RENDERING_VER ${ignition-rendering6_VERSION_MAJOR})
 find_package(sdformat12 REQUIRED)
 
 find_package(rclcpp REQUIRED)
@@ -49,14 +51,16 @@ list(APPEND MBZIRC_IGN_PLUGINS
   GameLogicPlugin
   SimpleHydrodynamics
   Surface
+  WaveVisual
 )
 
 foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
   add_library(${PLUGIN} SHARED src/${PLUGIN}.cc)
   target_link_libraries(${PLUGIN} PUBLIC
-     ignition-gazebo${IGN_GAZEBO_VER}::core
-     ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
-     Waves
+    ignition-gazebo${IGN_GAZEBO_VER}::core
+    ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
+    ignition-rendering${IGN_RENDERING_VER}::ignition-rendering${IGN_RENDERING_VER}
+    Waves
   )
 endforeach()
 

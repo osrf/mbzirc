@@ -332,7 +332,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
 
   return [ignition_spawn_entity, handler]
 
-def spawn_usv(context, model_path, model_name):
+def spawn_usv(context, model_path, world_name, model_name):
 
   x_pos = LaunchConfiguration('x').perform(context)
   y_pos = LaunchConfiguration('y').perform(context)
@@ -340,6 +340,8 @@ def spawn_usv(context, model_path, model_name):
   r_rot = LaunchConfiguration('R').perform(context)
   p_rot = LaunchConfiguration('P').perform(context)
   y_rot = LaunchConfiguration('Y').perform(context)
+
+  wavefield_size = {'simple_demo': 1000, 'coast': 6000}
 
   model_file = os.path.join(
       get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
@@ -351,6 +353,11 @@ def spawn_usv(context, model_path, model_name):
   # run erb
   command = ['erb']
   command.append(f'name={model_name}')
+
+  if world_name in wavefield_size:
+    command.append(f'wavefieldSize={wavefield_size[world_name]}')
+  else:
+    print(f'Wavefield size not found for {wavefield_size[world_name]}')
   command.append(model_file)
 
   process = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -434,7 +441,7 @@ def launch(context, *args, **kwargs):
       link_name = 'base_link'
       return spawn_uav(context, model_path, world_name, robot_name, link_name)
   elif robot_type == 'usv':
-      return spawn_usv(context, model_path, robot_name)
+      return spawn_usv(context, model_path, world_name, robot_name)
 
 
 
