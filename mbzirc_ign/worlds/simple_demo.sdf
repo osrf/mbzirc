@@ -64,7 +64,7 @@
 
     <model name="ground_platform">
       <static>true</static>
-      <pose>0 0 -1.5 0 0 0</pose>
+      <pose>0 0 -0.5 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry>
@@ -147,7 +147,7 @@
           </geometry>
         </collision>
         <collision name="ceiling">
-          <pose>0 0 146.42 0 0 0</pose>
+          <pose>0 0 147.42 0 0 0</pose>
           <geometry>
             <box>
               <size>5000 5000 1</size>
@@ -158,16 +158,15 @@
     </model>
 
     <include>
-      <pose>0 0 -1 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <uri>
         waves
       </uri>
     </include>
 
-
     <include>
       <name>Vessel A</name>
-      <pose>25 25 -0.7 0 0.0 -1.0</pose>
+      <pose>25 25 0.3 0 0.0 -1.0</pose>
       <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel A</uri>
       <plugin
         filename="libSurface.so"
@@ -176,7 +175,7 @@
         <vehicle_length>6</vehicle_length>
         <vehicle_width>3.3</vehicle_width>
         <hull_radius>0.27</hull_radius>
-        <fluid_level>-0.55</fluid_level>
+        <fluid_level>0.45</fluid_level>
 
         <!-- Waves -->
         <wavefield>
