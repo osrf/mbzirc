@@ -233,14 +233,40 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       else:
           print('Unknown payload: ', payload)
 
-  # twist
-  ros2_ign_twist_bridge = Node(
+  if model_path == "mbzirc_fixed_wing":
+    # Left Flap
+    ros2_ign_left_flap_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=['/model/' + model_name + '/joint/left_flap_joint/cmd_pos@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[('/model/' + model_name + '/joint/left_flap_joint/cmd_pos', 'cmd/left_flap')]
+    )
+    # Right Flap
+    ros2_ign_right_flap_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=['/model/' + model_name + '/joint/right_flap_joint/cmd_pos@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[('/model/' + model_name + '/joint/right_flap_joint/cmd_pos', 'cmd/right_flap')]
+    )
+    # Propeller
+    ros2_ign_propeller_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=['/model/' + model_name + '/joint/propeller_joint/cmd_vel@std_msgs/msg/Float64@ignition.msgs.Double'],
+      remappings=[('/model/' + model_name + '/joint/propeller_joint/cmd_vel', 'cmd/motor_speed')]
+    )
+  else:
+    # twist
+    ros2_ign_twist_bridge = Node(
       package='ros_ign_bridge',
       executable='parameter_bridge',
       output='screen',
       arguments=['/model/' + model_name + '/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist'],
       remappings=[('/model/' + model_name +'/cmd_vel', 'cmd_vel')]
-  )
+    )
 
   # pose
   ros2_ign_pose_bridge = Node(
@@ -271,17 +297,32 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       ]
   )
 
-  group_action = GroupAction([
-        PushRosNamespace(model_name),
-        ros2_ign_imu_bridge,
-        ros2_ign_magnetometer_bridge,
-        ros2_ign_air_pressure_bridge,
-        ros2_ign_twist_bridge,
-        ros2_ign_pose_bridge,
-        ros2_ign_pose_static_bridge,
-        ros2_tf_broadcaster,
-        *payloads
-  ])
+  if model_path == "mbzirc_fixed_wing":
+      group_action = GroupAction([
+          PushRosNamespace(model_name),
+          ros2_ign_imu_bridge,
+          ros2_ign_magnetometer_bridge,
+          ros2_ign_air_pressure_bridge,
+          ros2_ign_left_flap_bridge,
+          ros2_ign_right_flap_bridge,
+          ros2_ign_propeller_bridge,
+          ros2_ign_pose_bridge,
+          ros2_ign_pose_static_bridge,
+          ros2_tf_broadcaster,
+          *payloads
+    ])
+  else:
+    group_action = GroupAction([
+          PushRosNamespace(model_name),
+          ros2_ign_imu_bridge,
+          ros2_ign_magnetometer_bridge,
+          ros2_ign_air_pressure_bridge,
+          ros2_ign_twist_bridge,
+          ros2_ign_pose_bridge,
+          ros2_ign_pose_static_bridge,
+          ros2_tf_broadcaster,
+          *payloads
+    ])
 
   handler = RegisterEventHandler(
       event_handler=OnProcessExit(
@@ -316,7 +357,7 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   if world_name in wavefield_size:
     command.append(f'wavefieldSize={wavefield_size[world_name]}')
   else:
-    print(f'Wavefield size not found for {wavefield_size[world_name]}')
+    print(f'Wavefield size not found for world_name')
   command.append(model_file)
 
   process = subprocess.Popen(command, stdout=subprocess.PIPE)

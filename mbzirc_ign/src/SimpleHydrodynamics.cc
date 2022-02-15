@@ -186,10 +186,13 @@ void SimpleHydrodynamics::Configure(const Entity &_entity,
 
 //////////////////////////////////////////////////
 void SimpleHydrodynamics::PreUpdate(
-    const ignition::gazebo::UpdateInfo &/*_info*/,
+    const ignition::gazebo::UpdateInfo &_info,
     ignition::gazebo::EntityComponentManager &_ecm)
 {
   IGN_PROFILE("SimpleHydrodynamics::PreUpdate");
+
+  if (_info.paused)
+    return;
 
   if (!this->dataPtr->link.Valid(_ecm))
     return;

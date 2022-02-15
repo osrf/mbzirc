@@ -20,6 +20,9 @@ find_package(ignition-rendering6 REQUIRED)
 set(IGN_RENDERING_VER ${ignition-rendering6_VERSION_MAJOR})
 find_package(sdformat12 REQUIRED)
 
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+
 #============================================================================
 # Hooks
 configure_file(
@@ -83,7 +86,7 @@ if(BUILD_TESTING)
   configure_file(test/helper/TestConstants.hh.in TestConstants.hh @ONLY)
 
   foreach(TEST_TARGET
-    test_spawn_uav_battery test_game_logic)
+    test_spawn_uav_battery test_game_logic test_spawn_usv_maxspeed)
     ament_add_gtest(
       ${TEST_TARGET}
       test/${TEST_TARGET}.cc
