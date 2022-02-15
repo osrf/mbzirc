@@ -84,6 +84,27 @@ class ignition::gazebo::systems::WaveVisualPrivate
   /// \brief Indicate whether the shader params have been set or not
   public: bool paramsSet = false;
 
+  /// \brief Shader param. Recale x and y components of normals.
+  public: float rescale = 0.5f;
+
+  /// \brief Shader param. Bump map scale.
+  public: math::Vector2d bumpScale = math::Vector2d(25.0, 25.0);
+
+  /// \brief Shader param. Bump map speed in x and y.
+  public: math::Vector2d bumpSpeed = math::Vector2d(0.01f, 0.01f);
+
+  /// \brief Shader param. HDR multiplier.
+  public: float hdrMultiplier = 0.4f;
+
+  /// \brief Shader param. Fresnel power.
+  public: float fresnelPower = 5.0f;
+
+  /// \brief Shader param. Color of shallow water.
+  public: math::Color shallowColor = math::Color(0.0f, 0.1f, 0.3f, 1.0f);
+
+  /// \brief Shader param. Color of deep water.
+  public: math::Color deepColor = math::Color(0.0f, 0.05f, 0.2f, 1.0f);
+
   /// \brief All rendering operations must happen within this call
   public: void OnUpdate();
 };
@@ -147,6 +168,41 @@ void WaveVisual::Configure(const Entity &_entity,
     sdf::ElementPtr fragmentElem = shaderElem->GetElement("fragment");
     this->dataPtr->fragmentShaderUri = common::findFile(
         asFullPath(fragmentElem->Get<std::string>(), this->dataPtr->modelPath));
+  }
+
+  // parse shader params
+  if (shaderElem->HasElement("parameters"))
+  {
+    sdf::ElementPtr paramElem = shaderElem->GetElement("parameters");
+    if (paramElem->HasElement("rescale"))
+    {
+      this->dataPtr->rescale = paramElem->GetElement("rescale")->Get<float>();
+    }
+    if (paramElem->HasElement("bumpScale"))
+    {
+      this->dataPtr->bumpScale =
+          paramElem->GetElement("bumpScale")->Get<math::Vector2d>();
+    }
+    if (paramElem->HasElement("hdrMultiplier"))
+    {
+      this->dataPtr->hdrMultiplier =
+          paramElem->GetElement("hdrMultiplier")->Get<float>();
+    }
+    if (paramElem->HasElement("fresnelPower"))
+    {
+      this->dataPtr->fresnelPower =
+          paramElem->GetElement("fresnelPower")->Get<float>();
+    }
+    if (paramElem->HasElement("shallowColor"))
+    {
+      this->dataPtr->shallowColor =
+          paramElem->GetElement("shallowColor")->Get<math::Color>();
+    }
+    if (paramElem->HasElement("deepColor"))
+    {
+      this->dataPtr->deepColor =
+          paramElem->GetElement("deepColor")->Get<math::Color>();
+    }
   }
 
   this->dataPtr->entity = _entity;
@@ -238,17 +294,21 @@ void WaveVisualPrivate::OnUpdate()
 
     // bump map parameters
     // rescale - scale x and y components of normals
-    (*vsParams)["rescale"] = 0.5f;
+    (*vsParams)["rescale"] = this->rescale;
 
     // size of bump map
-    float bumpScale[2] = {25.0f, 25.0f};
+    float bumpScaleV[2] = {
+        static_cast<float>(this->bumpScale.X()),
+        static_cast<float>(this->bumpScale.Y())};
     (*vsParams)["bumpScale"].InitializeBuffer(2);
-    (*vsParams)["bumpScale"].UpdateBuffer(bumpScale);
+    (*vsParams)["bumpScale"].UpdateBuffer(bumpScaleV);
 
     // bump map speed in x and y
-    float bumpSpeed[2] = {0.01f, 0.01f};
+    float bumpSpeedV[2] = {
+        static_cast<float>(this->bumpSpeed.X()),
+        static_cast<float>(this->bumpSpeed.Y())};
     (*vsParams)["bumpSpeed"].InitializeBuffer(2);
-    (*vsParams)["bumpSpeed"].UpdateBuffer(bumpSpeed);
+    (*vsParams)["bumpSpeed"].UpdateBuffer(bumpSpeedV);
 
     // wavefield parameters:
     (*vsParams)["Nwaves"] = static_cast<int>(this->wavefield.Number());
@@ -311,21 +371,27 @@ void WaveVisualPrivate::OnUpdate()
     auto fsParams = this->material->FragmentShaderParams();
 
     // HDR effect
-    float hdrMultiplier = 0.4f;
-    (*fsParams)["hdrMultiplier"] = hdrMultiplier;
+    (*fsParams)["hdrMultiplier"] = this->hdrMultiplier;
 
     // Fresnel power - refraction
-    float fresnelPower = 5.0f;
-    (*fsParams)["fresnelPower"] = fresnelPower;
+    (*fsParams)["fresnelPower"] = this->fresnelPower;
 
     // water color:
-    float shallowColor[4] = {0.0f, 0.1f, 0.3f, 1.0f};
+    float shallowColorV[4] = {
+        static_cast<float>(this->shallowColor.R()),
+        static_cast<float>(this->shallowColor.G()),
+        static_cast<float>(this->shallowColor.B()),
+        static_cast<float>(this->shallowColor.A())};
     (*fsParams)["shallowColor"].InitializeBuffer(4);
-    (*fsParams)["shallowColor"].UpdateBuffer(shallowColor);
+    (*fsParams)["shallowColor"].UpdateBuffer(shallowColorV);
 
-    float deepColor[4] = {0.0f, 0.05f, 0.2f, 1.0f};
+    float deepColorV[4] = {
+        static_cast<float>(this->deepColor.R()),
+        static_cast<float>(this->deepColor.G()),
+        static_cast<float>(this->deepColor.B()),
+        static_cast<float>(this->deepColor.A())};
     (*fsParams)["deepColor"].InitializeBuffer(4);
-    (*fsParams)["deepColor"].UpdateBuffer(deepColor);
+    (*fsParams)["deepColor"].UpdateBuffer(deepColorV);
 
     // \todo(anyone) find a more generic way of getting path to the textures
     // than using hard coded material paths
