@@ -3,6 +3,7 @@
     <model name="hexrotor">
         <pose>0 0 0.121078 0 0 0</pose>
         <link name="base_link">
+            <enable_wind>true</enable_wind>
             <pose frame="">0 0 0 0 -0 0</pose>
             <inertial>
                 <pose frame="">0 0 0 0 -0 0</pose>
