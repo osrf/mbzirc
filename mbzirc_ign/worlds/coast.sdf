@@ -378,6 +378,23 @@
         <nR>400.0</nR>
         <nRR>0.0</nRR>
       </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>-1350 20</waypoint>
+          <waypoint>-1400 20</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>45.55</force>
+        <torque>45.55</torque>
+      </plugin>
     </include>
 
     <model name="max_bounds">
