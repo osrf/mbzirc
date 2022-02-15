@@ -357,7 +357,7 @@ def spawn_usv(context, model_path, world_name, model_name):
   if world_name in wavefield_size:
     command.append(f'wavefieldSize={wavefield_size[world_name]}')
   else:
-    print(f'Wavefield size not found for {wavefield_size[world_name]}')
+    print(f'Wavefield size not found for world_name')
   command.append(model_file)
 
   process = subprocess.Popen(command, stdout=subprocess.PIPE)
