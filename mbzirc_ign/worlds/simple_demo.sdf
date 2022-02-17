@@ -96,6 +96,13 @@
     </model>
 
     <include>
+      <pose>0 0 50 0 0 0</pose>
+      <uri>
+        dust_storm
+      </uri>
+    </include>
+
+    <include>
       <pose>0 0 5 0 0 0</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Fortress heightmap
