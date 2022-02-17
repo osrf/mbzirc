@@ -33,7 +33,7 @@ repository should display a new job named "Release to dockerhub", it will take a
 15-20 minutes to be completed.
 
 After it finishes successfully two new images will be uploaded to [dockerhub](
-https://hub.docker.com/repository/docker/jlrivero/mbzirc/tags?page=1&ordering=last_updated)
+https://hub.docker.com/r/osrf/mbzirc/tags)
  * `mbzirc_sim_latest`: this docker image is being updated to the latest release
  * `mbzirc_sim_${timestamp}`: this docker image should have the date of the release
 
