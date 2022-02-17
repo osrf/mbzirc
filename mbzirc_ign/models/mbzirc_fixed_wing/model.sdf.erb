@@ -36,6 +36,10 @@ end
       <joint_name>propeller_joint</joint_name>
     </plugin>
 
+    <plugin filename="libFixedWingController.so"
+      name="mbzirc::FixedWingControllerPlugin">
+    </plugin>
+
     <!-- Battery plugin -->
     <!-- Since we are interested in using time as the limiting factor -->
     <plugin filename="libignition-gazebo-linearbatteryplugin-system.so"

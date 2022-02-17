@@ -52,6 +52,7 @@ list(APPEND MBZIRC_IGN_PLUGINS
   SimpleHydrodynamics
   Surface
   WaveVisual
+  FixedWingController
 )
 
 foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
