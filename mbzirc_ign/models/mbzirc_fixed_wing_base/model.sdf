@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <model name="zephyr_delta_wing">
+  <model name="zephyr_ delta_wing">
     <pose>0 0 0.02577 0 0 1.5708</pose>
 
     <link name="wing">
