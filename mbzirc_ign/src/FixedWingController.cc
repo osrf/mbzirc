@@ -29,6 +29,8 @@
 
 #include <ignition/transport/Node.hh>
 
+#include <mavros_msgs/msg/nav_controller_output.hpp>
+
 /// \brief fstream for temporary file storage logging
 #include <fstream>
 
@@ -57,6 +59,9 @@ public:
 
 public:
   double targetPitch{0};
+
+public:
+  double targetVelocity{0};
 
 public:
   Entity entity;

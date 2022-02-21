@@ -22,6 +22,7 @@ find_package(sdformat12 REQUIRED)
 
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(mavros_msgs REQUIRED)
 
 #============================================================================
 # Hooks
@@ -64,6 +65,8 @@ foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
     Waves
   )
 endforeach()
+
+ament_target_dependencies(FixedWingController PUBLIC rclcpp mavros_msgs)
 
 install(
   TARGETS ${MBZIRC_IGN_PLUGINS}
