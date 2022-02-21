@@ -38,6 +38,8 @@ end
 
     <plugin filename="libFixedWingController.so"
       name="mbzirc::FixedWingControllerPlugin">
+      <model_name><%= $model_name%></model_name>
+      <cmd_topic>/<%= $model_name%>/cmd/attitude</cmd_topic>
       <link_name>wing</link_name>
       <roll_axis>0 1 0</roll_axis>
       <roll_p>0.1</roll_p>

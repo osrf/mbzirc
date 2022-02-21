@@ -29,7 +29,9 @@
 
 #include <ignition/transport/Node.hh>
 
-#include <mavros_msgs/msg/nav_controller_output.hpp>
+#include <mavros_msgs/msg/attitude_target.hpp>
+
+#include <rclcpp/rclcpp.hpp>
 
 /// \brief fstream for temporary file storage logging
 #include <fstream>
@@ -86,6 +88,42 @@ public:
 
 public:
   std::ofstream logFile;
+
+public:
+  std::mutex mutex;
+
+public:
+  rclcpp::Node::SharedPtr rclNode;
+
+public:
+  rclcpp::Subscription<mavros_msgs::msg::AttitudeTarget>::SharedPtr attitudeTargetSub;
+
+public:
+  void SetupROS(const std::string &_name, const std::string &_topic)
+  {
+    this->rclNode = std::make_shared<rclcpp::Node>("FixedWingController" + _name);
+
+    this->attitudeTargetSub =
+      this->rclNode->create_subscription<mavros_msgs::msg::AttitudeTarget>(_topic,
+        10, std::bind(&FixedWingControllerPrivate::OnAttitudeTarget,
+        this, std::placeholders::_1));
+  }
+
+public:
+  void OnAttitudeTarget(const mavros_msgs::msg::AttitudeTarget::SharedPtr _msg)
+  {
+    math::Quaterniond quat(
+      _msg->orientation.w,
+      _msg->orientation.x,
+      _msg->orientation.y,
+      _msg->orientation.z);
+
+    std::lock_guard<std::mutex> lock(this->mutex);
+    math::Vector3d euler = quat.Euler();
+    targetRoll = euler.X();
+    targetPitch = euler.Y();
+    targetVelocity = _msg->thrust;
+  }
 };
 
 FixedWingControllerPlugin::FixedWingControllerPlugin() : dataPtr(std::make_unique<FixedWingControllerPrivate>())
@@ -102,6 +140,10 @@ void FixedWingControllerPlugin::Configure(
     ignition::gazebo::EntityComponentManager &_ecm,
     ignition::gazebo::EventManager &_eventMgr)
 {
+  char const** argv = NULL;
+  if (!rclcpp::ok())
+    rclcpp::init(0, argv);
+
   auto model = Model(_entity);
 
   /// Get the link that the controller should track
@@ -196,6 +238,10 @@ void FixedWingControllerPlugin::Configure(
   {
     this->dataPtr->rollAxis = _sdf->Get<ignition::math::Vector3d>("roll_axis");
   }
+
+  this->dataPtr->SetupROS(
+    _sdf->Get<std::string>("model_name"),
+    _sdf->Get<std::string>("cmd_topic"));
 }
 
 void FixedWingControllerPlugin::PreUpdate(
@@ -212,32 +258,38 @@ void FixedWingControllerPlugin::PreUpdate(
     _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
   auto linVel = linVelocityComp->Data().Length();
 
-  /// Fix Thruster power
-  msgs::Double thrusterPower;
-  thrusterPower.set_data(1000.0);
-  this->dataPtr->thruster.Publish(thrusterPower);
+  {
+    std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+    /// Fix Thruster power
+    msgs::Double thrusterPower;
+    thrusterPower.set_data(this->dataPtr->targetVelocity);
+    this->dataPtr->thruster.Publish(thrusterPower);
 
-  /// Attitude control
-  auto rollError =
-    rotation.Dot(this->dataPtr->rollAxis) - this->dataPtr->targetRoll;
-  auto difference = this->dataPtr->rollControl.Update(rollError, _info.dt);
+    /// Attitude control
+    auto rollError =
+      rotation.Dot(this->dataPtr->rollAxis) - this->dataPtr->targetRoll;
+    auto difference = this->dataPtr->rollControl.Update(rollError, _info.dt);
 
-  auto pitchError =
-    rotation.Dot(this->dataPtr->pitchAxis) - this->dataPtr->targetPitch;
-  auto offset = this->dataPtr->pitchControl.Update(pitchError, _info.dt);
+    auto pitchError =
+      rotation.Dot(this->dataPtr->pitchAxis) - this->dataPtr->targetPitch;
+    auto offset = this->dataPtr->pitchControl.Update(pitchError, _info.dt);
 
-  /// Control aerelions
-  msgs::Double leftFlap;
-  leftFlap.set_data(-offset + difference/2);
-  this->dataPtr->leftFlap.Publish(leftFlap);
+    /// Control aerelions
+    msgs::Double leftFlap;
+    leftFlap.set_data(-offset + difference/2);
+    this->dataPtr->leftFlap.Publish(leftFlap);
 
-  msgs::Double rightFlap;
-  rightFlap.set_data(-offset - difference/2);
-  this->dataPtr->rightFlap.Publish(rightFlap);
+    msgs::Double rightFlap;
+    rightFlap.set_data(-offset - difference/2);
+    this->dataPtr->rightFlap.Publish(rightFlap);
 
-  /// Log data
-  this->dataPtr->logFile << rollError << "," << pitchError << "," << linVel << "\n";
-  this->dataPtr->logFile.flush();
+    /// Log data
+    this->dataPtr->logFile << rollError << "," << pitchError << "," << linVel << "\n";
+    this->dataPtr->logFile.flush();
+  }
+
+  /// ROS
+  rclcpp::spin_some(this->dataPtr->rclNode);
 }
 
 IGNITION_ADD_PLUGIN(
