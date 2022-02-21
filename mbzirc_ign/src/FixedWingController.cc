@@ -54,9 +54,6 @@ public:
   math::PID pitchControl;
 
 public:
-  math::PID velocityControl;
-
-public:
   double targetRoll{0};
 
 public:
@@ -215,19 +212,6 @@ void FixedWingControllerPlugin::Configure(
   if (_sdf->HasElement("pitch_d"))
   {
     this->dataPtr->pitchControl.SetDGain(_sdf->Get<double>("pitch_d"));
-  }
-
-  if (_sdf->HasElement("velocity_p"))
-  {
-    this->dataPtr->velocityControl.SetPGain(_sdf->Get<double>("velocity_p"));
-  }
-  if (_sdf->HasElement("velocity_i"))
-  {
-    this->dataPtr->velocityControl.SetIGain(_sdf->Get<double>("velocity_i"));
-  }
-  if (_sdf->HasElement("velocity_d"))
-  {
-    this->dataPtr->velocityControl.SetDGain(_sdf->Get<double>("velocity_d"));
   }
 
   if (_sdf->HasElement("pitch_axis"))
