@@ -38,6 +38,18 @@ end
 
     <plugin filename="libFixedWingController.so"
       name="mbzirc::FixedWingControllerPlugin">
+      <link_name>wing</link_name>
+      <roll_axis>0 1 0</roll_axis>
+      <roll_p>0.1</roll_p>
+      <roll_i>0.01</roll_i>
+      <roll_d>0.01</roll_d>
+      <pitch_axis>1 0 0</pitch_axis>
+      <pitch_p>1</pitch_p>
+      <pitch_i>0.2</pitch_i>
+      <pitch_d>0.1</pitch_d>
+      <left_flap>/model/<%= $model_name%>/joint/left_flap_joint/cmd_pos</left_flap>
+      <right_flap>/model/<%= $model_name%>/joint/right_flap_joint/cmd_pos</right_flap>
+      <propeller>/model/<%= $model_name%>/joint/propeller_joint/cmd_vel</propeller>
     </plugin>
 
     <!-- Battery plugin -->

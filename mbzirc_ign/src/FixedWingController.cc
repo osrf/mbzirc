@@ -22,7 +22,6 @@
 #include <ignition/gazebo/Entity.hh>
 #include <ignition/gazebo/Model.hh>
 #include <ignition/gazebo/Util.hh>
-#include <ignition/gazebo/components/AngularVelocity.hh>
 #include <ignition/gazebo/components/LinearVelocity.hh>
 #include <ignition/gazebo/components/Pose.hh>
 
@@ -63,6 +62,12 @@ public:
   Entity entity;
 
 public:
+  math::Vector3d pitchAxis;
+
+public:
+  math::Vector3d rollAxis;
+
+public:
   transport::Node node;
 
 public:
@@ -94,25 +99,98 @@ void FixedWingControllerPlugin::Configure(
 {
   auto model = Model(_entity);
 
-  this->dataPtr->entity = model.LinkByName(_ecm, "wing");
-  ;
+  /// Get the link that the controller should track
+  if (_sdf->HasElement("link_name"))
+  {
+    auto linkName = _sdf->Get<std::string>("link_name");
+    this->dataPtr->entity = model.LinkByName(_ecm, "wing");
+
+    if (this->dataPtr->entity == kNullEntity)
+    {
+      ignerr << "Could not find link named " << linkName << std::endl;
+      return;
+    }
+  }
+  else
+  {
+    ignerr << "Please specify a link name" << std::endl;
+    return;
+  }
+
   enableComponent<components::WorldPose>(_ecm, this->dataPtr->entity);
   enableComponent<components::WorldLinearVelocity>(_ecm, this->dataPtr->entity);
-  enableComponent<components::WorldAngularVelocity>(_ecm, this->dataPtr->entity);
-  enableComponent<components::LinearVelocity>(_ecm, this->dataPtr->entity);
-  enableComponent<components::AngularVelocity>(_ecm, this->dataPtr->entity);
 
-  this->dataPtr->leftFlap = this->dataPtr->node.Advertise<msgs::Double>(
-      "/model/zephyr/joint/left_flap_joint/cmd_pos");
-  this->dataPtr->rightFlap = this->dataPtr->node.Advertise<msgs::Double>(
-      "/model/zephyr/joint/right_flap_joint/cmd_pos");
-  this->dataPtr->thruster = this->dataPtr->node.Advertise<msgs::Double>(
-      "/model/zephyr/joint/propeller_joint/cmd_vel");
+  if (_sdf->HasElement("left_flap"))
+  {
+    auto leftFlapTopic = _sdf->Get<std::string>("left_flap");
+    this->dataPtr->leftFlap =
+      this->dataPtr->node.Advertise<msgs::Double>(leftFlapTopic);
+  }
 
-  this->dataPtr->logFile.open("zephyr_controller.log");
+  if (_sdf->HasElement("right_flap"))
+  {
+    auto rightFlapTopic = _sdf->Get<std::string>("right_flap");
+    this->dataPtr->rightFlap =
+      this->dataPtr->node.Advertise<msgs::Double>(rightFlapTopic);
+  }
 
-  this->dataPtr->rollControl.SetPGain(0.1);
-  this->dataPtr->pitchControl.SetPGain(1);
+  if (_sdf->HasElement("propeller"))
+  {
+    auto propellerTopic = _sdf->Get<std::string>("propeller");
+    this->dataPtr->thruster =
+      this->dataPtr->node.Advertise<msgs::Double>(propellerTopic);
+  }
+
+
+  this->dataPtr->logFile.open("zephyr_controller.csv");
+
+  if (_sdf->HasElement("roll_p"))
+  {
+    this->dataPtr->rollControl.SetPGain(_sdf->Get<double>("roll_p"));
+  }
+  if (_sdf->HasElement("roll_i"))
+  {
+    this->dataPtr->rollControl.SetIGain(_sdf->Get<double>("roll_i"));
+  }
+  if (_sdf->HasElement("roll_d"))
+  {
+    this->dataPtr->rollControl.SetDGain(_sdf->Get<double>("roll_d"));
+  }
+
+  if (_sdf->HasElement("pitch_p"))
+  {
+    this->dataPtr->pitchControl.SetPGain(_sdf->Get<double>("pitch_p"));
+  }
+  if (_sdf->HasElement("pitch_i"))
+  {
+    this->dataPtr->pitchControl.SetIGain(_sdf->Get<double>("pitch_i"));
+  }
+  if (_sdf->HasElement("pitch_d"))
+  {
+    this->dataPtr->pitchControl.SetDGain(_sdf->Get<double>("pitch_d"));
+  }
+
+  if (_sdf->HasElement("velocity_p"))
+  {
+    this->dataPtr->velocityControl.SetPGain(_sdf->Get<double>("velocity_p"));
+  }
+  if (_sdf->HasElement("velocity_i"))
+  {
+    this->dataPtr->velocityControl.SetIGain(_sdf->Get<double>("velocity_i"));
+  }
+  if (_sdf->HasElement("velocity_d"))
+  {
+    this->dataPtr->velocityControl.SetDGain(_sdf->Get<double>("velocity_d"));
+  }
+
+  if (_sdf->HasElement("pitch_axis"))
+  {
+    this->dataPtr->pitchAxis = _sdf->Get<ignition::math::Vector3d>("pitch_axis");
+  }
+  if (_sdf->HasElement("roll_axis"))
+  {
+    this->dataPtr->rollAxis = _sdf->Get<ignition::math::Vector3d>("roll_axis");
+  }
 }
 
 void FixedWingControllerPlugin::PreUpdate(
@@ -125,10 +203,9 @@ void FixedWingControllerPlugin::PreUpdate(
   auto pose = _ecm.Component<components::WorldPose>(this->dataPtr->entity);
   auto rotation = pose->Data().Rot().Euler();
 
-  auto angularVelocity =
-      _ecm.Component<components::WorldAngularVelocity>(this->dataPtr->entity);
-  auto linearVelocity =
-      _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
+  auto linVelocityComp =
+    _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
+  auto linVel = linVelocityComp->Data().Length();
 
   /// Fix Thruster power
   msgs::Double thrusterPower;
@@ -136,10 +213,13 @@ void FixedWingControllerPlugin::PreUpdate(
   this->dataPtr->thruster.Publish(thrusterPower);
 
   /// Attitude control
-  auto difference = this->dataPtr->rollControl.Update(
-      rotation.Y() - this->dataPtr->targetRoll, _info.dt);
-  auto offset = this->dataPtr->pitchControl.Update(
-      rotation.X() - this->dataPtr->targetPitch, _info.dt);
+  auto rollError =
+    rotation.Dot(this->dataPtr->rollAxis) - this->dataPtr->targetRoll;
+  auto difference = this->dataPtr->rollControl.Update(rollError, _info.dt);
+
+  auto pitchError =
+    rotation.Dot(this->dataPtr->pitchAxis) - this->dataPtr->targetPitch;
+  auto offset = this->dataPtr->pitchControl.Update(pitchError, _info.dt);
 
   /// Control aerelions
   msgs::Double leftFlap;
@@ -150,10 +230,8 @@ void FixedWingControllerPlugin::PreUpdate(
   rightFlap.set_data(-offset - difference/2);
   this->dataPtr->rightFlap.Publish(rightFlap);
 
-
   /// Log data
-  this->dataPtr->logFile
-      <<  << "\n";
+  this->dataPtr->logFile << rollError << "," << pitchError << "," << linVel << "\n";
   this->dataPtr->logFile.flush();
 }
 
