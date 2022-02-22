@@ -147,7 +147,7 @@ void FixedWingControllerPlugin::Configure(
   if (_sdf->HasElement("link_name"))
   {
     auto linkName = _sdf->Get<std::string>("link_name");
-    this->dataPtr->entity = model.LinkByName(_ecm, "wing");
+    this->dataPtr->entity = model.LinkByName(_ecm, linkName);
 
     if (this->dataPtr->entity == kNullEntity)
     {
