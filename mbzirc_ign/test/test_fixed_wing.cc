@@ -53,7 +53,10 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
     msg.orientation.w = 1;
     msg.thrust = 1000;
     publisher->publish(msg);
+
+    igndbg << "Publishing attitude target" << std::endl;
   });
+
 
   std::vector<std::pair<std::string,std::string>> params{
     {"name", "zephyr"},
@@ -98,7 +101,6 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
       if (linkEntity == ignition::gazebo::kNullEntity)
       {
         ignerr << "Could not find link" << std::endl;
-        ASSERT_TRUE(false);
         return;
       }
       auto linkVal = ignition::gazebo::Link(linkEntity);
@@ -118,13 +120,14 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
     auto modelEntity = world.ModelByName(_ecm, "zephyr");
     if (modelEntity != ignition::gazebo::kNullEntity)
     {
+      //ignerr << "FOUND VEHICLE" << std::endl;
       spawnedSuccessfully = true;
     }
 
     /// Not yet spawned no velocity will be recorded
     if (!spawnedSuccessfully)
     {
-      //ignerr << "No veh yet\n";
+      ignerr << "No veh yet\n";
       return;
     }
 
@@ -172,6 +175,6 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
 
   StopLaunchFile(launchHandle);
 
-  //ASSERT_TRUE(spawnedSuccessfully) << "Fixed Wing not spawned";
+  ASSERT_TRUE(spawnedSuccessfully) << "Fixed Wing not spawned";
   //ASSERT_TRUE(startedSuccessfully) << "Model did not start moving";
 }
