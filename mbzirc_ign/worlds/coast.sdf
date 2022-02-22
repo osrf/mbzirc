@@ -698,6 +698,79 @@
       </plugin>
     </include>
 
+    <include>
+      <name>Vessel G</name>
+      <pose>-900 1000 0.4 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel G</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>22</vehicle_length>
+        <vehicle_width>7</vehicle_width>
+        <hull_radius>3.5</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>102</xU>
+        <xUU>145</xUU>
+        <yV>40.0</yV>
+        <yVV>0.0</yVV>
+        <zW>500.0</zW>
+        <kP>50.0</kP>
+        <mQ>50.0</mQ>
+        <nR>400.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>-1100 1000</waypoint>
+          <waypoint>-1000 1000</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>90.8</force>
+        <torque>90.8</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+        <zero_vel_on_bearing_reached>true</zero_vel_on_bearing_reached>
+      </plugin>
+    </include>
+
     <model name="max_bounds">
       <static>true</static>
       <link name="link">
