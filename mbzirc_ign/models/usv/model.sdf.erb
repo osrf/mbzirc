@@ -47,6 +47,19 @@ end
           </submesh>
         </mesh>
       </geometry>
+      <material>
+        <ambient>0.8 0.8 0.8 1</ambient>
+        <diffuse>1.0 1.0 1.0 1</diffuse>
+        <specular>0.8 0.8 0.8 1</specular>
+          <pbr>
+            <metal>
+                <albedo_map>materials/textures/USV_Albedo.jpg</albedo_map>
+                <normal_map>materials/textures/USV_Normal.jpg</normal_map>
+                <roughness_map>materials/textures/USV_Roughness.jpg</roughness_map>
+                <metalness_map>materials/textures/USV_Metalness.jpg</metalness_map>
+            </metal>
+          </pbr>
+      </material>
     </visual>
   </link>
 
@@ -689,6 +702,20 @@ end
     <mQ>50.0</mQ>
     <nR>400.0</nR>
     <nRR>0.0</nRR>
+  </plugin>
+
+  <!-- Publish robot state information -->
+  <plugin filename="libignition-gazebo-pose-publisher-system.so"
+    name="ignition::gazebo::systems::PosePublisher">
+    <publish_link_pose>true</publish_link_pose>
+    <publish_sensor_pose>true</publish_sensor_pose>
+    <publish_collision_pose>false</publish_collision_pose>
+    <publish_visual_pose>false</publish_visual_pose>
+    <publish_nested_model_pose>true</publish_nested_model_pose>
+    <publish_model_pose>false</publish_model_pose>
+    <use_pose_vector_msg>true</use_pose_vector_msg>
+    <static_publisher>true</static_publisher>
+    <static_update_frequency>1</static_update_frequency>
   </plugin>
 
 </model>

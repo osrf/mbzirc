@@ -3,6 +3,11 @@
 <sdf version="1.6">
   <world name="coast">
 
+    <physics name="4ms" type="dart">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
     <gui fullscreen="0">
 
       <!-- 3D scene -->
