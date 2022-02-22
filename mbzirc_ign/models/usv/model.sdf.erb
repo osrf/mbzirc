@@ -47,6 +47,19 @@ end
           </submesh>
         </mesh>
       </geometry>
+      <material>
+        <ambient>0.8 0.8 0.8 1</ambient>
+        <diffuse>1.0 1.0 1.0 1</diffuse>
+        <specular>0.8 0.8 0.8 1</specular>
+          <pbr>
+            <metal>
+                <albedo_map>materials/textures/USV_Albedo.jpg</albedo_map>
+                <normal_map>materials/textures/USV_Normal.jpg</normal_map>
+                <roughness_map>materials/textures/USV_Roughness.jpg</roughness_map>
+                <metalness_map>materials/textures/USV_Metalness.jpg</metalness_map>
+            </metal>
+          </pbr>
+      </material>
     </visual>
   </link>
 
