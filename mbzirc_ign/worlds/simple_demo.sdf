@@ -222,6 +222,74 @@
       </plugin>
     </include>
 
+    <model name="small_box_a">
+      <pose>24 26.5 0.5 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+          <ixx>0.0066667</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.0066667</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.0066667</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 0 1</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="large_box_a">
+      <pose>24.9 24.85 0.65 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>10</mass>
+          <inertia>
+          <ixx>0.26667</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.26667</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.26667</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.4 0.4 0.4</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.4 0.4 0.4</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
     <!-- The MBZIRC competition logic plugin -->
     <plugin filename="libGameLogicPlugin.so"
             name="mbzirc::GameLogicPlugin">
@@ -240,6 +308,11 @@
         <center>0 0 48.46</center>
         <size>140 140 146.92</size>
       </geofence>
+      <target>
+        <vessel>Vessel A</vessel>
+        <small_object>small_box_a</small_object>
+        <large_object>large_box_a</large_object>
+      </target>
     </plugin>
 
     <!-- uncomment to see visualization of the competition area -->

@@ -17,6 +17,7 @@
 
 #include <ignition/msgs/boolean.pb.h>
 #include <ignition/msgs/float.pb.h>
+#include <ignition/msgs/stringmsg_v.pb.h>
 #include <ignition/plugin/Register.hh>
 
 #include <chrono>
@@ -56,6 +57,28 @@ using namespace mbzirc;
 
 class mbzirc::GameLogicPluginPrivate
 {
+  /// \brief Target vessel, objects, and report status
+  public: class Target
+  {
+    /// \brief Name of target vessel
+    public: std::string vessel;
+
+    /// \brief List of small target objects
+    public: std::set<std::string> smallObjects;
+
+    /// \brief List of large target objects
+    public: std::set<std::string> largeObjects;
+
+    /// \brief Indicates if vessel has been reported
+    public: bool vesselReported = false;
+
+    /// \brief Set of small objects that have been reported.
+    public: std::set<std::string> smallObjectsReported;
+
+    /// \brief Set of large objects that have been reported.
+    public: std::set<std::string> largeObjectsReported;
+  };
+
   public: enum PenaltyType
           {
             /// \brief Failure to ID target vessel
@@ -129,9 +152,9 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Log an event to the eventStream.
   /// \param[in] _event The event to log.
-  /// \param[in] _robot Robot associated with this event. Optional.
+  /// \param[in] _data Additional data for the event. Optional
   public: void LogEvent(const std::string &_event,
-      const std::string &_robot = "");
+      const std::string &_data = "");
 
   /// \brief Battery subscription callback.
   /// \param[in] _msg Battery message.
@@ -158,6 +181,9 @@ class mbzirc::GameLogicPluginPrivate
   public: bool OnFinishCall(const ignition::msgs::Boolean &_req,
                ignition::msgs::Boolean &_res);
 
+  public: bool OnReportTargets(const ignition::msgs::StringMsg_V &_req,
+               ignition::msgs::Boolean &_res);
+
   /// \brief Check if an entity's position is within the input boundary
   //// \param[in] _ecm Entity component manager
   //// \param[in] _entity Entity id
@@ -165,6 +191,9 @@ class mbzirc::GameLogicPluginPrivate
   public: bool CheckEntityInBoundary(const EntityComponentManager &_ecm,
                                      Entity _entity,
                                      const math::AxisAlignedBox &_boundary);
+
+  /// \brief Valid target reports, add time penalties, and update score
+  public: void ValidateTargetReports();
 
   /// \brief Ignition Transport node.
   public: transport::Node node;
@@ -200,11 +229,14 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Event file output stream.
   public: std::ofstream eventStream;
 
-  /// \brief Mutex to protect the eventStream.
-  public: std::mutex eventMutex;
-
   /// \brief Mutex to protect total score.
   public: std::mutex scoreMutex;
+
+  /// \brief Mutex to protect reports
+  public: std::mutex reportMutex;
+
+  /// \brief Target reports
+  public: std::vector<ignition::msgs::StringMsg_V> reports;
 
   /// \brief Ignition transport competition clock publisher.
   public: transport::Node::Publisher competitionClockPub;
@@ -262,8 +294,22 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Number of times robot moved beyond competition boundary
   public: unsigned int geofenceBoundaryPenaltyCount = 0u;
 
+  /// \brief Number of times vessel is incorrectly identified
+  public: unsigned int vesselPenaltyCount = 0u;
+
+  /// \brief Map of vessel to number of times small object is incorrectly
+  /// identified
+  public: std::map<std::string, unsigned int> smallObjectPenaltyCount;
+
+  /// \brief Map of vessel to number times large object is incorrectly
+  /// identified
+  public: std::map<std::string, unsigned int> largeObjectPenaltyCount;
+
   /// \brief Total time penalty in seconds;
   public: int timePenalty = 0;
+
+  /// \brief A map of target vessel name and targets.
+  public: std::map<std::string, Target> targets;
 };
 
 //////////////////////////////////////////////////
@@ -384,11 +430,68 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
            << " seconds.\n";
   }
 
+  // Get target vessels and objects
+  if (_sdf->HasElement("target"))
+  {
+    auto targetElem = sdf->GetElement("target");
+    while (targetElem)
+    {
+      if (targetElem->HasElement("vessel"))
+      {
+        GameLogicPluginPrivate::Target target;
+
+        // get target vessel name
+        auto vesselTargetElem = targetElem->GetElement("vessel");
+        std::string vessel = vesselTargetElem->Get<std::string>();
+        target.vessel = vessel;
+        ignmsg << "Target vessel: " << vessel << std::endl;;
+
+        // get a list of small target objects on this vessel
+        if (targetElem->HasElement("small_object"))
+        {
+          auto smallObjTargetElem = targetElem->GetElement("small_object");
+          while (smallObjTargetElem)
+          {
+            std::string smallObj = smallObjTargetElem->Get<std::string>();
+            target.smallObjects.insert(smallObj);
+            smallObjTargetElem = smallObjTargetElem->GetNextElement("small_object");
+            ignmsg << "  Small object: " << smallObj << std::endl;;
+          }
+        }
+
+        // get a list of large target objects on this vessel
+        if (targetElem->HasElement("large_object"))
+        {
+          auto largeObjTargetElem = targetElem->GetElement("large_object");
+          while (largeObjTargetElem)
+          {
+            std::string largeObj = largeObjTargetElem->Get<std::string>();
+            target.largeObjects.insert(largeObj);
+            largeObjTargetElem = largeObjTargetElem->GetNextElement("large_object");
+            ignmsg << "  Large object: " << largeObj << std::endl;;
+          }
+        }
+
+        this->dataPtr->targets[vessel] = target;
+
+      }
+      else
+      {
+        ignerr << "<target> element must have a <vessel> child element" << std::endl;
+      }
+
+      targetElem = targetElem->GetNextElement("target");
+    }
+  }
+
   this->dataPtr->node.Advertise("/mbzirc/start",
       &GameLogicPluginPrivate::OnStartCall, this->dataPtr.get());
 
   this->dataPtr->node.Advertise("/mbzirc/finish",
       &GameLogicPluginPrivate::OnFinishCall, this->dataPtr.get());
+
+  this->dataPtr->node.Advertise("/mbzirc/report/targets",
+      &GameLogicPluginPrivate::OnReportTargets, this->dataPtr.get());
 
   this->dataPtr->scoreThread.reset(new std::thread(
         &GameLogicPluginPrivate::PublishScore, this->dataPtr.get()));
@@ -578,6 +681,9 @@ void GameLogicPlugin::PostUpdate(
       this->dataPtr->robotsInBoundary[robotEnt] = isInBounds;
     }
   }
+
+  // validate target reports
+  this->dataPtr->ValidateTargetReports();
 
   // Get the start sim time in nanoseconds.
   auto startSimTime = std::chrono::nanoseconds(
@@ -791,6 +897,208 @@ void GameLogicPluginPrivate::Finish(const ignition::msgs::Time &_simTime)
 }
 
 /////////////////////////////////////////////////
+bool GameLogicPluginPrivate::OnReportTargets(
+    const ignition::msgs::StringMsg_V &_req,
+    ignition::msgs::Boolean &_res)
+{
+  this->reports.push_back(_req);
+  _res.set_data(true);
+  return true;
+}
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::ValidateTargetReports()
+{
+  for (auto &req : this->reports)
+  {
+    if (req.data_size() <= 0)
+    {
+      this->LogEvent("target_reported", "empty_report");
+      continue;
+    }
+
+    std::string vessel = req.data(0);
+    if (vessel.empty())
+    {
+      this->LogEvent("target_reported", "target_vessel_missing");
+      continue;
+    }
+
+    auto it = this->targets.find(vessel);
+    if (it != this->targets.end())
+    {
+      auto target = it->second;
+
+      // target has not been report - valid report
+      if (!target.vesselReported)
+      {
+        target.vesselReported = true;
+        this->targets[vessel] = target;
+        this->LogEvent("target_reported", "vessel_id_success");
+        continue;
+      }
+      // target has already been reported
+      // team is reporting objects
+      else if (req.data_size() > 1)
+      {
+        // small object target
+        std::string smallObj = req.data(1);
+        if (!smallObj.empty())
+        {
+          auto sIt = target.smallObjects.find(smallObj);
+          bool validObj = sIt != target.smallObjects.end();
+          if (validObj)
+          {
+            auto reportIt = target.smallObjectsReported.find(smallObj);
+            if (reportIt == target.smallObjectsReported.end())
+            {
+              target.smallObjectsReported.insert(smallObj);
+              this->targets[vessel] = target;
+              this->LogEvent("target_reported", "small_object_id_success");
+              continue;
+            }
+            else
+            {
+              this->LogEvent("target_reported", "small_object_id_duplicate");
+            }
+          }
+          else
+          {
+            // add penalty for incorrectly identifying small object
+            std::string logData = "small_object_id_failure";
+            unsigned int count = 0u;
+            auto it = this->smallObjectPenaltyCount.find(vessel);
+            if (it != this->smallObjectPenaltyCount.end())
+              count = it->second;
+
+            this->smallObjectPenaltyCount[vessel] = ++count;
+            if (count == 1u)
+            {
+              this->timePenalty +=
+                  this->kTimePenalties.at(LARGE_OBJECT_ID_1);
+              this->UpdateScoreFiles(this->simTime);
+              logData += "_1";
+              this->LogEvent("target_reported", logData);
+            }
+            else if (count == 2u)
+            {
+              this->timePenalty +=
+                  this->kTimePenalties.at(LARGE_OBJECT_ID_2);
+              this->UpdateScoreFiles(this->simTime);
+              logData += "_2";
+              this->LogEvent("target_reported", logData);
+            }
+            else
+            {
+              this->timePenalty +=
+                  this->kTimePenalties.at(LARGE_OBJECT_ID_3);
+              logData += "_3";
+              this->LogEvent("target_reported", logData);
+              // terminate run
+              this->Finish(this->simTime);
+              break;
+            }
+          }
+        }
+        else if (req.data_size() > 2)
+        {
+          // large object target
+          std::string largeObj = req.data(2);
+          if (!largeObj.empty())
+          {
+            auto sIt = target.largeObjects.find(largeObj);
+            bool validObj = sIt != target.largeObjects.end();
+            if (validObj)
+            {
+              auto reportIt = target.largeObjectsReported.find(largeObj);
+              if (reportIt == target.largeObjectsReported.end())
+              {
+                target.largeObjectsReported.insert(largeObj);
+                this->targets[vessel] = target;
+                this->LogEvent("target_reported", "large_object_id_success");
+                continue;
+              }
+              else
+              {
+                this->LogEvent("target_reported", "large_object_id_duplicate");
+              }
+            }
+            else
+            {
+              // add penalty for incorrectly identifying large object
+              std::string logData = "large_object_id_failure";
+              unsigned int count = 0u;
+              auto it = this->largeObjectPenaltyCount.find(vessel);
+              if (it != this->largeObjectPenaltyCount.end())
+                count = it->second;
+
+              this->largeObjectPenaltyCount[vessel] = ++count;
+              if (count == 1u)
+              {
+                this->timePenalty +=
+                    this->kTimePenalties.at(LARGE_OBJECT_ID_1);
+                this->UpdateScoreFiles(this->simTime);
+                this->LogEvent("target_reported", logData + "_1");
+              }
+              else if (count == 2u)
+              {
+                this->timePenalty +=
+                    this->kTimePenalties.at(LARGE_OBJECT_ID_2);
+                this->UpdateScoreFiles(this->simTime);
+                this->LogEvent("target_reported", logData + "_2");
+              }
+              else
+              {
+                this->timePenalty +=
+                    this->kTimePenalties.at(LARGE_OBJECT_ID_3);
+                this->LogEvent("target_reported", logData + "_3");
+                // terminate run
+                this->Finish(this->simTime);
+                break;
+              }
+            }
+          }
+        }
+      }
+      else
+      {
+        this->LogEvent("target_reported", "vessel_id_duplicate");
+      }
+    }
+    else
+    {
+      // add penalty for incorrectly identifying vessel
+      std::string logData = "vessel_id_failure";
+      this->vesselPenaltyCount++;
+      if (this->vesselPenaltyCount == 1u)
+      {
+        this->timePenalty +=
+            this->kTimePenalties.at(TARGET_VESSEL_ID_1);
+        this->UpdateScoreFiles(this->simTime);
+        this->LogEvent("target_reported", logData + "_1");
+      }
+      else if (this->vesselPenaltyCount == 2u)
+      {
+        this->timePenalty +=
+            this->kTimePenalties.at(TARGET_VESSEL_ID_2);
+        this->UpdateScoreFiles(this->simTime);
+        this->LogEvent("target_reported", logData + "_2");
+      }
+      else
+      {
+        this->timePenalty +=
+            this->kTimePenalties.at(TARGET_VESSEL_ID_3);
+        this->LogEvent("target_reported", logData + "_3");
+        // terminate run
+        this->Finish(this->simTime);
+        break;
+      }
+    }
+  }
+  this->reports.clear();
+}
+
+/////////////////////////////////////////////////
 std::chrono::steady_clock::time_point GameLogicPluginPrivate::UpdateScoreFiles(
     const ignition::msgs::Time &_simTime)
 {
@@ -836,7 +1144,7 @@ std::chrono::steady_clock::time_point GameLogicPluginPrivate::UpdateScoreFiles(
 
 /////////////////////////////////////////////////
 void GameLogicPluginPrivate::LogEvent(const std::string &_type,
-    const std::string &_robot)
+    const std::string &_data)
 {
   // Elapsed time
   int realElapsed = 0;
@@ -851,6 +1159,7 @@ void GameLogicPluginPrivate::LogEvent(const std::string &_type,
   }
 
   std::lock_guard<std::mutex> lock(this->eventCounterMutex);
+  std::lock_guard<std::mutex> lock2(this->scoreMutex);
   std::ostringstream stream;
   stream
     << "- event:\n"
@@ -860,8 +1169,8 @@ void GameLogicPluginPrivate::LogEvent(const std::string &_type,
     << "  elapsed_real_time: " << realElapsed << "\n"
     << "  elapsed_sim_time: " << simElapsed << "\n"
     << "  total_score: " << this->totalScore << std::endl;
-  if (!_robot.empty())
-    stream << "  robot: " << _robot << std::endl;
+  if (!_data.empty())
+    stream << "  data: " << _data << std::endl;
 
   this->eventStream << stream.str();
   this->eventStream.flush();
