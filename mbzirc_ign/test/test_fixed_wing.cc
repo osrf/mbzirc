@@ -136,34 +136,34 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
     if (linkEntity == ignition::gazebo::kNullEntity)
     {
       ignerr << "Could not find link" << std::endl;
-      //ASSERT_TRUE(false);
+      ASSERT_TRUE(false);
       return;
     }
     auto linkVal = ignition::gazebo::Link(linkEntity);
     auto linearVel = linkVal.WorldLinearVelocity(_ecm);
     auto angularVel = linkVal.WorldAngularVelocity(_ecm);
 
-    if(!linearVel.has_value())
+    auto jointEntity = modelVal.JointByName(_ecm, "propeller_joint");
+    if (jointEntity == ignition::gazebo::kNullEntity)
     {
-      ignerr << "No linear velocity\n";
+      ignerr << "Could not find joint" << std::endl;
       return;
     }
 
-    if (linearVel->Length() > 0)
+    auto jointVel = _ecm.Component<
+      ignition::gazebo::components::JointVelocity>(jointEntity);
+
+    if (jointVel == nullptr)
+    {
+      ignerr << "Could not find joint velocity" << std::endl;
+      return;
+    }
+
+    // Check if prop starts spinning
+    if (jointVel->Data().size() > 0 && jointVel->Data()[0] > 0)
     {
       startedSuccessfully = true;
     }
-
-    //igndbg << linearVel.value() << "\n";
-
-    //auto worldPose = _ecm.Component<ignition::gazebo::components::WorldPose>(linkEntity);
-    //if(!angularVel.has_value())
-    //{
-    //  ignerr << "No angular velocity\n";
-    //  return;
-    //}
-    //igndbg << angularVel.value() << "\n";
-    //igndbg << worldPose->Data().Rot().Euler() << "\n";
   });
   StartSim();
   WaitForMaxIter();
@@ -176,5 +176,5 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
   StopLaunchFile(launchHandle);
 
   ASSERT_TRUE(spawnedSuccessfully) << "Fixed Wing not spawned";
-  //ASSERT_TRUE(startedSuccessfully) << "Model did not start moving";
+  ASSERT_TRUE(startedSuccessfully) << "Prop did not start spinning";
 }
