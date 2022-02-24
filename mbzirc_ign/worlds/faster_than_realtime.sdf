@@ -37,7 +37,7 @@
 
     <model name="ground_platform">
       <static>true</static>
-      <pose>0 0 -1.5 0 0 0</pose>
+      <pose>0 0 -0.5 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry>
@@ -123,7 +123,7 @@
     </model>
 
     <include>
-      <pose>0 0 -1 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <uri>
         water_plane
       </uri>
@@ -137,6 +137,10 @@
       <logging>
         <path>mbzirc_logs</path>
       </logging>
+      <geofence>
+        <center>0 0 48.46</center>
+        <size>140 140 146.92</size>
+      </geofence>
     </plugin>
 
   </world>

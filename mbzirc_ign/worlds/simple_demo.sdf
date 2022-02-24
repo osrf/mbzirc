@@ -159,7 +159,7 @@
           </geometry>
         </collision>
         <collision name="ceiling">
-          <pose>0 0 147.42 0 0 0</pose>
+          <pose>0 0 160 0 0 0</pose>
           <geometry>
             <box>
               <size>5000 5000 1</size>
@@ -229,6 +229,74 @@
       </plugin>
     </include>
 
+    <model name="small_box_a">
+      <pose>24 26.5 0.5 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+          <ixx>0.0066667</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.0066667</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.0066667</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 0 1</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="large_box_a">
+      <pose>24.9 24.85 0.65 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>10</mass>
+          <inertia>
+          <ixx>0.26667</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.26667</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.26667</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.4 0.4 0.4</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.4 0.4 0.4</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
     <wind>
       <linear_velocity>0.3 0 0</linear_velocity>
     </wind>
@@ -274,13 +342,46 @@
     <plugin filename="libGameLogicPlugin.so"
             name="mbzirc::GameLogicPlugin">
       <run_duration_seconds>3600</run_duration_seconds>
-      <setup_duration_seconds>120</setup_duration_seconds>
+      <setup_duration_seconds>600</setup_duration_seconds>
       <logging>
         <!-- Use the <path> element to control where to record the log file.
              The HOME path is used by default -->
         <path>/tmp/ign/mbzirc/logs</path>
       </logging>
+      <!-- competition area -->
+      <!-- 140m x 140m
+           max flight height is 400 ft / 121.92m
+           allow 25m below water level -->
+      <geofence>
+        <center>0 0 48.46</center>
+        <size>140 140 146.92</size>
+      </geofence>
+      <target>
+        <vessel>Vessel A</vessel>
+        <small_object>small_box_a</small_object>
+        <large_object>large_box_a</large_object>
+      </target>
     </plugin>
 
+    <!-- uncomment to see visualization of the competition area -->
+    <!--
+    <model name="competition_area">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 0 0 0 0</pose>
+        <visual name="visual">
+          <pose>0 0 48.46 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>140 140 146.92</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0 0.5</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    -->
   </world>
 </sdf>

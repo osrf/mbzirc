@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <sdf version="1.6">
-  <world name="coast.sdf">
+  <world name="coast">
 
     <physics name="4ms" type="dart">
       <max_step_size>0.004</max_step_size>
@@ -22,7 +22,7 @@
         <scene>scene</scene>
         <ambient_light>0.4 0.4 0.4</ambient_light>
         <background_color>0.8 0.8 0.8</background_color>
-        <camera_pose>-1500 0 6 0 0.5 0</camera_pose>
+        <camera_pose>-1510 0 6 0 0.5 0</camera_pose>
         <camera_clip>
           <near>0.25</near>
           <far>10000</far>
@@ -851,6 +851,74 @@
       </plugin>
     </include>
 
+    <model name="small_box_a">
+      <pose>-1400 20 0.5 0 0.0 -1.0</pose>
+      <link name="link">
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+          <ixx>0.0066667</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.0066667</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.0066667</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 0 1</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="large_box_a">
+      <pose>-1400.5 20 0.65 0 0.0 -1.0</pose>
+      <link name="link">
+        <inertial>
+          <mass>10</mass>
+          <inertia>
+          <ixx>0.26667</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.26667</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.26667</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.4 0.4 0.4</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.4 0.4 0.4</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
     <model name="max_bounds">
       <static>true</static>
       <link name="link">
@@ -957,6 +1025,19 @@
              The HOME path is used by default -->
         <path>/tmp/ign/mbzirc/logs</path>
       </logging>
+      <!-- competition area -->
+      <!-- w x h = 10km2
+           max flight height is 400 ft / 121.92m
+           allow 100m below water level -->
+      <geofence>
+        <center>0 0 10.96</center>
+        <size>3162.28 3162.28 221.92</size>
+      </geofence>
+      <target>
+        <vessel>Vessel A</vessel>
+        <small_object>small_box_a</small_object>
+        <large_object>large_box_a</large_object>
+      </target>
     </plugin>
 
     <!-- uncomment to see visualization of the competition area -->
@@ -979,6 +1060,5 @@
       </link>
     </model>
     -->
-
   </world>
 </sdf>

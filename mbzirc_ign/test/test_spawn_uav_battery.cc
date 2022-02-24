@@ -199,7 +199,7 @@ TEST_F(MBZIRCTestFixture, TestBatteryDuration)
     std::stringstream eventsBuffer;
     eventsBuffer << eventsLog.rdbuf();
     eventFound = eventsBuffer.str().find("type: dead_battery") != std::string::npos
-        && eventsBuffer.str().find("robot: quadrotor") != std::string::npos;
+        && eventsBuffer.str().find("data: quadrotor") != std::string::npos;
   }
   EXPECT_TRUE(eventFound);
   ignition::common::removeAll(logPath);
