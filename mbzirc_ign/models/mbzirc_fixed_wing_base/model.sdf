@@ -4,6 +4,7 @@
     <pose>0 0 0.02577 0 0 1.5708</pose>
 
     <link name="wing">
+      <enable_wind>true</enable_wind>
       <inertial>
         <pose>0 -0.12 0 0 0 0</pose>
         <mass>1.5</mass>

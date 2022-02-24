@@ -22,6 +22,7 @@
 #include <ignition/transport/Node.hh>
 
 #include <ignition/msgs.hh>
+#include <ignition/gazebo/Model.hh>
 #include <ignition/gazebo/TestFixture.hh>
 #include <ignition/gazebo/Util.hh>
 #include <ignition/gazebo/World.hh>
@@ -326,9 +327,9 @@ TEST_F(MBZIRCTestFixture, GameLogicRobotModels)
 
   StopLaunchFile(launchHandle);
 
-  // summary log is updated every 30 seconds
-  ignmsg << "Waiting 30 seconds for summary.yml to update" << std::endl;
-  std::this_thread::sleep_for(30000ms);
+  // summary log is updated every 1 seconds
+  ignmsg << "Waiting 1 second for summary.yml to update" << std::endl;
+  std::this_thread::sleep_for(1000ms);
 
   // check that robot count in summary log is correct
   std::string logPath = "mbzirc_logs";
@@ -351,6 +352,227 @@ TEST_F(MBZIRCTestFixture, GameLogicRobotModels)
         != std::string::npos;
   }
   EXPECT_TRUE(robotCountReached);
+
+  ignition::common::removeAll(logPath);
+  return;
+}
+
+TEST_F(MBZIRCTestFixture, GameLogicBoundaryPenalty)
+{
+  using namespace std::literals::chrono_literals;
+
+  /// This test checks penalty is applied when robot moves out of bounds
+  std::vector<std::pair<std::string,std::string>> params{
+    {"name", "quadrotor"},
+    {"world", "faster_than_realtime"},
+    {"model", "mbzirc_quadrotor"},
+    {"type",  "uav"},
+    {"x", "1"},
+    {"y", "2"},
+    {"z", "0.05"},
+    {"flightTime", "10"}
+  };
+
+  bool spawnedSuccessfully = false;
+  bool moveOutOfBounds = false;
+  bool moveOutOfBoundsDone = false;
+  bool moveWithinBounds = false;
+  bool moveWithinBoundsDone = false;
+  bool moveOutOfBounds2 = false;
+  bool moveOutOfBounds2Done = false;
+  SetMaxIter(1000);
+
+  LoadWorld("faster_than_realtime.sdf");
+
+  OnPreupdate([&](const ignition::gazebo::UpdateInfo &_info,
+          ignition::gazebo::EntityComponentManager &_ecm)
+  {
+    auto worldEntity = ignition::gazebo::worldEntity(_ecm);
+    ignition::gazebo::World world(worldEntity);
+    auto modelEntity = world.ModelByName(_ecm, "quadrotor");
+    ignition::gazebo::Model model(modelEntity);
+    if (moveOutOfBounds && !moveOutOfBoundsDone)
+    {
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(0, -71, 100, 0, 0, 0));
+      moveOutOfBoundsDone = true;
+      ignmsg << "Moving UAV out of bounds." << std::endl;
+    }
+    else if (moveOutOfBounds2 && !moveOutOfBounds2Done)
+    {
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(0, 0, 125, 0, 0, 0));
+      moveOutOfBounds2Done = true;
+      ignmsg << "Moving UAV out of bounds again." << std::endl;
+    }
+    else if (moveWithinBounds && !moveWithinBoundsDone)
+    {
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(0, 0, 1, 0, 0, 0));
+      moveWithinBoundsDone = true;
+      ignmsg << "Moving UAV back within bounds." << std::endl;
+    }
+  });
+
+  OnPostupdate([&](const ignition::gazebo::UpdateInfo &_info,
+          const ignition::gazebo::EntityComponentManager &_ecm)
+  {
+    auto worldEntity = ignition::gazebo::worldEntity(_ecm);
+    ignition::gazebo::World world(worldEntity);
+
+    /// Check for model
+    auto modelEntity = world.ModelByName(_ecm, "quadrotor");
+    if (modelEntity != ignition::gazebo::kNullEntity)
+    {
+      spawnedSuccessfully = true;
+    }
+
+    if (Iter() % 1000 == 0)
+      ignmsg << Iter() <<std::endl;
+  });
+
+  StartSim();
+  auto launchHandle = LaunchWithParams("spawn.launch.py", params);
+  WaitForMaxIter();
+
+  // Wait for a maximum of 50K iterations or till the vehicle has been spawned.
+  while(!spawnedSuccessfully && Iter() < 50000)
+  {
+    Step(100);
+  }
+
+  ASSERT_TRUE(spawnedSuccessfully);
+
+  std::string logPath = "mbzirc_logs";
+  std::string eventsLogPath =
+      ignition::common::joinPaths(logPath, "events.yml");
+  EXPECT_TRUE(ignition::common::isFile(eventsLogPath));
+  std::string scoreLogPath =
+      ignition::common::joinPaths(logPath, "score.yml");
+  EXPECT_TRUE(ignition::common::isFile(scoreLogPath));
+
+  // verify initial state of logs
+  {
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    // events log should be empty
+    EXPECT_TRUE(eventsBuffer.str().empty());
+  }
+
+  // score should be 0
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    EXPECT_EQ(0, std::stoi(scoreBuffer.str()));
+  }
+
+  // move robot out of bounds
+  moveOutOfBounds = true;
+  Step(1);
+
+  // verify that exceed_boundary event is logged
+  bool started = false;
+  int sleep = 0;
+  int maxSleep = 10;
+  bool logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    // there should only be one exceed_boundary event
+    logged = eventsBuffer.str().find("type: exceed_boundary_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("type: exceed_boundary_2")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // score should be time penalty (300)
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    EXPECT_EQ(300, std::stoi(scoreBuffer.str()));
+  }
+
+  // move robot back within bounds
+  // this does not trigger any event
+  moveWithinBounds = true;
+  Step(2000);
+
+  // verify event log is the same
+  logged = false;
+  sleep = 0;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    // there should only be one exceed_boundary event
+    logged = eventsBuffer.str().find("type: exceed_boundary_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("type: exceed_boundary_2")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // score should be sim time + penalty (300s)
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    EXPECT_LT(300, std::stoi(scoreBuffer.str()));
+  }
+
+
+  // move robot back out of bounds again
+  moveOutOfBounds2 = true;
+  Step(1);
+
+  // verify there are now 2 exceed_bondary events
+  logged = false;
+  sleep = 0;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    // there should now be two exceed_boundary events
+    logged = eventsBuffer.str().find("type: exceed_boundary_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("type: exceed_boundary_2")
+               != std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // competition should be terminated due to 2nd exceed_boundary event
+  // score should be a large number (exceed time limit)
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    EXPECT_LT(3600, std::stof(scoreBuffer.str()));
+  }
+
+  StopLaunchFile(launchHandle);
 
   ignition::common::removeAll(logPath);
   return;

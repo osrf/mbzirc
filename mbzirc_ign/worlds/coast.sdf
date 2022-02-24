@@ -1,7 +1,12 @@
 <?xml version="1.0" ?>
 
 <sdf version="1.6">
-  <world name="coast.sdf">
+  <world name="coast">
+
+    <physics name="4ms" type="dart">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
 
     <gui fullscreen="0">
 
@@ -17,7 +22,7 @@
         <scene>scene</scene>
         <ambient_light>0.4 0.4 0.4</ambient_light>
         <background_color>0.8 0.8 0.8</background_color>
-        <camera_pose>-1500 0 6 0 0.5 0</camera_pose>
+        <camera_pose>-1510 0 6 0 0.5 0</camera_pose>
         <camera_clip>
           <near>0.25</near>
           <far>10000</far>
@@ -312,13 +317,20 @@
       <pose>0 0 10 0 0 0</pose>
       <diffuse>0.8 0.8 0.8 1</diffuse>
       <specular>0.2 0.2 0.2 1</specular>
-      <direction>-0.5 0.1 -0.9</direction>
+      <direction>-0.1 0.5 -0.9</direction>
     </light>
+
+    <include>
+      <pose>0 0 50 0 0 0</pose>
+      <uri>
+        dust_storm
+      </uri>
+    </include>
 
     <include>
       <name>Coast Waves</name>
       <pose>0 0 0 0 0 0</pose>
-      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Coast Waves</uri>
+      <uri>coast_waves</uri>
     </include>
 
     <include>
@@ -394,8 +406,518 @@
         <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
         <force>45.55</force>
         <torque>45.55</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+        <zero_vel_on_bearing_reached>true</zero_vel_on_bearing_reached>
       </plugin>
     </include>
+
+    <include>
+      <name>Vessel B</name>
+      <pose>0 0 0.4 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel B</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>22</vehicle_length>
+        <vehicle_width>7</vehicle_width>
+        <hull_radius>3.5</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>102</xU>
+        <xUU>145</xUU>
+        <yV>40.0</yV>
+        <yVV>0.0</yVV>
+        <zW>500.0</zW>
+        <kP>50.0</kP>
+        <mQ>50.0</mQ>
+        <nR>400.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>500 0</waypoint>
+          <waypoint>700 300</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>90.8</force>
+        <torque>90.8</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+        <zero_vel_on_bearing_reached>true</zero_vel_on_bearing_reached>
+      </plugin>
+    </include>
+
+    <include>
+      <name>Vessel C</name>
+      <pose>400 -1000 0.4 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel C</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>22</vehicle_length>
+        <vehicle_width>7</vehicle_width>
+        <hull_radius>3.5</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>102</xU>
+        <xUU>145</xUU>
+        <yV>40.0</yV>
+        <yVV>0.0</yVV>
+        <zW>500.0</zW>
+        <kP>50.0</kP>
+        <mQ>50.0</mQ>
+        <nR>400.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>400 -1100</waypoint>
+          <waypoint>450 -1000</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>90.8</force>
+        <torque>90.8</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+        <zero_vel_on_bearing_reached>true</zero_vel_on_bearing_reached>
+      </plugin>
+    </include>
+
+    <include>
+      <name>Vessel D</name>
+      <pose>1000 1200 0.4 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel D</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>22</vehicle_length>
+        <vehicle_width>7</vehicle_width>
+        <hull_radius>3.5</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>102</xU>
+        <xUU>145</xUU>
+        <yV>40.0</yV>
+        <yVV>0.0</yVV>
+        <zW>500.0</zW>
+        <kP>50.0</kP>
+        <mQ>50.0</mQ>
+        <nR>400.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>1100 0</waypoint>
+          <waypoint>1200 -300</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>90.8</force>
+        <torque>90.8</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+        <zero_vel_on_bearing_reached>true</zero_vel_on_bearing_reached>
+      </plugin>
+    </include>
+
+
+    <include>
+      <name>Vessel E</name>
+      <pose>-1000 -500 0.3 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel E</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>14</vehicle_length>
+        <vehicle_width>5</vehicle_width>
+        <hull_radius>2.5</hull_radius>
+        <fluid_level>0.35</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>77</xU>
+        <xUU>108.6</xUU>
+        <yV>40.0</yV>
+        <yVV>0.0</yVV>
+        <zW>500.0</zW>
+        <kP>50.0</kP>
+        <mQ>50.0</mQ>
+        <nR>400.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>-1100 -300</waypoint>
+          <waypoint>-1200 -20</waypoint>
+        </waypoints>
+        <!-- 1~2 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>100</force>
+        <torque>100</torque>
+        <bearing_tolerance>5</bearing_tolerance>
+        <range_tolerance>5</range_tolerance>
+        <zero_vel_on_bearing_reached>true</zero_vel_on_bearing_reached>
+      </plugin>
+    </include>
+
+    <include>
+      <name>Vessel F</name>
+      <pose>-100 600 0.3 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel F</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>14</vehicle_length>
+        <vehicle_width>5</vehicle_width>
+        <hull_radius>2.5</hull_radius>
+        <fluid_level>0.35</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>77</xU>
+        <xUU>108.6</xUU>
+        <yV>40.0</yV>
+        <yVV>0.0</yVV>
+        <zW>500.0</zW>
+        <kP>50.0</kP>
+        <mQ>50.0</mQ>
+        <nR>400.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>-100 700</waypoint>
+          <waypoint>-200 800</waypoint>
+        </waypoints>
+        <!-- 1~2 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>100</force>
+        <torque>100</torque>
+        <bearing_tolerance>5</bearing_tolerance>
+        <range_tolerance>5</range_tolerance>
+        <zero_vel_on_bearing_reached>true</zero_vel_on_bearing_reached>
+      </plugin>
+    </include>
+
+    <include>
+      <name>Vessel G</name>
+      <pose>-900 1000 0.4 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel G</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>22</vehicle_length>
+        <vehicle_width>7</vehicle_width>
+        <hull_radius>3.5</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>102</xU>
+        <xUU>145</xUU>
+        <yV>40.0</yV>
+        <yVV>0.0</yVV>
+        <zW>500.0</zW>
+        <kP>50.0</kP>
+        <mQ>50.0</mQ>
+        <nR>400.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>-1100 1000</waypoint>
+          <waypoint>-1000 1000</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>90.8</force>
+        <torque>90.8</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+        <zero_vel_on_bearing_reached>true</zero_vel_on_bearing_reached>
+      </plugin>
+    </include>
+
+    <model name="small_box_a">
+      <pose>-1400 20 0.5 0 0.0 -1.0</pose>
+      <link name="link">
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+          <ixx>0.0066667</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.0066667</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.0066667</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 0 1</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="large_box_a">
+      <pose>-1400.5 20 0.65 0 0.0 -1.0</pose>
+      <link name="link">
+        <inertial>
+          <mass>10</mass>
+          <inertia>
+          <ixx>0.26667</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.26667</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.26667</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.4 0.4 0.4</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.4 0.4 0.4</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
 
     <model name="max_bounds">
       <static>true</static>
@@ -452,6 +974,47 @@
       </link>
     </model>
 
+    <wind>
+      <linear_velocity>0.3 0 0</linear_velocity>
+    </wind>
+
+    <!-- Load the plugin for the wind -->
+    <plugin
+      filename="ignition-gazebo-wind-effects-system"
+      name="ignition::gazebo::systems::WindEffects">
+      <force_approximation_scaling_factor>0.002</force_approximation_scaling_factor>
+      <horizontal>
+        <magnitude>
+          <time_for_rise>10</time_for_rise>
+          <sin>
+            <amplitude_percent>0.05</amplitude_percent>
+            <period>60</period>
+          </sin>
+          <noise type="gaussian">
+           <mean>0</mean>
+           <stddev>0.0002</stddev>
+          </noise>
+        </magnitude>
+        <direction>
+          <time_for_rise>30</time_for_rise>
+          <sin>
+            <amplitude>5</amplitude>
+            <period>20</period>
+          </sin>
+          <noise type="gaussian">
+           <mean>0</mean>
+           <stddev>0.03</stddev>
+          </noise>
+        </direction>
+      </horizontal>
+      <vertical>
+        <noise type="gaussian">
+         <mean>0</mean>
+         <stddev>0.03</stddev>
+        </noise>
+      </vertical>
+    </plugin>
+
     <!-- The MBZIRC competition logic plugin -->
     <plugin filename="libGameLogicPlugin.so"
             name="mbzirc::GameLogicPlugin">
@@ -462,6 +1025,19 @@
              The HOME path is used by default -->
         <path>/tmp/ign/mbzirc/logs</path>
       </logging>
+      <!-- competition area -->
+      <!-- w x h = 10km2
+           max flight height is 400 ft / 121.92m
+           allow 100m below water level -->
+      <geofence>
+        <center>0 0 10.96</center>
+        <size>3162.28 3162.28 221.92</size>
+      </geofence>
+      <target>
+        <vessel>Vessel A</vessel>
+        <small_object>small_box_a</small_object>
+        <large_object>large_box_a</large_object>
+      </target>
     </plugin>
 
     <!-- uncomment to see visualization of the competition area -->
@@ -484,6 +1060,5 @@
       </link>
     </model>
     -->
-
   </world>
 </sdf>
