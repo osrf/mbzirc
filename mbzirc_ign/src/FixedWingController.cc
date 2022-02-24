@@ -41,62 +41,65 @@ using namespace ignition;
 using namespace gazebo;
 
 /// This file describes a simple Attitude controller for fixed wing air craft such as the
-/// Zephyr. The controller is based on three PID loops: one to control the pitch
-/// rate, one to control the roll rate, and one to control the forward velocity.
+/// Zephyr. The controller is based on two PID loops: one to control the pitch, 
+/// one to control the roll, and open loop forward velocity.
 /// This yaw rate in the zephyr is affected by the roll rate as the zephyr
 /// itself is underactuated.
 class mbzirc::FixedWingControllerPrivate
 {
-public:
-  math::PID rollControl;
+  /// \brief Roll control PID
+  public: math::PID rollControl;
 
-public:
-  math::PID pitchControl;
+  /// \brief Pitch control PID
+  public: math::PID pitchControl;
 
-public:
-  double targetRoll{0};
+  /// \brief Target Roll control PID
+  public: double targetRoll{0};
 
-public:
-  double targetPitch{0};
+  /// \brief Target Pitch control setpoint
+  public: double targetPitch{0};
 
-public:
-  double targetVelocity{0};
+  /// \brief Yaw control PID
+  public: double targetVelocity{0};
 
-public:
-  Entity entity;
+  /// \brief Entity to be controlled
+  public: Entity entity;
 
-public:
-  math::Vector3d pitchAxis;
+  /// \brief Pitch Axis
+  public: math::Vector3d pitchAxis;
 
-public:
-  math::Vector3d rollAxis;
+  /// \brief Roll Axis
+  public: math::Vector3d rollAxis;
 
-public:
-  transport::Node node;
+  /// \brief Ignition Node for joint position controllers
+  public: transport::Node node;
 
-public:
-  transport::Node::Publisher leftFlap;
+  /// \brief Ignition Publisher for left flap position controllers
+  public: transport::Node::Publisher leftFlap;
 
-public:
-  transport::Node::Publisher rightFlap;
+  /// \brief Ignition Node for right flap position controllers
+  public: transport::Node::Publisher rightFlap;
 
-public:
-  transport::Node::Publisher thruster;
+  /// \brief Ignition Node for thruster control
+  public: transport::Node::Publisher thruster;
 
-public:
-  std::ofstream logFile;
+  /// Uncomment to enable logging for PID tuning
+  ///public: std::ofstream logFile;
 
-public:
-  std::mutex mutex;
+  /// \brief Mutex for setpoints
+  public: std::mutex mutex;
 
-public:
-  rclcpp::Node::SharedPtr rclNode;
+  /// \brief ROS Node
+  public: rclcpp::Node::SharedPtr rclNode;
 
-public:
-  rclcpp::Subscription<mavros_msgs::msg::AttitudeTarget>::SharedPtr attitudeTargetSub;
+  /// \brief Attitude subscriber
+  public: rclcpp::Subscription<mavros_msgs::msg::AttitudeTarget>::SharedPtr 
+    attitudeTargetSub;
 
-public:
-  void SetupROS(const std::string &_name, const std::string &_topic)
+  /// \brief Setup the ros node
+  /// \param[in] _name Ros node name
+  /// \param[in] _topic Topic to listen on
+  public: void SetupROS(const std::string &_name, const std::string &_topic)
   {
     this->rclNode = std::make_shared<rclcpp::Node>("FixedWingController" + _name);
 
@@ -106,8 +109,9 @@ public:
         this, std::placeholders::_1));
   }
 
-public:
-  void OnAttitudeTarget(const mavros_msgs::msg::AttitudeTarget::SharedPtr _msg)
+  /// \brief Callback for attitude target messages
+  /// \param[in] _msg Attitude target message
+  public: void OnAttitudeTarget(const mavros_msgs::msg::AttitudeTarget::SharedPtr _msg)
   {
     math::Quaterniond quat(
       _msg->orientation.w,
@@ -123,7 +127,8 @@ public:
   }
 };
 
-FixedWingControllerPlugin::FixedWingControllerPlugin() : dataPtr(std::make_unique<FixedWingControllerPrivate>())
+FixedWingControllerPlugin::FixedWingControllerPlugin() :
+  dataPtr(std::make_unique<FixedWingControllerPrivate>())
 {
 }
 
@@ -161,9 +166,11 @@ void FixedWingControllerPlugin::Configure(
     return;
   }
 
+  /// Enable the Pose and Velocity components
   enableComponent<components::WorldPose>(_ecm, this->dataPtr->entity);
   enableComponent<components::WorldLinearVelocity>(_ecm, this->dataPtr->entity);
 
+  /// Get Control surface topics
   if (_sdf->HasElement("left_flap"))
   {
     auto leftFlapTopic = _sdf->Get<std::string>("left_flap");
@@ -185,9 +192,10 @@ void FixedWingControllerPlugin::Configure(
       this->dataPtr->node.Advertise<msgs::Double>(propellerTopic);
   }
 
+  /// Uncomment for logging
+  ///this->dataPtr->logFile.open("zephyr_controller.csv");
 
-  this->dataPtr->logFile.open("zephyr_controller.csv");
-
+  /// Setup Roll PID
   if (_sdf->HasElement("roll_p"))
   {
     this->dataPtr->rollControl.SetPGain(_sdf->Get<double>("roll_p"));
@@ -201,6 +209,7 @@ void FixedWingControllerPlugin::Configure(
     this->dataPtr->rollControl.SetDGain(_sdf->Get<double>("roll_d"));
   }
 
+  /// Setup Pitch PID
   if (_sdf->HasElement("pitch_p"))
   {
     this->dataPtr->pitchControl.SetPGain(_sdf->Get<double>("pitch_p"));
@@ -214,6 +223,7 @@ void FixedWingControllerPlugin::Configure(
     this->dataPtr->pitchControl.SetDGain(_sdf->Get<double>("pitch_d"));
   }
 
+  /// Get Axis in relation to link
   if (_sdf->HasElement("pitch_axis"))
   {
     this->dataPtr->pitchAxis = _sdf->Get<ignition::math::Vector3d>("pitch_axis");
@@ -223,6 +233,7 @@ void FixedWingControllerPlugin::Configure(
     this->dataPtr->rollAxis = _sdf->Get<ignition::math::Vector3d>("roll_axis");
   }
 
+  /// Start listening to attitude target messages
   this->dataPtr->SetupROS(
     _sdf->Get<std::string>("model_name"),
     _sdf->Get<std::string>("cmd_topic"));
@@ -238,9 +249,10 @@ void FixedWingControllerPlugin::PreUpdate(
   auto pose = _ecm.Component<components::WorldPose>(this->dataPtr->entity);
   auto rotation = pose->Data().Rot().Euler();
 
-  auto linVelocityComp =
-    _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
-  auto linVel = linVelocityComp->Data().Length();
+  /// For Logging
+  ///auto linVelocityComp =
+  ///  _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
+  ///auto linVel = linVelocityComp->Data().Length();
 
   {
     std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
@@ -268,8 +280,8 @@ void FixedWingControllerPlugin::PreUpdate(
     this->dataPtr->rightFlap.Publish(rightFlap);
 
     /// Log data
-    this->dataPtr->logFile << rollError << "," << pitchError << "," << linVel << "\n";
-    this->dataPtr->logFile.flush();
+    //this->dataPtr->logFile << rollError << "," << pitchError << "," << linVel << "\n";
+    //this->dataPtr->logFile.flush();
   }
 
   /// ROS

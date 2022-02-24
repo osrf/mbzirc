@@ -38,7 +38,9 @@ using namespace std::chrono_literals;
 TEST_F(MBZIRCTestFixture, FixedWingController)
 {
   // Create a ROS Node to commandeer the fixed wing
-  rclcpp::init(0, nullptr);
+  char const** argv = NULL;
+  if (!rclcpp::ok())
+    rclcpp::init(0, argv);
   auto rosNode = std::make_shared<rclcpp::Node>("TestFixedWing");
   auto publisher =
     rosNode->create_publisher<mavros_msgs::msg::AttitudeTarget>("/zephyr/cmd/attitude", 10);
