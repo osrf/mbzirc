@@ -901,6 +901,7 @@ bool GameLogicPluginPrivate::OnReportTargets(
     const ignition::msgs::StringMsg_V &_req,
     ignition::msgs::Boolean &_res)
 {
+  std::lock_guard<std::mutex> lock(this->reportMutex);
   this->reports.push_back(_req);
   _res.set_data(true);
   return true;
@@ -909,6 +910,7 @@ bool GameLogicPluginPrivate::OnReportTargets(
 /////////////////////////////////////////////////
 void GameLogicPluginPrivate::ValidateTargetReports()
 {
+  std::lock_guard<std::mutex> lock(this->reportMutex);
   for (auto &req : this->reports)
   {
     if (req.data_size() <= 0)
