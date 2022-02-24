@@ -9,7 +9,30 @@ namespace mbzirc
   class FixedWingControllerPrivate;
 
   /// \brief A plugin that takes care of fixed wing control of the zephyr.
-  class FixedWingControllerPlugin:
+  /// The controller is based on two PID loops: one to control the pitch,
+  /// one to control the roll, and open loop forward velocity.
+  /// This yaw rate in the zephyr is affected by the roll rate as the zephyr
+  /// itself is underactuated.
+  ///
+  /// # Parameters
+  /// `model_name` : The name of the rosnode (string)
+  /// `cmd_topic` : ROS Topic on which users should publish commands to
+  /// `link_name` : Link to be controlled (string)
+  /// `roll_axis` : Axis in link frame which describes the roll (vector3d)
+  /// `pitch_axis` : Axis in link frame which describes the pitch (vector3d)
+  /// `roll_p` : Roll control P gain (double)
+  /// `roll_i` : Roll control I gain (double)
+  /// `roll_d` : Roll control D gain (double)
+  /// `pitch_p` : Pitch control P gain (double)
+  /// `pitch_i` : Pitch control I gain (double)
+  /// `pitch_d` : Pitch control D gain (double)
+  /// `left_flap`: Topic to publish to on ignition to control the
+  ///    left flap joint position (string)
+  /// `right_flap`: Topic to publish to on ignition to control the
+  ///    right flap joint position (string)
+  /// `thruster`: Topic to publish to on ignition to control the
+  ///    thruster joint velocity (string)
+    class FixedWingControllerPlugin:
     public ignition::gazebo::System,
     public ignition::gazebo::ISystemConfigure,
     public ignition::gazebo::ISystemPreUpdate
