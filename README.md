@@ -31,6 +31,13 @@ See Installation instructions for:
     git clone https://github.com/osrf/mbzirc.git
     ```
 
+1. Install dependencies using [rosdep](https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Binary.html#installing-and-initializing-rosdep)
+
+    ```
+    cd ~/mbzirc_ws
+    rosdep install -r --from-paths src -i -y --rosdistro galactic
+    ```
+
 1. Build the workspace
 
     ```
