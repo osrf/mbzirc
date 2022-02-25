@@ -61,7 +61,7 @@ void main()
 
   // Compute refraction ratio (Fresnel):
   float facing = 1.0 - dot(-E, N);
-  float waterEnvRatio = clamp(pow(facing, fresnelPower), 0.05, 1.0);
+  float waterEnvRatio = clamp(pow(facing, fresnelPower), 0.15, 1.0);
 
   // Refracted ray only considers deep and shallow water colors:
   vec4 waterColor = mix(shallowColor, deepColor, facing);
