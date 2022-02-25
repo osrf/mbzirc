@@ -97,7 +97,7 @@ if(BUILD_TESTING)
     )
     target_include_directories(${TEST_TARGET}
       PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto mavros_msgs)
-    target_link_libraries(${TEST_TARGET} ignition-gazebo6::ignition-gazebo6 rclcpp::rclcpp ${mavros_msgs_LIBRARIES})
+    target_link_libraries(${TEST_TARGET} ignition-gazebo${IGN_GAZEBO_VER}::ignition-gazebo${IGN_GAZEBO_VER} rclcpp::rclcpp ${mavros_msgs_LIBRARIES})
     set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
   endforeach()
 endif()

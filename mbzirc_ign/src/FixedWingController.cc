@@ -41,7 +41,7 @@ using namespace ignition;
 using namespace gazebo;
 
 /// This file describes a simple Attitude controller for fixed wing air craft such as the
-/// Zephyr. The controller is based on two PID loops: one to control the pitch, 
+/// Zephyr. The controller is based on two PID loops: one to control the pitch,
 /// one to control the roll, and open loop forward velocity.
 /// This yaw rate in the zephyr is affected by the roll rate as the zephyr
 /// itself is underactuated.
@@ -59,7 +59,7 @@ class mbzirc::FixedWingControllerPrivate
   /// \brief Target Pitch control setpoint
   public: double targetPitch{0};
 
-  /// \brief Yaw control PID
+  /// \brief Target velocity control setpoint
   public: double targetVelocity{0};
 
   /// \brief Entity to be controlled
@@ -93,7 +93,7 @@ class mbzirc::FixedWingControllerPrivate
   public: rclcpp::Node::SharedPtr rclNode;
 
   /// \brief Attitude subscriber
-  public: rclcpp::Subscription<mavros_msgs::msg::AttitudeTarget>::SharedPtr 
+  public: rclcpp::Subscription<mavros_msgs::msg::AttitudeTarget>::SharedPtr
     attitudeTargetSub;
 
   /// \brief Setup the ros node
@@ -132,9 +132,7 @@ FixedWingControllerPlugin::FixedWingControllerPlugin() :
 {
 }
 
-FixedWingControllerPlugin::~FixedWingControllerPlugin()
-{
-}
+FixedWingControllerPlugin::~FixedWingControllerPlugin() = default;
 
 void FixedWingControllerPlugin::Configure(
     const ignition::gazebo::Entity &_entity,
