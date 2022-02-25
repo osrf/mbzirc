@@ -1,9 +1,76 @@
 <%
 if !defined?(name) || name== nil || name.empty?
-  $model_name = 'mbzirc_quadrotor'
+  $model_name = 'mbzirc_fixed_wing'
 else
   $model_name = name
 end
+
+$slot0_payload = nil
+$slot0_rpy = '0 0 0'
+$slot1_payload = nil
+$slot1_rpy = '0 0 0'
+$slot2_payload = nil
+$slot2_rpy = '0 0 0'
+$slot3_payload = nil
+$slot3_rpy = '0 0 0'
+$slot4_payload = nil
+$slot4_rpy = '0 0 0'
+$slot5_payload = nil
+$slot5_rpy = '0 0 0'
+$slot6_payload = nil
+$slot6_rpy = '0 0 0'
+$slot7_payload = nil
+$slot7_rpy = '0 0 0'
+
+if defined?(slot0)
+  $slot0_payload = slot0
+end
+if defined?(slot0_pos)
+  $slot0_rpy = slot0_pos
+end
+if defined?(slot1)
+  $slot1_payload = slot1
+end
+if defined?(slot1_pos)
+  $slot1_rpy = slot1_pos
+end
+if defined?(slot2)
+  $slot2_payload = slot2
+end
+if defined?(slot2_pos)
+  $slot2_rpy = slot2_pos
+end
+if defined?(slot3)
+  $slot3_payload = slot3
+end
+if defined?(slot3_pos)
+  $slot3_rpy = slot3_pos
+end
+if defined?(slot4)
+  $slot4_payload = slot4
+end
+if defined?(slot4_pos)
+  $slot4_rpy = slot4_pos
+end
+if defined?(slot5)
+  $slot5_payload = slot5
+end
+if defined?(slot5_pos)
+  $slot5_rpy = slot5_pos
+end
+if defined?(slot6)
+  $slot6_payload = slot6
+end
+if defined?(slot6_pos)
+  $slot6_rpy = slot6_pos
+end
+if defined?(slot7)
+  $slot7_payload = slot7
+end
+if defined?(slot7_pos)
+  $slot7_rpy = slot7_pos
+end
+
 %>
 
 <?xml version="1.0"?>
@@ -14,6 +81,135 @@ end
     <include merge="true">
       <uri>model://mbzirc_fixed_wing_base</uri>
     </include>
+
+    <% if $slot0_payload != nil%>
+    <!-- Payload slot0 -->
+    <include>
+      <name>sensor_0</name>
+      <uri>model://sensors/<%= $slot0_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_0" degrees="true">
+        0 0 0 <%= $slot0_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_0_joint" type="fixed">
+      <parent>slot_0</parent>
+      <child>sensor_0::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot1_payload != nil%>
+    <!-- Payload slot1 -->
+    <include>
+      <name>sensor_1</name>
+      <uri>model://sensors/<%= $slot1_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_1" degrees="true">
+        0 0 0 <%= $slot1_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_1_joint" type="fixed">
+      <parent>slot_1</parent>
+      <child>sensor_1::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot2_payload != nil%>
+    <!-- Payload slot2 -->
+    <include>
+      <name>sensor_2</name>
+      <uri>model://sensors/<%= $slot2_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_2" degrees="true">
+        0 0 0 <%= $slot2_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_2_joint" type="fixed">
+      <parent>slot_2</parent>
+      <child>sensor_2::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot3_payload != nil%>
+    <!-- Payload slot3 -->
+    <include>
+      <name>sensor_3</name>
+      <uri>model://sensors/<%= $slot3_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_3" degrees="true">
+        0 0 0 <%= $slot3_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_3_joint" type="fixed">
+      <parent>slot_3</parent>
+      <child>sensor_3::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot4_payload != nil%>
+    <!-- Payload slot4 -->
+    <include>
+      <name>sensor_4</name>
+      <uri>model://sensors/<%= $slot4_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_4" degrees="true">
+        0 0 0 <%= $slot4_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_4_joint" type="fixed">
+      <parent>slot_4</parent>
+      <child>sensor_4::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot5_payload != nil%>
+    <!-- Payload slot5 -->
+    <include>
+      <name>sensor_5</name>
+      <uri>model://sensors/<%= $slot5_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_5" degrees="true">
+        0 0 0 <%= $slot5_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_5_joint" type="fixed">
+      <parent>slot_5</parent>
+      <child>sensor_5::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot6_payload != nil%>
+    <!-- Payload slot6 -->
+    <include>
+      <name>sensor_6</name>
+      <uri>model://sensors/<%= $slot6_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_6" degrees="true">
+        0 0 0 <%= $slot6_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_6_joint" type="fixed">
+      <parent>slot_6</parent>
+      <child>sensor_6::mount_point</child>
+    </joint>
+    <% end %>
+    <% if $slot7_payload != nil%>
+    <!-- Payload slot7 -->
+    <include>
+      <name>sensor_7</name>
+      <uri>model://sensors/<%= $slot7_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_7" degrees="true">
+        0 0 0 <%= $slot7_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_7_joint" type="fixed">
+      <parent>slot_7</parent>
+      <child>sensor_7::mount_point</child>
+    </joint>
+    <% end %>
 
     <!-- Joints -->
     <plugin
@@ -34,6 +230,24 @@ end
       filename="ignition-gazebo-joint-controller-system"
       name="ignition::gazebo::systems::JointController">
       <joint_name>propeller_joint</joint_name>
+    </plugin>
+
+    <plugin filename="libFixedWingController.so"
+      name="mbzirc::FixedWingControllerPlugin">
+      <model_name><%= $model_name%></model_name>
+      <cmd_topic>/<%= $model_name%>/cmd/attitude</cmd_topic>
+      <link_name>wing</link_name>
+      <roll_axis>0 1 0</roll_axis>
+      <roll_p>0.1</roll_p>
+      <roll_i>0.01</roll_i>
+      <roll_d>0.01</roll_d>
+      <pitch_axis>1 0 0</pitch_axis>
+      <pitch_p>1</pitch_p>
+      <pitch_i>0.2</pitch_i>
+      <pitch_d>0.1</pitch_d>
+      <left_flap>/model/<%= $model_name%>/joint/left_flap_joint/cmd_pos</left_flap>
+      <right_flap>/model/<%= $model_name%>/joint/right_flap_joint/cmd_pos</right_flap>
+      <propeller>/model/<%= $model_name%>/joint/propeller_joint/cmd_vel</propeller>
     </plugin>
 
     <!-- Battery plugin -->

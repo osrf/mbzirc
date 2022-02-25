@@ -22,6 +22,7 @@ find_package(sdformat12 REQUIRED)
 
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(mavros_msgs REQUIRED)
 
 #============================================================================
 # Hooks
@@ -52,6 +53,7 @@ list(APPEND MBZIRC_IGN_PLUGINS
   SimpleHydrodynamics
   Surface
   WaveVisual
+  FixedWingController
 )
 
 foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
@@ -63,6 +65,8 @@ foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
     Waves
   )
 endforeach()
+
+ament_target_dependencies(FixedWingController PUBLIC rclcpp mavros_msgs)
 
 install(
   TARGETS ${MBZIRC_IGN_PLUGINS}
@@ -86,14 +90,14 @@ if(BUILD_TESTING)
   configure_file(test/helper/TestConstants.hh.in TestConstants.hh @ONLY)
 
   foreach(TEST_TARGET
-    test_spawn_uav_battery test_game_logic test_spawn_usv_maxspeed)
+    test_spawn_uav_battery test_game_logic test_spawn_usv_maxspeed test_fixed_wing)
     ament_add_gtest(
       ${TEST_TARGET}
       test/${TEST_TARGET}.cc
     )
     target_include_directories(${TEST_TARGET}
-      PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto )
-    target_link_libraries(${TEST_TARGET} ignition-gazebo6::ignition-gazebo6)
+      PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto mavros_msgs)
+    target_link_libraries(${TEST_TARGET} ignition-gazebo${IGN_GAZEBO_VER}::ignition-gazebo${IGN_GAZEBO_VER} rclcpp::rclcpp ${mavros_msgs_LIBRARIES})
     set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
   endforeach()
 endif()
