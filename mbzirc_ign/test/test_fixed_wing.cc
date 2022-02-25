@@ -78,6 +78,15 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
    // Create a Gazebo world
   LoadWorld("empty_platform.sdf");
 
+  std::atomic<bool> keepRosRunning {true};
+  auto rosThread = std::thread([&](){
+      while(keepRosRunning && rclcpp::ok())
+      {
+        rclcpp::spin_some(rosNode);
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+      }
+  });
+
   OnPreUpdate([&](const ignition::gazebo::UpdateInfo &_info,
     ignition::gazebo::EntityComponentManager &_ecm)
   {
@@ -109,7 +118,6 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
       linkVal.EnableVelocityChecks(_ecm);
       initialVelocitySet = true;
     }
-    rclcpp::spin_some(rosNode);
   });
 
   OnPostupdate([&](const ignition::gazebo::UpdateInfo &_info,
@@ -176,6 +184,11 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
   }
 
   StopLaunchFile(launchHandle);
+
+  keepRosRunning = false;
+  if (rosThread.joinable())
+    rosThread.join();
+
 
   ASSERT_TRUE(spawnedSuccessfully) << "Fixed Wing not spawned";
   ASSERT_TRUE(startedSuccessfully) << "Prop did not start spinning";
