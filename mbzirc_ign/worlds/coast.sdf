@@ -924,7 +924,7 @@
       <link name="link">
         <pose>0 0 0 0 0 0</pose>
         <collision name="x">
-          <pose>4000 0 0 0 0 0</pose>
+          <pose>3000 0 0 0 0 0</pose>
           <geometry>
             <box>
               <size>1 6000 1000</size>
@@ -932,7 +932,7 @@
           </geometry>
         </collision>
         <collision name="y">
-          <pose>0 4000 0 0 0 0</pose>
+          <pose>0 3000 0 0 0 0</pose>
           <geometry>
             <box>
               <size>6000 1 1000</size>
@@ -940,7 +940,7 @@
           </geometry>
         </collision>
         <collision name="-x">
-          <pose>-4000 0 0 0 0 0</pose>
+          <pose>-3000 0 0 0 0 0</pose>
           <geometry>
             <box>
               <size>1 6000 1000</size>
@@ -948,7 +948,7 @@
           </geometry>
         </collision>
         <collision name="-y">
-          <pose>0 -4000 0 0 0 0</pose>
+          <pose>0 -3000 0 0 0 0</pose>
           <geometry>
             <box>
               <size>6000 1 1000</size>
