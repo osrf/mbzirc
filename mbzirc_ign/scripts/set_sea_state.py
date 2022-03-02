@@ -34,10 +34,11 @@ def parse_args():
     return args
 
 
-def update_params(wave_gain, wind_speed_v):
+def update_params(wave_gain, wave_period, wind_speed_v):
     return
     process = subprocess.Popen(
-        ['sh', 'update_sea_state_params.sh', str(wave_gain), str(wind_speed_v)],
+        ['sh', 'update_sea_state_params.sh', str(wave_gain), str(wave_period),\
+        str(wind_speed_v)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
@@ -84,9 +85,10 @@ def update_params_by_date(hist_date, wind_dir):
 
     print ("Setting sea sate by date:", hist_date)
     print ("    wave gain (avg):", gain)
+    print ("    wave period:", wave_period)
     print ("    wind linear velocity:", wind_speed_v)
 
-    update_params(gain, wind_speed_v)
+    update_params(gain, wave_period, wind_speed_v)
 
 
 def update_params_by_sea_state(sea_state, wind_dir):
@@ -98,6 +100,7 @@ def update_params_by_sea_state(sea_state, wind_dir):
 
     gain = None
     wind_speed = None
+    wave_period = 5.0
     if sea_state_code == 0:
         gain = 0.0
         wind_speed = 0.0
@@ -113,9 +116,10 @@ def update_params_by_sea_state(sea_state, wind_dir):
     wind_speed_v = wind_dir * wind_speed
     print ("Setting sea sate by code:", sea_state)
     print ("    wave gain:", gain)
+    print ("    wave period:", wave_period)
     print ("    wind linear velocity:", wind_speed_v)
 
-    update_params(gain, wind_speed_v)
+    update_params(gain, wave_period, wind_speed_v)
 
 def run_main():
     args = parse_args()
