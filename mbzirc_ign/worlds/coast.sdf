@@ -349,7 +349,7 @@
         <link_name>link</link_name>
         <vehicle_length>6</vehicle_length>
         <vehicle_width>3.3</vehicle_width>
-        <hull_radius>0.27</hull_radius>
+        <hull_radius>1.9</hull_radius>
         <fluid_level>0.45</fluid_level>
 
         <!-- Waves -->
