@@ -52,15 +52,17 @@ def update_params_by_date(hist_date, wind_dir):
     wave_period = None
     wind_speed_kmh = None
     csv_file_name = "weather_avg_daily.csv"
+
     # read from csv spreadsheet file
     with open(csv_file_name, 'rt') as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=',')
+        reader = csv.DictReader(filter(lambda r: r[0]!='#', csv_file),
+                                delimiter=',')
         for row in reader:
             if hist_date in row["date"]:
                 wave_height = float(row["wave"])
                 wave_period = float(row["period"])
                 wind_speed_kmh = float(row["wind"])
-                print ("Found weather data for date:", hist_date, ":")
+                print ("Found weather data for date:", hist_date)
                 print ("  Avg wave height (m):", wave_height)
                 print ("  Avg wave period (s):", wave_period)
                 print ("  Avg wind speed (km/h):", wind_speed_kmh)
