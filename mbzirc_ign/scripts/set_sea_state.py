@@ -82,8 +82,9 @@ def update_params_by_date(hist_date, wind_dir):
     # amplitude is half of total wave height
     amplitude = wave_height * 0.5
 
-    # compute wave gain and wind speed using PMS model
+    # compute wave gain using PMS model
     gain = gain_from_pms(amplitude, wave_period, scale, number)
+
     wind_speed_v = np.array(wind_dir) * wind_speed
 
     print ("Setting sea state by date:", hist_date)
@@ -92,7 +93,6 @@ def update_params_by_date(hist_date, wind_dir):
     print ("    wind linear velocity:", wind_speed_v)
 
     update_params(gain, wave_period, wind_speed_v)
-
 
 def update_params_by_sea_state(sea_state, wind_dir):
     try:
