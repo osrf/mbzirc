@@ -22,4 +22,4 @@ find $DIR/../models -type f -exec sed -i ':a;N;$!ba;s/\(<wavefield>.*\)<period>.
 find $DIR/../worlds -type f -exec sed -i ':a;N;$!ba;s/\(<wavefield>.*\)<period>.*<\/period>\(.*<\/wavefield\)/\1<period>'"$wave_period"'<\/period>\2/g' {} \;
 
 # # update wind linear vel param
-find $DIR/../worlds -type f -exec sed -i ':a;N;$!ba;s/\(<wind>.*\)<linear_velocity>.*<\/linear_velocity>\(.*<\/wind\)/\1<linear_velocity>'"$wave_linear_velocity"'<\/linear_velocity>\2/g' {} \;
+find $DIR/../worlds -type f -exec sed -i ':a;N;$!ba;s/\(<wind>.*\)<linear_velocity>.*<\/linear_velocity>\(.*<\/wind\)/\1<linear_velocity>'"$wind_speed"'<\/linear_velocity>\2/g' {} \;
