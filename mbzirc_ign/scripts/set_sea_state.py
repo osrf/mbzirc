@@ -43,7 +43,7 @@ def update_params(wave_gain, wave_period, wind_speed_v):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
-    if not stderr:
+    if stderr != None and len(stderr) != 0:
         print (stdout, stderr)
         sys.exit(1)
 
