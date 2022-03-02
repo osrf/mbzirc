@@ -35,10 +35,11 @@ def parse_args():
 
 
 def update_params(wave_gain, wave_period, wind_speed_v):
-    return
+    wind_speed_v_str = ' '.join(str(w) for w in wind_speed_v)
+
     process = subprocess.Popen(
         ['sh', 'update_sea_state_params.sh', str(wave_gain), str(wave_period),\
-        str(wind_speed_v)],
+        str(wind_speed_v_str)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
