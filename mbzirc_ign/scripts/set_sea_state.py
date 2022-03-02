@@ -86,7 +86,7 @@ def update_params_by_date(hist_date, wind_dir):
     gain = gain_from_pms(amplitude, wave_period, scale, number)
     wind_speed_v = np.array(wind_dir) * wind_speed
 
-    print ("Setting sea sate by date:", hist_date)
+    print ("Setting sea state by date:", hist_date)
     print ("    wave gain (avg):", gain)
     print ("    wave period:", wave_period)
     print ("    wind linear velocity:", wind_speed_v)
