@@ -328,6 +328,14 @@
     </include>
 
     <include>
+      <pose>0 0 50 0 0 0</pose>
+      <uri>
+        fog
+      </uri>
+    </include>
+
+
+    <include>
       <name>Coast Waves</name>
       <pose>0 0 0 0 0 0</pose>
       <uri>coast_waves</uri>
