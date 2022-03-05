@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <model name="dust_storm">
+  <model name="fog">
     <static>true</static>
     <link name="link">
-      <particle_emitter name="dust_storm" type="box">
+      <particle_emitter name="fog" type="box">
         <pose>0 0 0 0 -1.5708 0</pose>
         <emitting>false</emitting>
         <size>3500 3500 0</size>
@@ -11,7 +11,7 @@
         <lifetime>30</lifetime>
         <duration>300</duration>
         <min_velocity>0.1</min_velocity>
-        <max_velocity>1.0</max_velocity>
+        <max_velocity>0.3</max_velocity>
         <scale_rate>30</scale_rate>
         <rate>100</rate>
         <material>
@@ -19,11 +19,11 @@
           <specular>1.0 1.0 1.0 0.1</specular>
           <pbr>
             <metal>
-              <albedo_map>materials/textures/dust.png</albedo_map>
+              <albedo_map>materials/textures/fog.png</albedo_map>
             </metal>
           </pbr>
         </material>
-        <color_range_image>materials/textures/dustcolors.png</color_range_image>
+        <color_range_image>materials/textures/fogcolors.png</color_range_image>
         <particle_scatter_ratio>0.65</particle_scatter_ratio>
       </particle_emitter>
     </link>
