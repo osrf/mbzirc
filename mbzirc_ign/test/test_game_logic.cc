@@ -22,6 +22,7 @@
 #include <ignition/transport/Node.hh>
 
 #include <ignition/msgs.hh>
+#include <ignition/gazebo/components/Pose.hh>
 #include <ignition/gazebo/Model.hh>
 #include <ignition/gazebo/TestFixture.hh>
 #include <ignition/gazebo/Util.hh>
@@ -537,7 +538,6 @@ TEST_F(MBZIRCTestFixture, GameLogicBoundaryPenalty)
     EXPECT_LT(300, std::stoi(scoreBuffer.str()));
   }
 
-
   // move robot back out of bounds again
   moveOutOfBounds2 = true;
   Step(1);
@@ -576,4 +576,734 @@ TEST_F(MBZIRCTestFixture, GameLogicBoundaryPenalty)
 
   ignition::common::removeAll(logPath);
   return;
+}
+
+TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
+{
+  using namespace std::literals::chrono_literals;
+
+  /// This test checks reporting targets over video stream
+  std::vector<std::pair<std::string,std::string>> params{
+    {"name", "quadrotor"},
+    {"world", "faster_than_realtime"},
+    {"model", "mbzirc_quadrotor"},
+    {"type",  "uav"},
+    {"x", "1"},
+    {"y", "2"},
+    {"z", "1.05"},
+    {"slot3", "mbzirc_hd_camera"},
+    {"flightTime", "10"}
+  };
+
+  bool spawnedSuccessfully = false;
+  bool moveAboveTargetVessel = false;
+  bool moveAboveTargetVesselDone = false;
+  bool moveAboveTargetSmallObject = false;
+  bool moveAboveTargetSmallObjectDone = false;
+  bool moveAboveTargetLargeObject = false;
+  bool moveAboveTargetLargeObjectDone = false;
+
+  SetMaxIter(1000);
+
+  LoadWorld("faster_than_realtime.sdf");
+
+  int simTimeSec = 0;
+  OnPreupdate([&](const ignition::gazebo::UpdateInfo &_info,
+          ignition::gazebo::EntityComponentManager &_ecm)
+  {
+    int64_t s, ns;
+    std::tie(s, ns) = ignition::math::durationToSecNsec(_info.simTime);
+    simTimeSec = s;
+
+    auto worldEntity = ignition::gazebo::worldEntity(_ecm);
+    ignition::gazebo::World world(worldEntity);
+    auto modelEntity = world.ModelByName(_ecm, "quadrotor");
+    ignition::gazebo::Model model(modelEntity);
+
+    if (moveAboveTargetVessel && !moveAboveTargetVesselDone)
+    {
+      auto vesselEntity = world.ModelByName(_ecm, "Vessel A");
+      auto poseComp =
+          _ecm.Component<ignition::gazebo::components::Pose>(vesselEntity);
+      ASSERT_TRUE(poseComp != nullptr);
+      ignition::math::Pose3d pose = poseComp->Data();
+      ignition::gazebo::Model vessel(vesselEntity);
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
+          pose.Pos() + ignition::math::Vector3d(0, 0, 80),
+          ignition::math::Quaterniond::Identity));
+      static bool output = false;
+      if (!output)
+      {
+        ignmsg << "Moving UAV above target vessel." << std::endl;
+        output = true;
+      }
+    }
+    else if (moveAboveTargetSmallObject && !moveAboveTargetSmallObjectDone)
+    {
+      auto objectEntity = world.ModelByName(_ecm, "small_box_a");
+      auto poseComp =
+          _ecm.Component<ignition::gazebo::components::Pose>(objectEntity);
+      ASSERT_TRUE(poseComp != nullptr);
+      ignition::math::Pose3d pose = poseComp->Data();
+      ignition::gazebo::Model object(objectEntity);
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
+          pose.Pos() + ignition::math::Vector3d(0, 0, 1),
+          ignition::math::Quaterniond::Identity));
+      moveAboveTargetSmallObjectDone = true;
+      static bool output = false;
+      if (!output)
+      {
+        ignmsg << "Moving UAV above target small object." << std::endl;
+        output = true;
+      }
+    }
+    else if (moveAboveTargetLargeObject && !moveAboveTargetLargeObjectDone)
+    {
+      auto objectEntity = world.ModelByName(_ecm, "large_box_a");
+      auto poseComp =
+          _ecm.Component<ignition::gazebo::components::Pose>(objectEntity);
+      ASSERT_TRUE(poseComp != nullptr);
+      ignition::math::Pose3d pose = poseComp->Data();
+      ignition::gazebo::Model object(objectEntity);
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
+          pose.Pos() + ignition::math::Vector3d(0, 0, 1),
+          ignition::math::Quaterniond::Identity));
+      moveAboveTargetLargeObjectDone = true;
+      static bool output = false;
+      if (!output)
+      {
+        ignmsg << "Moving UAV above target large object." << std::endl;
+        output = true;
+      }
+    }
+  });
+
+  OnPostupdate([&](const ignition::gazebo::UpdateInfo &_info,
+          const ignition::gazebo::EntityComponentManager &_ecm)
+  {
+    auto worldEntity = ignition::gazebo::worldEntity(_ecm);
+    ignition::gazebo::World world(worldEntity);
+
+    /// Check for model
+    auto modelEntity = world.ModelByName(_ecm, "quadrotor");
+    if (modelEntity != ignition::gazebo::kNullEntity)
+    {
+      spawnedSuccessfully = true;
+    }
+
+    if (Iter() % 1000 == 0)
+      ignmsg << Iter() <<std::endl;
+  });
+
+  StartSim();
+  auto launchHandle = LaunchWithParams("spawn.launch.py", params);
+  WaitForMaxIter();
+
+  // Wait for a maximum of 50K iterations or till the vehicle has been spawned.
+  while(!spawnedSuccessfully && Iter() < 50000)
+  {
+    Step(100);
+  }
+
+  ASSERT_TRUE(spawnedSuccessfully);
+
+  std::string logPath = "mbzirc_logs";
+  std::string eventsLogPath =
+      ignition::common::joinPaths(logPath, "events.yml");
+  EXPECT_TRUE(ignition::common::isFile(eventsLogPath));
+  std::string scoreLogPath =
+      ignition::common::joinPaths(logPath, "score.yml");
+  EXPECT_TRUE(ignition::common::isFile(scoreLogPath));
+
+   // verify initial state of logs
+  int score = 0;
+  {
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    // events log should be empty
+    EXPECT_TRUE(eventsBuffer.str().empty());
+
+    // score should be 0
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    EXPECT_EQ(0, score);
+  }
+
+  // move quadrotor above target vessel
+  moveAboveTargetVessel = true;
+  Step(100);
+
+  // verify that competition is started
+  int sleep = 0;
+  int maxSleep = 10;
+  bool logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    // there should be a started event
+    logged = eventsBuffer.str().find("type: started")
+               != std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  int startTime = simTimeSec;
+
+  ignition::transport::Node node;
+
+  // start stream
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("quadrotor");
+    req.add_data("sensor_3");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/start",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  Step(10);
+
+  // variables for counting score
+  // score = sim time + time penlty
+  // so keep track of sim time in OnPreUpdate and add penalties to it
+  // to get expected score
+  int vesselFirstPenalty = 180;
+  int vesselSecondPenalty = 240;
+  int smallFirstPenalty = 180;
+  int smallSecondPenalty = 240;
+  int largeFirstPenalty = 180;
+  int largeSecondPenalty = 240;
+
+  // verify that start stream request is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    // there should be a stream_start_request event
+    // but nothing should be reported yet
+    logged = eventsBuffer.str().find("type: stream_start_request")
+               != std::string::npos &&
+             eventsBuffer.str().find("type: target_reported")
+               == std::string::npos;
+
+  }
+  EXPECT_TRUE(logged);
+
+  // get current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // test report target but give incorrect image position
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("vessel");
+    req.add_data("240");
+    req.add_data("480");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/report",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  Step(100);
+
+  // verify that a vessel report failure event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("type: target_reported_in_stream")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: vessel_id_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: vessel_id_failure_2")
+               == std::string::npos &&
+             eventsBuffer.str().find("data: vessel_id_success")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        vesselFirstPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // advance time
+  Step(100);
+
+  // test report target vessel but give incorrect image position again
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("vessel");
+    req.add_data("340");
+    req.add_data("480");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/report",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  Step(100);
+
+  // verify that another vessel report failure event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("data: vessel_id_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: vessel_id_failure_2")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: vessel_id_success")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        vesselFirstPenalty + vesselSecondPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // advance time
+  Step(100);
+
+  // test report correct target vessel
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("vessel");
+    req.add_data("640");
+    req.add_data("480");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/report",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  Step(100);
+
+  // verify that a vessel report success event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("data: vessel_id_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: vessel_id_failure_2")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: vessel_id_success")
+               != std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        vesselFirstPenalty + vesselSecondPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // advance time
+  Step(100);
+
+  moveAboveTargetVesselDone = true;
+  moveAboveTargetSmallObject = true;
+  Step(20);
+
+  // test report target small object but give incorrect image position
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("small");
+    req.add_data("340");
+    req.add_data("480");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/report",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  Step(20);
+
+  // verify that a small object report failure event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("data: small_object_id_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: small_object_id_failure_2")
+               == std::string::npos &&
+             eventsBuffer.str().find("data: small_object_id_success")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        vesselFirstPenalty + vesselSecondPenalty +
+        smallFirstPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // test report target small object but give incorrect image position again
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("small");
+    req.add_data("640");
+    req.add_data("280");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/report",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  Step(20);
+
+  // verify that another small object report failure event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("data: small_object_id_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: small_object_id_failure_2")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: small_object_id_success")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        vesselFirstPenalty + vesselSecondPenalty +
+        smallFirstPenalty + smallSecondPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // test report correct target small object
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("small");
+    req.add_data("640");
+    req.add_data("480");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/report",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  Step(20);
+
+  // verify that a small object report success event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("data: small_object_id_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: small_object_id_failure_2")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: small_object_id_success")
+               != std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        vesselFirstPenalty + vesselSecondPenalty +
+        smallFirstPenalty + smallSecondPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // advance time
+  Step(100);
+
+  moveAboveTargetSmallObjectDone = true;
+  moveAboveTargetLargeObject = true;
+  Step(20);
+
+  // test report target large object but give incorrect image position
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("large");
+    req.add_data("0");
+    req.add_data("0");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/report",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  Step(20);
+
+  // verify that a large object report failure event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("data: large_object_id_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: large_object_id_failure_2")
+               == std::string::npos;
+             eventsBuffer.str().find("data: large_object_id_success")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        vesselFirstPenalty + vesselSecondPenalty +
+        smallFirstPenalty + smallSecondPenalty +
+        largeFirstPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // test report target large object but give incorrect image position again
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("large");
+    req.add_data("1280");
+    req.add_data("960");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/report",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+  Step(20);
+
+  // verify that another large object report failure event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("data: large_object_id_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: large_object_id_failure_2")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: large_object_id_success")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        vesselFirstPenalty + vesselSecondPenalty +
+        smallFirstPenalty + smallSecondPenalty +
+        largeFirstPenalty + largeSecondPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // test report correct large object
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg_V req;
+    req.add_data("large");
+    req.add_data("640");
+    req.add_data("480");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/target/stream/report",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  Step(20);
+
+  // verify that a large object report success event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("data: large_object_id_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: large_object_id_failure_2")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: large_object_id_success")
+               != std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        vesselFirstPenalty + vesselSecondPenalty +
+        smallFirstPenalty + smallSecondPenalty +
+        largeFirstPenalty + largeSecondPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  moveAboveTargetLargeObjectDone = true;
+
+  StopLaunchFile(launchHandle);
+  ignition::common::removeAll(logPath);
 }

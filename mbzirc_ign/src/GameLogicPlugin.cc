@@ -173,6 +173,10 @@ class mbzirc::GameLogicPluginPrivate
   public: std::chrono::steady_clock::time_point UpdateScoreFiles(
               const ignition::msgs::Time &_simTime);
 
+  /// \brief Get the sim time msg
+  /// \return Sim time msg
+  public: ignition::msgs::Time SimTime();
+
   /// \brief Log an event to the eventStream.
   /// \param[in] _event The event to log.
   /// \param[in] _data Additional data for the event. Optional
@@ -197,22 +201,43 @@ class mbzirc::GameLogicPluginPrivate
   /// \return True if the run was started.
   public: bool Start(const ignition::msgs::Time &_simTime);
 
-  /// \brief Ignition service callback triggered when the service is called.
+  /// \brief Ignition service callback triggered when finish is called.
   /// \param[in] _req The message containing a flag telling if the game is to
   /// be finished.
   /// \param[out] _res The response message.
   public: bool OnFinishCall(const ignition::msgs::Boolean &_req,
                ignition::msgs::Boolean &_res);
 
+  /// \brief Ignition service callback triggered when targets are reported.
+  /// \param[in] _req Report msg string in the following format:
+  ///                 [vessel name, small obj name. large obj name]
+  /// \param[out] _res The response message.
   public: bool OnReportTargets(const ignition::msgs::StringMsg_V &_req,
                ignition::msgs::Boolean &_res);
 
+  /// \brief Ignition service callback triggered when video stream is to be
+  /// started
+  /// \param[in] _req Report msg string in the following format:
+  ///                 [vehicle name, sensor_name]
+  ///                 where vehicle and sensor name are the vehicle carrying
+  ///                 the sensor with the image stream
+  /// \param[out] _res The response message.
   public: bool OnTargetStreamStart(const ignition::msgs::StringMsg_V &_req,
                ignition::msgs::Boolean &_res);
 
+  /// \brief Ignition service callback triggered when video stream is to be
+  /// stopped.
+  /// \param[in] _req Empty msg
+  /// \param[out] _res The response message.
   public: bool OnTargetStreamStop(const ignition::msgs::Empty &_req,
                ignition::msgs::Boolean &_res);
 
+  /// \brief Ignition service callback triggered when targets are reported
+  /// with image position in the video stream
+  /// \param[in] _req Report msg string in the following format:
+  ///                 [type, image pos x, image pos y]
+  ///                 where type can be "vessel", "small", or "large"
+  /// \param[out] _res The response message.
   public: bool OnTargetStreamReport(const ignition::msgs::StringMsg_V &_req,
                ignition::msgs::Boolean &_res);
 
@@ -234,11 +259,12 @@ class mbzirc::GameLogicPluginPrivate
   /// \param[in] _visual Target visual
   /// \param[in] _imagePos Image position to check for target
   /// \param[in] _type Type of target: vessel, small, or large
-  /// \return Name of potential target if found
-  public: std::string FindTargetVisual(
+  /// \param[out] _objectAtImgPos Object found at image pos.
+  /// \return True if a valid target is found
+  public: bool FindTargetVisual(
       const rendering::VisualPtr &_visual,
       const math::Vector2i &_imagePos,
-      const std::string &_type) const;
+      const std::string &_type, std::string &_objectAtImgPos) const;
 
   /// \brief Check if visual is in camera view
   /// \param[in] _visual Visual to check
@@ -282,6 +308,9 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Mutex to protect log stream.
   public: std::mutex logMutex;
+
+  /// \brief Mutex to protect sim time
+  public: std::mutex simTimeMutex;
 
   /// \brief Log file output stream.
   public: std::ofstream logStream;
@@ -407,8 +436,11 @@ class mbzirc::GameLogicPluginPrivate
   public: std::map<std::string, std::set<rendering::VisualPtr>>
       targetLargeObjectVisuals;
 
-  /// \brief Max allowed error (%) for reported target image position
-  public: const double kTargetInImageTol = 0.03;
+  /// \brief Max allowed error (%) for reported target vessel image position
+  public: const double kTargetVesselInImageTol = 0.03;
+
+  /// \brief Max allowed error (%) for reported target object image position
+  public: const double kTargetObjInImageTol = 0.008;
 };
 
 //////////////////////////////////////////////////
@@ -620,7 +652,8 @@ void GameLogicPluginPrivate::OnBatteryMsg(
     const ignition::msgs::BatteryState &_msg,
     const transport::MessageInfo &_info)
 {
-  ignition::msgs::Time localSimTime(this->simTime);
+  auto simT = this->SimTime();
+  ignition::msgs::Time localSimTime(simT);
   if (_msg.percentage() <= 0)
   {
     std::vector<std::string> topicParts = common::split(_info.Topic(), "/");
@@ -656,8 +689,11 @@ void GameLogicPlugin::PostUpdate(
   // Store sim time
   int64_t s, ns;
   std::tie(s, ns) = ignition::math::durationToSecNsec(_info.simTime);
-  this->dataPtr->simTime.set_sec(s);
-  this->dataPtr->simTime.set_nsec(ns);
+  {
+    std::lock_guard<std::mutex> lock(this->dataPtr->simTimeMutex);
+    this->dataPtr->simTime.set_sec(s);
+    this->dataPtr->simTime.set_nsec(ns);
+  }
 
   // Capture the names of the robots. We only do this until the team
   // triggers the start signal.
@@ -931,7 +967,8 @@ void GameLogicPluginPrivate::PublishScore()
 bool GameLogicPluginPrivate::OnFinishCall(const ignition::msgs::Boolean &_req,
   ignition::msgs::Boolean &_res)
 {
-  ignition::msgs::Time localSimTime(this->simTime);
+  auto simT = this->SimTime();
+  ignition::msgs::Time localSimTime(simT);
   if (this->started && _req.data() && !this->finished)
   {
     ignmsg << "User triggered OnFinishCall." << std::endl;
@@ -951,7 +988,8 @@ bool GameLogicPluginPrivate::OnFinishCall(const ignition::msgs::Boolean &_req,
 bool GameLogicPluginPrivate::OnStartCall(const ignition::msgs::Boolean &_req,
   ignition::msgs::Boolean &_res)
 {
-  ignition::msgs::Time localSimTime(this->simTime);
+  auto simT = this->SimTime();
+  ignition::msgs::Time localSimTime(simT);
   if (_req.data())
     _res.set_data(this->Start(localSimTime));
   else
@@ -1140,7 +1178,7 @@ bool GameLogicPluginPrivate::OnTargetStreamReport(
 {
   if (!this->started || this->finished)
   {
-    ignwarn << "Unabled to report target in stream. Run not active"
+    ignwarn << "Unable to report target in stream. Run not active"
             << std::endl;
     this->LogEvent("target_reported_in_stream", "run_not_active");
     _res.set_data(false);
@@ -1198,6 +1236,8 @@ void GameLogicPluginPrivate::ValidateTargetReports()
       continue;
     }
 
+    auto simT = this->SimTime();
+
     auto it = this->targets.find(vessel);
     if (it != this->targets.end())
     {
@@ -1251,7 +1291,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             {
               this->timePenalty +=
                   this->kTimePenalties.at(LARGE_OBJECT_ID_1);
-              this->UpdateScoreFiles(this->simTime);
+              this->UpdateScoreFiles(simT);
               logData += "_1";
               this->LogEvent("target_reported", logData);
             }
@@ -1259,7 +1299,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             {
               this->timePenalty +=
                   this->kTimePenalties.at(LARGE_OBJECT_ID_2);
-              this->UpdateScoreFiles(this->simTime);
+              this->UpdateScoreFiles(simT);
               logData += "_2";
               this->LogEvent("target_reported", logData);
             }
@@ -1270,7 +1310,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               logData += "_3";
               this->LogEvent("target_reported", logData);
               // terminate run
-              this->Finish(this->simTime);
+              this->Finish(simT);
               break;
             }
           }
@@ -1312,14 +1352,14 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               {
                 this->timePenalty +=
                     this->kTimePenalties.at(LARGE_OBJECT_ID_1);
-                this->UpdateScoreFiles(this->simTime);
+                this->UpdateScoreFiles(simT);
                 this->LogEvent("target_reported", logData + "_1");
               }
               else if (count == 2u)
               {
                 this->timePenalty +=
                     this->kTimePenalties.at(LARGE_OBJECT_ID_2);
-                this->UpdateScoreFiles(this->simTime);
+                this->UpdateScoreFiles(simT);
                 this->LogEvent("target_reported", logData + "_2");
               }
               else
@@ -1328,7 +1368,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
                     this->kTimePenalties.at(LARGE_OBJECT_ID_3);
                 this->LogEvent("target_reported", logData + "_3");
                 // terminate run
-                this->Finish(this->simTime);
+                this->Finish(simT);
                 break;
               }
             }
@@ -1349,14 +1389,14 @@ void GameLogicPluginPrivate::ValidateTargetReports()
       {
         this->timePenalty +=
             this->kTimePenalties.at(TARGET_VESSEL_ID_1);
-        this->UpdateScoreFiles(this->simTime);
+        this->UpdateScoreFiles(simT);
         this->LogEvent("target_reported", logData + "_1");
       }
       else if (this->vesselPenaltyCount == 2u)
       {
         this->timePenalty +=
             this->kTimePenalties.at(TARGET_VESSEL_ID_2);
-        this->UpdateScoreFiles(this->simTime);
+        this->UpdateScoreFiles(simT);
         this->LogEvent("target_reported", logData + "_2");
       }
       else
@@ -1365,12 +1405,19 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             this->kTimePenalties.at(TARGET_VESSEL_ID_3);
         this->LogEvent("target_reported", logData + "_3");
         // terminate run
-        this->Finish(this->simTime);
+        this->Finish(simT);
         break;
       }
     }
   }
   this->reports.clear();
+}
+
+/////////////////////////////////////////////////
+ignition::msgs::Time GameLogicPluginPrivate::SimTime()
+{
+  std::lock_guard<std::mutex> lock(this->simTimeMutex);
+  return this->simTime;
 }
 
 /////////////////////////////////////////////////
@@ -1426,11 +1473,14 @@ void GameLogicPluginPrivate::LogEvent(const std::string &_type,
   int simElapsed = 0;
   std::chrono::steady_clock::time_point currTime =
     std::chrono::steady_clock::now();
+
+  auto simT = this->SimTime();
+
   if (this->started)
   {
     realElapsed = std::chrono::duration_cast<std::chrono::seconds>(
         currTime - this->startTime).count();
-    simElapsed = this->simTime.sec() - this->startSimTime.sec();
+    simElapsed = simT.sec() - this->startSimTime.sec();
   }
 
   std::lock_guard<std::mutex> lock(this->eventCounterMutex);
@@ -1440,7 +1490,7 @@ void GameLogicPluginPrivate::LogEvent(const std::string &_type,
     << "- event:\n"
     << "  id: " << this->eventCounter << "\n"
     << "  type: " << _type << "\n"
-    << "  time_sec: " << this->simTime.sec() << "\n"
+    << "  time_sec: " << simT.sec() << "\n"
     << "  elapsed_real_time: " << realElapsed << "\n"
     << "  elapsed_sim_time: " << simElapsed << "\n"
     << "  total_score: " << this->totalScore << std::endl;
@@ -1451,7 +1501,7 @@ void GameLogicPluginPrivate::LogEvent(const std::string &_type,
   this->eventStream.flush();
   this->eventCounter++;
 
-  this->Log(this->simTime) << "Logged Event:\n" << stream.str() << std::endl;
+  this->Log(simT) << "Logged Event:\n" << stream.str() << std::endl;
 }
 
 /////////////////////////////////////////////////
@@ -1496,6 +1546,7 @@ void GameLogicPluginPrivate::OnPostRender()
       {
         this->targetVesselVisuals.insert(vesselVisual);
       }
+
 
       for (const auto &obj : it.second.smallObjects)
       {
@@ -1548,12 +1599,13 @@ void GameLogicPluginPrivate::OnPostRender()
         if (value && *value == static_cast<int>(this->targetStreamSensorEntity))
         {
           this->camera = std::dynamic_pointer_cast<rendering::Camera>(sensor);
-          std::cerr << "found camera streaming target!!! " << sensor->Name() << std::endl;
           break;
         }
       }
     }
   }
+  // reset camera pointer if stream sensor entity is null
+  // this could be the stream stopped
   else if (this->camera && this->targetStreamSensorEntity == kNullEntity)
   {
     this->camera.reset();
@@ -1562,30 +1614,36 @@ void GameLogicPluginPrivate::OnPostRender()
   // validate target
   if (this->camera && !this->targetInStreamReport.type.empty())
   {
+    // check if the specified img pos contains the target visual
+    // using the FindTargetVisual function below
+    // It uses a 2 phase process for identifying target
+    // First it checks if target is at the exact img pos
+    // If not, it checks to see if any target is nearby with some tol
     ignition::msgs::StringMsg_V req;
     ignition::msgs::Boolean res;
     std::string target;
+    // verify vesel
     if (this->targetInStreamReport.type == "vessel")
     {
       for (const auto &v : this->targetVesselVisuals)
       {
-        std::string t = this->FindTargetVisual(v,
+        bool found = this->FindTargetVisual(v,
             math::Vector2i(this->targetInStreamReport.x,
             this->targetInStreamReport.y),
-            this->targetInStreamReport.type);
-        if (!t.empty())
+            this->targetInStreamReport.type, target);
+        if (found)
         {
-          target = t;
           break;
         }
       }
       req.add_data(target);
       this->OnReportTargets(req, res);
     }
+    // verify small object
     else if (this->targetInStreamReport.type == "small")
     {
       auto it = this->targetSmallObjectVisuals.find(this->currentTargetVessel);
-      if (!this->currentTargetVessel.empty() ||
+      if (this->currentTargetVessel.empty() ||
           it == this->targetSmallObjectVisuals.end())
       {
         ignerr << "Target vessel has not been identified yet" << std::endl;
@@ -1595,13 +1653,12 @@ void GameLogicPluginPrivate::OnPostRender()
 
       for (const auto &v : it->second)
       {
-        std::string t = this->FindTargetVisual(v,
+        bool found = this->FindTargetVisual(v,
             math::Vector2i(this->targetInStreamReport.x,
             this->targetInStreamReport.y),
-            this->targetInStreamReport.type);
-        if (!t.empty())
+            this->targetInStreamReport.type, target);
+        if (found)
         {
-          target = t;
           break;
         }
       }
@@ -1610,10 +1667,11 @@ void GameLogicPluginPrivate::OnPostRender()
       req.add_data(target);
       this->OnReportTargets(req, res);
     }
+    // verify large object
     else if (this->targetInStreamReport.type == "large")
     {
       auto it = this->targetLargeObjectVisuals.find(this->currentTargetVessel);
-      if (!this->currentTargetVessel.empty() ||
+      if (this->currentTargetVessel.empty() ||
           it == this->targetLargeObjectVisuals.end())
       {
         ignerr << "Target vessel has not been identified yet" << std::endl;
@@ -1623,13 +1681,12 @@ void GameLogicPluginPrivate::OnPostRender()
 
       for (const auto &v : it->second)
       {
-        std::string t = this->FindTargetVisual(v,
+        bool found = this->FindTargetVisual(v,
             math::Vector2i(this->targetInStreamReport.x,
             this->targetInStreamReport.y),
-            this->targetInStreamReport.type);
-        if (!t.empty())
+            this->targetInStreamReport.type, target);
+        if (found)
         {
-          target = t;
           break;
         }
       }
@@ -1645,32 +1702,68 @@ void GameLogicPluginPrivate::OnPostRender()
 }
 
 /////////////////////////////////////////////////
-std::string GameLogicPluginPrivate::FindTargetVisual(
-    const rendering::VisualPtr &_visual,
-    const math::Vector2i &_imagePos, const std::string &_type) const
+bool GameLogicPluginPrivate::FindTargetVisual(
+    const rendering::VisualPtr &_targetVis,
+    const math::Vector2i &_imagePos, const std::string &_type,
+    std::string &_objectAtImgPos) const
 {
-  // first check if specified image pos has the target visual
+  // first check if object at specified image pos is the target visual
   std::string target;
-  auto targetVis = this->VisualAt(_imagePos.X(), _imagePos.Y(), _type);
-  if (!targetVis || targetVis != _visual)
+  auto vis = this->VisualAt(_imagePos.X(), _imagePos.Y(), _type);
+  if (!vis || vis != _targetVis)
   {
+    ignmsg << "No valid target at (" << _imagePos << ")." << std::endl;
+    ignmsg << "Checking nearby pixels." << std::endl;
     // check if target vessel is in camera view
     math::Vector2i pos;
-    if (this->VisualInView(_visual, pos))
+    if (this->VisualInView(_targetVis, pos))
     {
+      ignmsg << "Target is in view: " << _targetVis->Name() << std::endl;
       // check image pos of target is within tolernace
       auto diff = pos - _imagePos;
-      if (diff.Length() < this->camera->ImageWidth() * this->kTargetInImageTol)
+
+      // todo(anyone) make tol a function of distance from camera to
+      // target as well?
+      double tol = this->kTargetVesselInImageTol;
+      if (_type != "vessel")
+        tol = this->kTargetObjInImageTol;
+
+      double pxTol = this->camera->ImageWidth() * tol;
+      if (diff.Length() < pxTol)
       {
-        target = _visual->Name();
+        _objectAtImgPos = _targetVis->Name();
+        ignmsg << "  Found target: " << _targetVis->Name() << " "
+               << "within the allowed tolerance. Valid report."
+               << std::endl;
+        return true;
       }
+      else
+      {
+        ignmsg << "  Target is not within the allowed tolerance: "
+               << "diff: " << diff.Length() << ", tol: " << pxTol
+               << std::endl;
+      }
+    }
+    else
+    {
+      ignmsg << "Target is not in view: " << _targetVis->Name() << std::endl;
     }
   }
   else
   {
-    target = targetVis->Name();
+    ignmsg << "Found target: " << vis->Name() << ". Valid report."
+           <<  std::endl;
+    _objectAtImgPos = vis->Name();
+    return true;
   }
-  return target;
+
+  // set object at img pos even if it is not the target
+  if (vis)
+    _objectAtImgPos = vis->Name();
+  else
+    _objectAtImgPos = "none";
+
+  return false;
 }
 
 /////////////////////////////////////////////////
@@ -1687,7 +1780,6 @@ bool GameLogicPluginPrivate::VisualInView(
   {
     // check if projected pos of visual is within image width and height
     auto projectedImgPos = this->camera->Project(_visual->WorldPosition());
-    //  std::cerr << "projectedImgPos " << projectedImgPos << std::endl;
     if (projectedImgPos.X() >= 0 &&
         projectedImgPos.X() < this->camera->ImageWidth() &&
         projectedImgPos.Y() >= 0 &&
@@ -1757,7 +1849,6 @@ rendering::VisualPtr GameLogicPluginPrivate::VisualAt(
   std::string target;
   if (visual)
   {
-    std::cerr << "Found object: " << visual->Name() << std::endl;
     auto target = visual;
     while (target->Parent() &&
            target->Parent() != this->scene->RootVisual())
@@ -1765,12 +1856,7 @@ rendering::VisualPtr GameLogicPluginPrivate::VisualAt(
       target = std::dynamic_pointer_cast<rendering::Visual>(
           target->Parent());
     }
-    std::cerr << "Model: " << target->Name() << std::endl;
     return target;
-  }
-  else
-  {
-    std::cerr << "No object found! " << std::endl;
   }
   return nullptr;
 }
