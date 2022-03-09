@@ -1520,6 +1520,7 @@ void GameLogicPluginPrivate::OnPostRender()
   if (!this->scene)
   {
     this->scene = rendering::sceneFromFirstRenderEngine();
+    ignmsg << "Render thread started. Getting scene." << std::endl;
   }
 
   // return if scene not ready or no sensors available.

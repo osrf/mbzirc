@@ -647,9 +647,8 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
       ignition::math::Pose3d pose = poseComp->Data();
       ignition::gazebo::Model object(objectEntity);
       model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
-          pose.Pos() + ignition::math::Vector3d(0, 0, 1),
+          pose.Pos() + ignition::math::Vector3d(0, 0, 1.5),
           ignition::math::Quaterniond::Identity));
-      moveAboveTargetSmallObjectDone = true;
       static bool output = false;
       if (!output)
       {
@@ -666,9 +665,8 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
       ignition::math::Pose3d pose = poseComp->Data();
       ignition::gazebo::Model object(objectEntity);
       model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
-          pose.Pos() + ignition::math::Vector3d(0, 0, 1),
+          pose.Pos() + ignition::math::Vector3d(0, 0, 1.5),
           ignition::math::Quaterniond::Identity));
-      moveAboveTargetLargeObjectDone = true;
       static bool output = false;
       if (!output)
       {
@@ -706,6 +704,9 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   ASSERT_TRUE(spawnedSuccessfully);
+
+  // give some time for rendering sensors to load
+  std::this_thread::sleep_for(5000ms);
 
   std::string logPath = "mbzirc_logs";
   std::string eventsLogPath =
@@ -779,7 +780,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   Step(10);
 
   // variables for counting score
-  // score = sim time + time penlty
+  // score = sim time + time penalty
   // so keep track of sim time in OnPreUpdate and add penalties to it
   // to get expected score
   int vesselFirstPenalty = 180;
@@ -838,6 +839,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   Step(100);
+  std::this_thread::sleep_for(1000ms);
 
   // verify that a vessel report failure event is logged
   sleep = 0;
@@ -893,6 +895,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   Step(100);
+  std::this_thread::sleep_for(1000ms);
 
   // verify that another vessel report failure event is logged
   sleep = 0;
@@ -946,6 +949,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   Step(100);
+  std::this_thread::sleep_for(1000ms);
 
   // verify that a vessel report success event is logged
   sleep = 0;
@@ -1003,6 +1007,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   Step(20);
+  std::this_thread::sleep_for(1000ms);
 
   // verify that a small object report failure event is logged
   sleep = 0;
@@ -1054,6 +1059,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   Step(20);
+  std::this_thread::sleep_for(1000ms);
 
   // verify that another small object report failure event is logged
   sleep = 0;
@@ -1105,6 +1111,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   Step(20);
+  std::this_thread::sleep_for(1000ms);
 
   // verify that a small object report success event is logged
   sleep = 0;
@@ -1163,6 +1170,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   Step(20);
+  std::this_thread::sleep_for(1000ms);
 
   // verify that a large object report failure event is logged
   sleep = 0;
@@ -1214,6 +1222,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
     EXPECT_TRUE(rep.data());
   }
   Step(20);
+  std::this_thread::sleep_for(1000ms);
 
   // verify that another large object report failure event is logged
   sleep = 0;
@@ -1266,6 +1275,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   Step(20);
+  std::this_thread::sleep_for(1000ms);
 
   // verify that a large object report success event is logged
   sleep = 0;

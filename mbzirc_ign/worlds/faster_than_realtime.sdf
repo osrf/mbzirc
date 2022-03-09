@@ -27,6 +27,7 @@
       name="ignition::gazebo::systems::SceneBroadcaster">
     </plugin>
 
+
     <scene>
       <sky></sky>
       <grid>false</grid>
