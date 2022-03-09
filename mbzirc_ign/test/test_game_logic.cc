@@ -839,7 +839,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   Step(100);
-  std::this_thread::sleep_for(1000ms);
+  std::this_thread::sleep_for(5000ms);
 
   // verify that a vessel report failure event is logged
   sleep = 0;

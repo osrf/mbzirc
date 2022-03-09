@@ -1527,6 +1527,7 @@ void GameLogicPluginPrivate::OnPostRender()
   if (!this->scene->IsInitialized() ||
       this->scene->SensorCount() == 0)
   {
+    igndbg << "Thread not initialized or no sensors exist." << std::endl;
     return;
   }
 
@@ -1580,6 +1581,11 @@ void GameLogicPluginPrivate::OnPostRender()
     }
   }
 
+  igndbg <<  "target vessel small large size: " <<
+      this->targetVesselVisuals.size() << " " <<
+      this->targetSmallObjectVisuals.size()  << " " <<
+      this->targetLargeObjectVisuals.size() << std::endl;
+
   // get camera currently streaming video
   std::lock_guard<std::mutex> lock(this->streamMutex);
   if (!this->camera && this->targetStreamSensorEntity != kNullEntity)
@@ -1611,6 +1617,8 @@ void GameLogicPluginPrivate::OnPostRender()
   {
     this->camera.reset();
   }
+
+  igndbg <<  "Got camera and report ? " << this->camera << " " << this->targetInStreamReport.type << std::endl;
 
   // validate target
   if (this->camera && !this->targetInStreamReport.type.empty())
