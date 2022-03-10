@@ -845,9 +845,11 @@ void GameLogicPlugin::PostUpdate(
     std::lock_guard<std::mutex> lock(this->dataPtr->streamMutex);
     if (!this->dataPtr->targetStreamTopic.empty())
     {
+      std::cerr << "camera sensor count " << this->dataPtr->cameraSensors.size() << std::endl;
       for (auto sensorEntity : this->dataPtr->cameraSensors)
       {
         std::string topic = scopedName(sensorEntity, _ecm);
+        std::cerr << "topic " << topic << std::endl;
         if (this->dataPtr->targetStreamTopic.find(topic) != std::string::npos)
         {
           this->dataPtr->targetStreamSensorEntity = sensorEntity;
@@ -1133,6 +1135,7 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
     }
   }
 
+
   if (!vehicleTopic.empty())
   {
     _res.set_data(true);
@@ -1153,6 +1156,8 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
     this->targetStreamTopic.clear();
   }
   this->targetStreamSensorEntity = kNullEntity;
+
+  std::cerr << "vehicle topic " << vehicleTopic << " : " <<  this->targetStreamSensorEntity << std::endl;
   return true;
 }
 
@@ -1586,6 +1591,10 @@ void GameLogicPluginPrivate::OnPostRender()
       this->targetSmallObjectVisuals.size()  << " " <<
       this->targetLargeObjectVisuals.size() << std::endl;
 
+
+
+  igndbg <<  "Got camera and report ? " << this->camera << " " << this->targetStreamSensorEntity << std::endl;
+
   // get camera currently streaming video
   std::lock_guard<std::mutex> lock(this->streamMutex);
   if (!this->camera && this->targetStreamSensorEntity != kNullEntity)
@@ -1596,15 +1605,24 @@ void GameLogicPluginPrivate::OnPostRender()
       if (!sensor)
         continue;
 
+      igndbg <<  "sensor " << sensor << std::endl;
+
       if (sensor->HasUserData("gazebo-entity"))
       {
+
         // RenderUtil stores gazebo-entity user data as int
         // \todo(anyone) Change this to uint64_t in Ignition H
         auto variant = sensor->UserData("gazebo-entity");
         const int *value = std::get_if<int>(&variant);
 
+        igndbg <<  "Has user data " << value << std::endl;
+
+        if (value)
+          igndbg <<  "  user data " << *value << std::endl;
+
         if (value && *value == static_cast<int>(this->targetStreamSensorEntity))
         {
+
           this->camera = std::dynamic_pointer_cast<rendering::Camera>(sensor);
           break;
         }
@@ -1618,7 +1636,6 @@ void GameLogicPluginPrivate::OnPostRender()
     this->camera.reset();
   }
 
-  igndbg <<  "Got camera and report ? " << this->camera << " " << this->targetInStreamReport.type << std::endl;
 
   // validate target
   if (this->camera && !this->targetInStreamReport.type.empty())
