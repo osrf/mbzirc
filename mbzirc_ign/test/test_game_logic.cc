@@ -649,7 +649,6 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
       model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
           pose.Pos() + ignition::math::Vector3d(0, 0, 1),
           ignition::math::Quaterniond::Identity));
-      moveAboveTargetSmallObjectDone = true;
       static bool output = false;
       if (!output)
       {
@@ -668,7 +667,6 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
       model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
           pose.Pos() + ignition::math::Vector3d(0, 0, 1),
           ignition::math::Quaterniond::Identity));
-      moveAboveTargetLargeObjectDone = true;
       static bool output = false;
       if (!output)
       {
