@@ -429,10 +429,16 @@ class mbzirc::GameLogicPluginPrivate
   /// This variable is used later when validating reports of target objects.
   public: std::string currentTargetVessel;
 
-
+  /// \brief A set of target vessel visuals
   public: std::set<rendering::VisualPtr> targetVesselVisuals;
+
+  /// \brief A map of target vessel name and the small target object visuals
+  /// on the vessel
   public: std::map<std::string, std::set<rendering::VisualPtr>>
       targetSmallObjectVisuals;
+
+  /// \brief A map of target vessel name and the large target object visuals
+  /// on the vessel
   public: std::map<std::string, std::set<rendering::VisualPtr>>
       targetLargeObjectVisuals;
 
