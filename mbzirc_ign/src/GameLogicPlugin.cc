@@ -96,10 +96,10 @@ class mbzirc::GameLogicPluginPrivate
     public: std::string type;
 
     /// \brief Image x position
-    public: double x = 0;
+    public: unsigned int x = 0;
 
     /// \brief Image y position
-    public: double y = 0;
+    public: unsigned int y = 0;
   };
 
   public: enum PenaltyType
@@ -1186,8 +1186,8 @@ bool GameLogicPluginPrivate::OnTargetStreamReport(
   }
 
   std::string type = _req.data(0);
-  double x = std::stof(_req.data(1));
-  double y = std::stof(_req.data(2));
+  unsigned int x = std::stoul(_req.data(1));
+  unsigned int y = std::stoul(_req.data(2));
 
   TargetInStream tis;
   tis.type = type;
