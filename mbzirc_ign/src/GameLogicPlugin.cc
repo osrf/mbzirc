@@ -34,6 +34,7 @@
 #include "ignition/gazebo/rendering/Events.hh"
 
 #include <ignition/gazebo/components/Camera.hh>
+#include <ignition/gazebo/components/HaltMotion.hh>
 #include <ignition/gazebo/components/Link.hh>
 #include <ignition/gazebo/components/Model.hh>
 #include <ignition/gazebo/components/Name.hh>
@@ -252,6 +253,14 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Valid target reports, add time penalties, and update score
   public: void ValidateTargetReports();
 
+  /// \brief Check if robots are inside geofence boundary. Time penalties are
+  /// given if the robots exceed the first geofence two times, and the
+  /// is terminated on the third occurence. If a robot moves outside of the
+  /// outer geofence, the robot is disabled
+  /// \param[in] _ecm Mutable reference to Entity Component Manager
+  public: void CheckRobotsInGeofenceBoundary(
+      EntityComponentManager &_ecm);
+
   /// \brief Callback invoked in the rendering thread after a render update
   public: void OnPostRender();
 
@@ -376,12 +385,23 @@ class mbzirc::GameLogicPluginPrivate
   /// This is geofenceBoundary - geofenceBoundaryBuffer
   public: math::AxisAlignedBox geofenceBoundaryInner;
 
+  /// \brief Outer / hard boundary of competition area
+  /// This is geofenceBoundary + geofenceBoundaryBufferOuter.
+  /// If any vehicles moves outside of this boundary, it will be disabled
+  public: math::AxisAlignedBox geofenceBoundaryOuter;
+
   /// \brief Inner boundary of competition area
   public: double geofenceBoundaryBuffer = 5.0;
+
+  /// \brief Outer / hard boundary of competition area
+  public: double geofenceBoundaryBufferOuter = 25.0;
 
   /// \brief Map of robot entity id and bool var to indicate if they are inside
   ///  the competition boundary
   public: std::map<Entity, bool> robotsInBoundary;
+
+  /// \brief A list of robots that have been disabled
+  public: std::set<Entity> disabledRobots;
 
   /// \brief Number of times robot moved beyond competition boundary
   public: unsigned int geofenceBoundaryPenaltyCount = 0u;
@@ -548,6 +568,9 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
       this->dataPtr->geofenceBoundaryInner =
           math::AxisAlignedBox(min + this->dataPtr->geofenceBoundaryBuffer,
                                max - this->dataPtr->geofenceBoundaryBuffer);
+      this->dataPtr->geofenceBoundaryOuter =
+          math::AxisAlignedBox(min - this->dataPtr->geofenceBoundaryBufferOuter,
+                               max + this->dataPtr->geofenceBoundaryBufferOuter);
       ignmsg << "Geofence boundary min: " << min << ", max: " << max << std::endl;
     }
     else
@@ -685,6 +708,13 @@ void GameLogicPluginPrivate::OnBatteryMsg(
 void GameLogicPlugin::PreUpdate(const UpdateInfo &_info,
     EntityComponentManager &_ecm)
 {
+  if (!this->dataPtr->started)
+    return;
+
+  // check if any robots moved outside of geofence
+  // give time penalties or disable robots if they exceeded
+  // boundaries
+  this->dataPtr->CheckRobotsInGeofenceBoundary(_ecm);
 }
 
 //////////////////////////////////////////////////
@@ -795,58 +825,8 @@ void GameLogicPlugin::PostUpdate(
     }
   }
 
-  // check if robots are inside the competition boundary
-  for (const auto &it : this->dataPtr->robotNames)
-  {
-    Entity robotEnt = it.first;
-    std::string robotName = it.second;
-    bool wasInBounds = true;
-    auto bIt = this->dataPtr->robotsInBoundary.find(robotEnt);
-    if (bIt == this->dataPtr->robotsInBoundary.end())
-      this->dataPtr->robotsInBoundary[robotEnt] = wasInBounds;
-    else
-      wasInBounds = bIt->second;
-
-    // If robot was outside of boundary, allow some buffer distance before
-    // counting it as returning to the inside boundary.
-    // This is so that we don't immediately trigger another exceed_boundary
-    // event if the robot oscillates slightly at the boundary line,
-    // e.g. USV motion due to waves
-    auto boundary = wasInBounds ? this->dataPtr->geofenceBoundary :
-        this->dataPtr->geofenceBoundaryInner;
-
-    bool isInBounds = this->dataPtr->CheckEntityInBoundary(_ecm,
-        robotEnt, boundary);
-
-    if (isInBounds != wasInBounds)
-    {
-      // robot moved outside the boundary!
-      if (!isInBounds)
-      {
-        this->dataPtr->geofenceBoundaryPenaltyCount++;
-        if (this->dataPtr->geofenceBoundaryPenaltyCount == 1)
-        {
-          this->dataPtr->timePenalty +=
-              this->dataPtr->kTimePenalties.at(
-              GameLogicPluginPrivate::BOUNDARY_1);
-          this->dataPtr->LogEvent("exceed_boundary_1", robotName);
-          this->dataPtr->UpdateScoreFiles(this->dataPtr->simTime);
-        }
-        else if (this->dataPtr->geofenceBoundaryPenaltyCount >= 2)
-        {
-          this->dataPtr->timePenalty =
-              this->dataPtr->kTimePenalties.at(
-              GameLogicPluginPrivate::BOUNDARY_2);
-          this->dataPtr->LogEvent("exceed_boundary_2", robotName);
-          // terminate run
-          this->dataPtr->Finish(this->dataPtr->simTime);
-        }
-      }
-      this->dataPtr->robotsInBoundary[robotEnt] = isInBounds;
-    }
-  }
-
   // find the sensor associated with the input stream
+  // used for valdiating target reports
   {
     std::lock_guard<std::mutex> lock(this->dataPtr->streamMutex);
     if (!this->dataPtr->targetStreamTopic.empty())
@@ -862,7 +842,6 @@ void GameLogicPlugin::PostUpdate(
     }
     this->dataPtr->targetStreamTopic.clear();
   }
-
 
   // validate target reports
   this->dataPtr->ValidateTargetReports();
@@ -931,6 +910,99 @@ void GameLogicPlugin::PostUpdate(
   }
 }
 
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
+    EntityComponentManager &_ecm)
+{
+  // check if robots are inside the competition boundary
+  for (const auto &it : this->robotNames)
+  {
+    Entity robotEnt = it.first;
+    std::string robotName = it.second;
+
+    if (this->disabledRobots.find(robotEnt) != this->disabledRobots.end())
+    {
+      continue;
+    }
+
+    // update list of robot and whether or not it is inside boundary
+    bool wasInBounds = true;
+    auto bIt = this->robotsInBoundary.find(robotEnt);
+    if (bIt == this->robotsInBoundary.end())
+      this->robotsInBoundary[robotEnt] = wasInBounds;
+    else
+      wasInBounds = bIt->second;
+
+    // check if it exceeded the outer / hard boundary
+    // if so, disable the robot
+    if (!wasInBounds && !this->CheckEntityInBoundary(_ecm,
+          robotEnt, this->geofenceBoundaryOuter))
+    {
+      // Create a halt motion component if one is not
+      // present. Make sure to create one for nested models as well
+      auto haltComp = _ecm.Component<components::HaltMotion>(robotEnt);
+      if (!haltComp)
+      {
+        haltComp = _ecm.CreateComponent(robotEnt, components::HaltMotion());
+      }
+      haltComp->Data() = true;
+      auto children = _ecm.ChildrenByComponents(robotEnt, components::Model());
+      for (auto &childEnt : children)
+      {
+        auto childHaltComp = _ecm.Component<components::HaltMotion>(childEnt);
+        if (!childHaltComp)
+        {
+          childHaltComp = _ecm.CreateComponent(childEnt, components::HaltMotion());
+        }
+        childHaltComp->Data() = true;
+      }
+
+      this->disabledRobots.insert(robotEnt);
+      this->LogEvent("exceed_boundary_outer", robotName);
+      continue;
+    }
+
+    // If robot was outside of boundary, allow some buffer distance before
+    // counting it as returning to the inside boundary.
+    // This is so that we don't immediately trigger another exceed_boundary
+    // event if the robot oscillates slightly at the boundary line,
+    // e.g. USV motion due to waves
+    auto boundary = wasInBounds ? this->geofenceBoundary :
+        this->geofenceBoundaryInner;
+
+    bool isInBounds = this->CheckEntityInBoundary(_ecm,
+        robotEnt, boundary);
+
+    if (isInBounds != wasInBounds)
+    {
+      // robot moved outside the boundary!
+      if (!isInBounds)
+      {
+        this->geofenceBoundaryPenaltyCount++;
+        if (this->geofenceBoundaryPenaltyCount == 1)
+        {
+          this->timePenalty +=
+              this->kTimePenalties.at(
+              GameLogicPluginPrivate::BOUNDARY_1);
+          this->LogEvent("exceed_boundary_1", robotName);
+          this->UpdateScoreFiles(this->simTime);
+        }
+        else if (this->geofenceBoundaryPenaltyCount >= 2)
+        {
+          this->timePenalty =
+              this->kTimePenalties.at(
+              GameLogicPluginPrivate::BOUNDARY_2);
+          this->LogEvent("exceed_boundary_2", robotName);
+          // terminate run
+          this->Finish(this->simTime);
+        }
+      }
+      this->robotsInBoundary[robotEnt] = isInBounds;
+    }
+  }
+}
+
 /////////////////////////////////////////////////
 bool GameLogicPluginPrivate::CheckEntityInBoundary(
     const EntityComponentManager &_ecm, Entity _entity,
@@ -948,7 +1020,6 @@ bool GameLogicPluginPrivate::CheckEntityInBoundary(
   math::Pose3d pose = poseComp->Data();
   return _boundary.Contains(pose.Pos());
 }
-
 
 /////////////////////////////////////////////////
 void GameLogicPluginPrivate::PublishScore()
