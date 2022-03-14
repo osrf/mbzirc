@@ -34,7 +34,8 @@
 #include "ignition/gazebo/rendering/Events.hh"
 
 #include <ignition/gazebo/components/Camera.hh>
-#include <ignition/gazebo/components/HaltMotion.hh>
+#include <ignition/gazebo/components/CanonicalLink.hh>
+#include <ignition/gazebo/components/DetachableJoint.hh>
 #include <ignition/gazebo/components/Link.hh>
 #include <ignition/gazebo/components/Model.hh>
 #include <ignition/gazebo/components/Name.hh>
@@ -42,8 +43,10 @@
 #include <ignition/gazebo/components/Pose.hh>
 #include <ignition/gazebo/components/RgbdCamera.hh>
 #include <ignition/gazebo/components/Sensor.hh>
+#include <ignition/gazebo/components/World.hh>
 #include <ignition/gazebo/EntityComponentManager.hh>
 #include <ignition/gazebo/Events.hh>
+#include <ignition/gazebo/SdfEntityCreator.hh>
 #include <ignition/gazebo/Util.hh>
 
 #include <ignition/common/Console.hh>
@@ -261,6 +264,11 @@ class mbzirc::GameLogicPluginPrivate
   public: void CheckRobotsInGeofenceBoundary(
       EntityComponentManager &_ecm);
 
+  /// \brief Make an entity static
+  /// \param[in] _entity Entity to make static
+  /// \param[in] _ecm Mutable reference to Entity Component Manager
+  public: bool MakeStatic(Entity _entity, EntityComponentManager &_ecm);
+
   /// \brief Callback invoked in the rendering thread after a render update
   public: void OnPostRender();
 
@@ -400,6 +408,15 @@ class mbzirc::GameLogicPluginPrivate
   ///  the competition boundary
   public: std::map<Entity, bool> robotsInBoundary;
 
+  /// \brief SDF DOM of a static model with empty link
+  public: sdf::Model staticModelToSpawn;
+
+  /// \brief Creator interface
+  public: std::unique_ptr<SdfEntityCreator> creator{nullptr};
+
+  /// \brief World entity
+  public: Entity worldEntity{kNullEntity};
+
   /// \brief A list of robots that have been disabled
   public: std::set<Entity> disabledRobots;
 
@@ -490,9 +507,11 @@ GameLogicPlugin::~GameLogicPlugin()
 //////////////////////////////////////////////////
 void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
                            const std::shared_ptr<const sdf::Element> &_sdf,
-                           ignition::gazebo::EntityComponentManager & /*_ecm*/,
+                           ignition::gazebo::EntityComponentManager & _ecm,
                            ignition::gazebo::EventManager & _eventMgr)
 {
+  this->dataPtr->creator = std::make_unique<SdfEntityCreator>(_ecm, _eventMgr);
+  this->dataPtr->worldEntity = _ecm.EntityByComponents(components::World());
   this->dataPtr->eventManager = &_eventMgr;
 
   // Check if the game logic plugin has a <logging> element.
@@ -939,24 +958,7 @@ void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
     if (!wasInBounds && !this->CheckEntityInBoundary(_ecm,
           robotEnt, this->geofenceBoundaryOuter))
     {
-      // Create a halt motion component if one is not
-      // present. Make sure to create one for nested models as well
-      auto haltComp = _ecm.Component<components::HaltMotion>(robotEnt);
-      if (!haltComp)
-      {
-        haltComp = _ecm.CreateComponent(robotEnt, components::HaltMotion());
-      }
-      haltComp->Data() = true;
-      auto children = _ecm.ChildrenByComponents(robotEnt, components::Model());
-      for (auto &childEnt : children)
-      {
-        auto childHaltComp = _ecm.Component<components::HaltMotion>(childEnt);
-        if (!childHaltComp)
-        {
-          childHaltComp = _ecm.CreateComponent(childEnt, components::HaltMotion());
-        }
-        childHaltComp->Data() = true;
-      }
+      this->MakeStatic(robotEnt, _ecm);
 
       this->disabledRobots.insert(robotEnt);
       this->LogEvent("exceed_boundary_outer", robotName);
@@ -1001,6 +1003,58 @@ void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
       this->robotsInBoundary[robotEnt] = isInBounds;
     }
   }
+}
+
+//////////////////////////////////////////////////
+bool GameLogicPluginPrivate::MakeStatic(Entity _entity,
+    EntityComponentManager &_ecm)
+{
+  // make breadcrumb static by spawning a static model and attaching the
+  // breadcrumb to the static model
+  // todo(anyone) Add a feature in ign-physics to support making a model
+  // static
+  if (this->staticModelToSpawn.LinkCount() == 0u)
+  {
+    sdf::ElementPtr staticModelSDF(new sdf::Element);
+    sdf::initFile("model.sdf", staticModelSDF);
+    staticModelSDF->GetAttribute("name")->Set("static_model");
+    staticModelSDF->GetElement("static")->Set(true);
+    sdf::ElementPtr linkElem = staticModelSDF->AddElement("link");
+    linkElem->GetAttribute("name")->Set("static_link");
+    this->staticModelToSpawn.Load(staticModelSDF);
+  }
+
+  auto poseComp = _ecm.Component<components::Pose>(_entity);
+  if (!poseComp)
+    return false;
+  math::Pose3d p = poseComp->Data();
+  this->staticModelToSpawn.SetRawPose(p);
+
+  auto nameComp = _ecm.Component<components::Name>(_entity);
+  this->staticModelToSpawn.SetName(nameComp->Data() + "__static__");
+
+  Entity staticEntity = this->creator->CreateEntities(&staticModelToSpawn);
+  this->creator->SetParent(staticEntity, this->worldEntity);
+
+  Entity parentLinkEntity = _ecm.EntityByComponents(
+      components::Link(), components::ParentEntity(staticEntity),
+      components::Name("static_link"));
+
+  if (parentLinkEntity == kNullEntity)
+    return false;
+
+  Entity childLinkEntity = _ecm.EntityByComponents(
+      components::CanonicalLink(), components::ParentEntity(_entity));
+
+  if (childLinkEntity == kNullEntity)
+    return false;
+
+  Entity detachableJointEntity = _ecm.CreateEntity();
+  _ecm.CreateComponent(detachableJointEntity,
+      components::DetachableJoint(
+      {parentLinkEntity, childLinkEntity, "fixed"}));
+
+  return true;
 }
 
 /////////////////////////////////////////////////
