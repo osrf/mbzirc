@@ -39,10 +39,10 @@ namespace mbzirc
         ignition::gazebo::EventManager &_eventMgr) override;
 
     public: void PreUpdate(const ignition::gazebo::UpdateInfo &_info,
-        const ignition::gazebo::EntityComponentManager &_ecm) override;
+        ignition::gazebo::EntityComponentManager &_ecm) override;
 
     public: std::unique_ptr<SuctionGripperPrivate> dataPtr;
-  }
+  };
 }
 
 #endif

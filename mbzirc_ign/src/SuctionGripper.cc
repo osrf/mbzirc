@@ -5,7 +5,13 @@
 
 #include <ignition/msgs/contacts.pb.h>
 
+#include <ignition/msgs.hh>
+
 #include <ignition/gazebo/components.hh>
+#include <ignition/gazebo/Model.hh>
+
+#include "SuctionGripper.hh"
+
 using namespace mbzirc;
 using namespace ignition;
 using namespace gazebo;
@@ -26,25 +32,25 @@ class mbzirc::SuctionGripperPrivate
 
   public: bool pendingJointCreation{false};
 
-  public: std::mutex _mtx
+  public: std::mutex _mtx;
 
   public: void OnContact(const ignition::msgs::Contacts &_msg)
   {
-    if (!gripperOpen) continue;
+    if (!gripperOpen) return;
 
     for (int i = 0; i < _msg.contact_size(); ++i)
     {
       auto contact = _msg.contact(i);
-      if (contact.collision1() == this->gripperEntity)
+      if (contact.collision1().id() == this->gripperEntity)
       {
         std::lock_guard<std::mutex> lock(this->_mtx);
-        this->childItem = contact.collision2();
+        this->childItem = contact.collision2().id();
         pendingJointCreation = true;
       }
-      if (contact.collision2() == this->gripperEntity)
+      if (contact.collision2().id() == this->gripperEntity)
       {
         std::lock_guard<std::mutex> lock(this->_mtx);
-        this->childItem = contact.collision1();
+        this->childItem = contact.collision1().id();
         pendingJointCreation = true;
       }
     }
@@ -69,7 +75,7 @@ void SuctionGripperPlugin::Configure(const Entity &_entity,
   EntityComponentManager &_ecm,
   EventManager &/*_eventMgr*/)
 {
-  if(_sdf->hasElement("parent_link"))
+  if(_sdf->HasElement("parent_link"))
   {
     this->dataPtr->linkName = _sdf->Get<std::string>("parent_link");
   }
@@ -87,20 +93,10 @@ void SuctionGripperPlugin::Configure(const Entity &_entity,
     return;
   }
 
-  if(_sdf->hasElement("contact_sensor_topic"))
+  if(_sdf->HasElement("contact_sensor_topic"))
   {
     auto topic = _sdf->Get<std::string>("contact_sensor_topic");
-    this->dataPtr->node.Subscribe(topic, &SuctionGripperPrivate::OnContact, this);
-  }
-  else
-  {
-    ignerr << "Please specify a topic" << std::endl;
-    return;
-  }
-  if(_sdf->hasElement("contact_sensor_topic"))
-  {
-    auto topic = _sdf->Get<std::string>("contact_sensor_topic");
-    this->dataPtr->node.Subscribe(topic, &SuctionGripperPrivate::OnContact, this);
+    this->dataPtr->node.Subscribe(topic, &SuctionGripperPrivate::OnContact, this->dataPtr.get());
   }
   else
   {
@@ -108,11 +104,11 @@ void SuctionGripperPlugin::Configure(const Entity &_entity,
     return;
   }
 }
-}
+
 
 //////////////////////////////////////////////////
 void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
-    const EntityComponentManager &_ecm)
+  EntityComponentManager &_ecm)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->_mtx);
   if (this->dataPtr->pendingJointCreation)
@@ -120,9 +116,9 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
     this->dataPtr->pendingJointCreation = false;
     this->dataPtr->joint = _ecm.CreateEntity();
     _ecm.CreateComponent(
-          this->detachableJointEntity,
-          components::DetachableJoint({this->parentLinkEntity,
-                                        this->childLinkEntity, "fixed"}));
+          this->dataPtr->joint,
+          components::DetachableJoint({this->dataPtr->gripperEntity,
+                                        this->dataPtr->childItem, "fixed"}));
   }
 }
 
