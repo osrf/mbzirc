@@ -49,11 +49,12 @@ install(
 
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
+  FixedWingController
   GameLogicPlugin
   SimpleHydrodynamics
+  SuctionGripper
   Surface
   WaveVisual
-  FixedWingController
 )
 
 foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
