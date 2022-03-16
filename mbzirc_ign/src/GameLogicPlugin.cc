@@ -1479,7 +1479,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
                 target.largeObjectsReported.insert(largeObj);
                 this->targets[vessel] = target;
                 this->LogEvent("target_reported", "large_object_id_success");
-                this->SetPhase("small_object_id_success");
+                this->SetPhase("large_object_id_success");
                 continue;
               }
               else

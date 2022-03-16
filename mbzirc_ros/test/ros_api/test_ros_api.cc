@@ -18,12 +18,15 @@
 #include <gtest/gtest.h>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rosgraph_msgs/msg/clock.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/fluid_pressure.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/magnetic_field.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 
 using std::placeholders::_1;
@@ -105,6 +108,24 @@ TEST(RosApiTest, SimTopics)
   waitUntilBoolVarAndSpin(
     node, tfStatic.callbackExecuted, 10ms, 3500);
   EXPECT_TRUE(tfStatic.callbackExecuted);
+
+  // score
+  MyTestClass<std_msgs::msg::Float32> score("/mbzirc/score");
+  waitUntilBoolVarAndSpin(
+    node, score.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(score.callbackExecuted);
+
+  // phase
+  MyTestClass<std_msgs::msg::String> phase("/mbzirc/phase");
+  waitUntilBoolVarAndSpin(
+    node, phase.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(phase.callbackExecuted);
+
+  // run_clock
+  MyTestClass<rosgraph_msgs::msg::Clock> runClock("/mbzirc/run_clock");
+  waitUntilBoolVarAndSpin(
+    node, runClock.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(runClock.callbackExecuted);
 }
 
 /////////////////////////////////////////////////
