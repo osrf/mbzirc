@@ -28,32 +28,31 @@ class mbzirc::SuctionGripperPrivate
 
   public: transport::Node node;
 
-  public: bool gripperOpen{true};
+  public: bool suctionOn{true};
 
   public: bool pendingJointCreation{false};
+
+  public: bool jointCreated{false};
 
   public: std::mutex _mtx;
 
   public: void OnContact(const ignition::msgs::Contacts &_msg)
   {
-    if (!gripperOpen) return;
+    if (!suctionOn || jointCreated) return;
 
     for (int i = 0; i < _msg.contact_size(); ++i)
     {
       auto contact = _msg.contact(i);
-      if (contact.collision1().id() == this->gripperEntity)
-      {
-        std::lock_guard<std::mutex> lock(this->_mtx);
-        this->childItem = contact.collision2().id();
-        pendingJointCreation = true;
-      }
-      if (contact.collision2().id() == this->gripperEntity)
-      {
-        std::lock_guard<std::mutex> lock(this->_mtx);
-        this->childItem = contact.collision1().id();
-        pendingJointCreation = true;
-      }
+      std::lock_guard<std::mutex> lock(this->_mtx);
+      this->childItem = contact.collision2().id();
+      pendingJointCreation = true;
     }
+  }
+
+  public: void OnCmd(const ignition::msgs::Boolean &_suctionOn)
+  {
+    std::lock_guard<std::mutex> lock(this->_mtx);
+    this->suctionOn = _suctionOn.data();
   }
 };
 
@@ -89,18 +88,36 @@ void SuctionGripperPlugin::Configure(const Entity &_entity,
   this->dataPtr->gripperEntity = model.LinkByName(_ecm, this->dataPtr->linkName);
   if (this->dataPtr->gripperEntity == kNullEntity)
   {
-    ignerr << "Could not find link named " << this->dataPtr->linkName << std::endl;
+    ignerr << "Could not find link named "
+      << this->dataPtr->linkName << std::endl;
     return;
   }
 
   if(_sdf->HasElement("contact_sensor_topic"))
   {
     auto topic = _sdf->Get<std::string>("contact_sensor_topic");
-    this->dataPtr->node.Subscribe(topic, &SuctionGripperPrivate::OnContact, this->dataPtr.get());
+    this->dataPtr->node.Subscribe(
+      topic,
+      &SuctionGripperPrivate::OnContact,
+      this->dataPtr.get());
   }
   else
   {
-    ignerr << "Please specify a topic" << std::endl;
+    ignerr << "Please specify a contact_sensor_topic" << std::endl;
+    return;
+  }
+
+  if(_sdf->HasElement("command_topic"))
+  {
+    auto topic = _sdf->Get<std::string>("command_topic");
+    this->dataPtr->node.Subscribe(
+      topic,
+      &SuctionGripperPrivate::OnCmd,
+      this->dataPtr.get());
+  }
+  else
+  {
+    ignerr << "Please specify a command_topic" << std::endl;
     return;
   }
 }
@@ -110,15 +127,22 @@ void SuctionGripperPlugin::Configure(const Entity &_entity,
 void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
   EntityComponentManager &_ecm)
 {
+  if (_info.paused) return;
+
   std::lock_guard<std::mutex> lock(this->dataPtr->_mtx);
   if (this->dataPtr->pendingJointCreation)
   {
     this->dataPtr->pendingJointCreation = false;
     this->dataPtr->joint = _ecm.CreateEntity();
+    auto parentLink = _ecm.ParentEntity(this->dataPtr->childItem);
     _ecm.CreateComponent(
           this->dataPtr->joint,
           components::DetachableJoint({this->dataPtr->gripperEntity,
-                                        this->dataPtr->childItem, "fixed"}));
+                                       parentLink, "fixed"}));
+    igndbg << "Created joint between gripper and "
+      << this->dataPtr->childItem
+      << std::endl;
+    this->dataPtr->jointCreated = true;
   }
 }
 
