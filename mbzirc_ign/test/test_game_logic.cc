@@ -492,6 +492,7 @@ TEST_F(MBZIRCTestFixture, GameLogicBoundaryPenalty)
                != std::string::npos &&
              eventsBuffer.str().find("type: exceed_boundary_2")
                == std::string::npos;
+    Step(1);
   }
   EXPECT_TRUE(logged);
 
@@ -526,6 +527,7 @@ TEST_F(MBZIRCTestFixture, GameLogicBoundaryPenalty)
                != std::string::npos &&
              eventsBuffer.str().find("type: exceed_boundary_2")
                == std::string::npos;
+    Step(1);
   }
   EXPECT_TRUE(logged);
 
@@ -559,6 +561,7 @@ TEST_F(MBZIRCTestFixture, GameLogicBoundaryPenalty)
                != std::string::npos &&
              eventsBuffer.str().find("type: exceed_boundary_2")
                != std::string::npos;
+    Step(1);
   }
   EXPECT_TRUE(logged);
 
