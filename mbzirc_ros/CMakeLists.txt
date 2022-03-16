@@ -34,6 +34,9 @@ install(TARGETS
   optical_frame_publisher
   pose_tf_broadcaster
   DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME})
 
 
 if(BUILD_TESTING)
