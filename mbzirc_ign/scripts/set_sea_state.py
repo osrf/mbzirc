@@ -19,6 +19,7 @@ import csv
 import math
 import numpy as np
 import os
+import pathlib
 import subprocess
 import sys
 
@@ -51,10 +52,14 @@ def update_params_by_date(hist_date, wind_dir):
     wave_height = None
     wave_period = None
     wind_speed_kmh = None
-    csv_file_name = "weather_avg_daily.csv"
+
+    csv_file_name = "weather_data_hourly.csv"
+    csv_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+        "weather")
+    csv_file_path = os.path.join(csv_file,csv_file_name)
 
     # read from csv spreadsheet file
-    with open(csv_file_name, 'rt') as csv_file:
+    with open(csv_file_path, 'rt') as csv_file:
         reader = csv.DictReader(filter(lambda r: r[0]!='#', csv_file),
                                 delimiter=',')
         for row in reader:
@@ -63,9 +68,9 @@ def update_params_by_date(hist_date, wind_dir):
                 wave_period = float(row["period"])
                 wind_speed_kmh = float(row["wind"])
                 print ("Found weather data for date:", hist_date)
-                print ("  Avg wave height (m):", wave_height)
-                print ("  Avg wave period (s):", wave_period)
-                print ("  Avg wind speed (km/h):", wind_speed_kmh)
+                print ("  wave height (m):", wave_height)
+                print ("  wave period (s):", wave_period)
+                print ("  wind speed (km/h):", wind_speed_kmh)
                 break;
 
     if wave_height == None or wave_period == None or wind_speed_kmh == None:
