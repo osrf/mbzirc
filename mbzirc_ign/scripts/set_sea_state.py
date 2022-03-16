@@ -56,7 +56,7 @@ def update_params_by_date(hist_date, wind_dir):
     csv_file_name = "weather_data_hourly.csv"
     csv_file_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
         "weather")
-    csv_file_path = os.path.join(csv_file,csv_file_name)
+    csv_file_path = os.path.join(csv_file_path, csv_file_name)
 
     # read from csv spreadsheet file
     with open(csv_file_path, 'rt') as csv_file:
