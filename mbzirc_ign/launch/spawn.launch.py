@@ -340,6 +340,7 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   r_rot = LaunchConfiguration('R').perform(context)
   p_rot = LaunchConfiguration('P').perform(context)
   y_rot = LaunchConfiguration('Y').perform(context)
+  arm = LaunchConfiguration('arm').perform(context)
 
   wavefield_size = {'simple_demo': 1000, 'coast': 6000}
 
@@ -353,6 +354,8 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   # run erb
   command = ['erb']
   command.append(f'name={model_name}')
+
+  if arm: command.append(f'arm={arm}')
 
   if world_name in wavefield_size:
     command.append(f'wavefieldSize={wavefield_size[world_name]}')
@@ -536,7 +539,10 @@ def generate_launch_description():
             'flightTime',
             default_value='10',
             description='Battery flight time in minutes (only for UAVs)'),
-
+        DeclareLaunchArgument(
+            'arm',
+            default_value='',
+            description="model arm to attach to usv"),
         DeclareLaunchArgument(
             'slot0',
             default_value='',
