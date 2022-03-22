@@ -353,6 +353,58 @@
       <pose relative_to='wrist_link'>0.19304 0 0 -1.570796326794896 0 0</pose>
     </frame>
 
+    <link name='end_effector_connector'>
+      <pose relative_to='gripper_mount_point'>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.001</iyy>
+          <iyz>0</iyz>
+          <izz>0.001</izz>
+        </inertia>
+      </inertial>
+      <collision name='end_effector_collision'>
+        <geometry>
+          <box>
+            <size>0.01 0.01 0.01</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='end_effector_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.01 0.01</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+
+    <joint name='wrist' type='revolute'>
+      <parent>wrist_link</parent>
+      <child>end_effector_connector</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-6.2831853071795862</lower>
+          <upper>6.2831853071795862</upper>
+          <effort>10</effort>
+          <velocity>0.14999999999999999</velocity>
+        </limit>
+        <dynamics>
+          <damping>10</damping>
+          <friction>5</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+<!--
     <include>
       <name>gripper</name>
       <uri>model://mbzirc_oberon7_gripper</uri>
@@ -361,9 +413,7 @@
     </include>
 
     <joint name='wrist' type='revolute'>
-      <!--<pose relative_to='wrist_link'>0.19304 0 0 -1.570796326794896 0 0</pose>-->
       <parent>wrist_link</parent>
-      <!--<child>end_effector</child>-->
       <child>gripper::mount_point</child>
       <axis>
         <xyz>1 0 0</xyz>
@@ -381,6 +431,7 @@
         </dynamics>
       </axis>
     </joint>
+-->
 <!--    <link name='end_effector'>
       <pose relative_to='wrist'>0 0 0 0 0 0</pose>
       <inertial>
@@ -753,6 +804,6 @@
         <joint_name>wrist</joint_name>
     </plugin>
 
-    <frame name="mount_point"/>
+    <frame name="arm_mount_point"/>
   </model>
 </sdf>

@@ -461,7 +461,7 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   arm_bridges = []
   if arm:
       print("spawning arm bridges " )
-      arm_prefix = 'world/' + world_name + '/model/' + model_name + '/model/arm'
+      arm_prefix = 'world/' + world_name + '/model/' + model_name
       ros2_ign_arm_joint_state_bridge = Node(
           package='ros_ign_bridge',
           executable='parameter_bridge',

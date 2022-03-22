@@ -10,6 +10,12 @@ if defined?(arm)
   $arm_name = arm
 end
 
+if !defined?(gripper) || gripper== nil || gripper.empty?
+  $gripper_name = 'mbzirc_oberon7_gripper'
+else
+  $model_name = gripper
+end
+
 
 if !defined?(wavefieldSize) || wavefieldSize == nil || wavefieldSize.empty?
   $wavefield_size = 1000.0
@@ -36,16 +42,30 @@ end
   </include>
 
   <% if $arm_name != nil%>
-  <include>
+  <include merge="true">
     <name>arm</name>
     <uri>model://<%= $arm_name%></uri>
-    <placement_frame>mount_point</placement_frame>
+    <placement_frame>arm_mount_point</placement_frame>
     <pose relative_to="arm_slot_0">0 0 0 0 0 0</pose>
   </include>
   <joint name="arm_slot_0_joint" type="fixed">
     <parent>arm_slot_0</parent>
-    <child>arm::mount_point</child>
+    <child>arm_mount_point</child>
   </joint>
+
+
+  <include>
+    <name>gripper</name>
+    <uri>model://<%= $gripper_name%></uri>
+    <placement_frame>mount_point</placement_frame>
+    <pose relative_to="gripper_mount_point">0 0 0 0 0 0</pose>
+  </include>
+
+  <joint name='gripper_joint' type='fixed'>
+    <parent>end_effector_connector</parent>
+    <child>gripper::mount_point</child>
+  </joint>
+
   <% end %>
 
   <plugin
