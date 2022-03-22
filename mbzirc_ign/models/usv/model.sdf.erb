@@ -42,7 +42,7 @@ end
   </include>
 
   <% if $arm_name != nil%>
-  <include merge="true">
+  <include>
     <name>arm</name>
     <uri>model://<%= $arm_name%></uri>
     <placement_frame>arm_mount_point</placement_frame>
@@ -50,11 +50,11 @@ end
   </include>
   <joint name="arm_slot_0_joint" type="fixed">
     <parent>arm_slot_0</parent>
-    <child>arm_mount_point</child>
+    <child>arm::arm_mount_point</child>
   </joint>
 
 
-  <include>
+<!--  <include>
     <name>gripper</name>
     <uri>model://<%= $gripper_name%></uri>
     <placement_frame>mount_point</placement_frame>
@@ -62,9 +62,10 @@ end
   </include>
 
   <joint name='gripper_joint' type='fixed'>
-    <parent>end_effector_connector</parent>
+    <parent>arm::end_effector_connector</parent>
     <child>gripper::mount_point</child>
   </joint>
+-->
 
   <% end %>
 

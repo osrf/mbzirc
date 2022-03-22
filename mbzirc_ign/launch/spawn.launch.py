@@ -341,6 +341,7 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   p_rot = LaunchConfiguration('P').perform(context)
   y_rot = LaunchConfiguration('Y').perform(context)
   arm = LaunchConfiguration('arm').perform(context)
+  gripper = LaunchConfiguration('gripper').perform(context)
 
   wavefield_size = {'simple_demo': 1000, 'coast': 6000}
 
@@ -363,6 +364,7 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
     print(f'Wavefield size not found for world_name')
   command.append(model_file)
 
+  # run erb for usv
   process = subprocess.Popen(command, stdout=subprocess.PIPE)
   stdout = process.communicate()[0]
   str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
@@ -370,6 +372,22 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   f.write(str_output)
 
   print(command, str_output)
+
+  # run erb for arm to attach the user specified gripper
+  if arm:
+      arm_model_file = os.path.join(
+          get_package_share_directory('mbzirc_ign'), 'models', arm, 'model.sdf.erb')
+      arm_model_output_file = os.path.join(
+          get_package_share_directory('mbzirc_ign'), 'models', arm, 'model.sdf')
+      command = ['erb']
+      if gripper: command.append(f'gripper={gripper}')
+      command.append(arm_model_file)
+      process = subprocess.Popen(command, stdout=subprocess.PIPE)
+      stdout = process.communicate()[0]
+      str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
+      f = open(arm_model_output_file, 'w')
+      f.write(str_output)
+      print(command, str_output)
 
   ignition_spawn_entity = Node(
       package='ros_ign_gazebo',
@@ -458,10 +476,11 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
       ]
   )
 
+  # bridges for arm and gripper
   arm_bridges = []
   if arm:
       print("spawning arm bridges " )
-      arm_prefix = 'world/' + world_name + '/model/' + model_name
+      arm_prefix = 'world/' + world_name + '/model/' + model_name + '/model/arm'
       ros2_ign_arm_joint_state_bridge = Node(
           package='ros_ign_bridge',
           executable='parameter_bridge',
@@ -469,15 +488,15 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
           arguments=[arm_prefix + '/joint_state@sensor_msgs/msg/JointState@ignition.msgs.Model'],
           remappings=[(arm_prefix + '/joint_state', '/joint_states')]
       )
+      ros2_ign_gripper_joint_state_bridge = Node(
+          package='ros_ign_bridge',
+          executable='parameter_bridge',
+          output='screen',
+          arguments=[arm_prefix + '/joint_state@sensor_msgs/msg/JointState@ignition.msgs.Model'],
+          remappings=[(arm_prefix + '/model/gripper/joint_state', '/joint_states')]
+      )
       arm_bridges.append(ros2_ign_arm_joint_state_bridge)
-      # ros2_ign_gripper_joint_state_bridge = Node(
-      #     package='ros_ign_bridge',
-      #     executable='parameter_bridge',
-      #     output='screen',
-      #     arguments=[arm_prefix + '/joint_state@sensor_msgs/msg/JointState@ignition.msgs.Model'],
-      #     remappings=[(arm_prefix + '/joint_state', '/joint_states')]
-      # )
-
+      arm_bridges.append(ros2_ign_gripper_joint_state_bridge)
 
   bridges = [
         PushRosNamespace(model_name),
@@ -567,7 +586,11 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'arm',
             default_value='',
-            description="model arm to attach to usv"),
+            description="arm model to attach to usv"),
+        DeclareLaunchArgument(
+            'gripper',
+            default_value='',
+            description="gripper model to attach to arm"),
         DeclareLaunchArgument(
             'slot0',
             default_value='',
