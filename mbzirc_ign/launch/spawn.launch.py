@@ -458,15 +458,40 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
       ]
   )
 
-  group_action = GroupAction([
+  arm_bridges = []
+  if arm:
+      print("spawning arm bridges " )
+      arm_prefix = 'world/' + world_name + '/model/' + model_name + '/model/arm'
+      ros2_ign_arm_joint_state_bridge = Node(
+          package='ros_ign_bridge',
+          executable='parameter_bridge',
+          output='screen',
+          arguments=[arm_prefix + '/joint_state@sensor_msgs/msg/JointState@ignition.msgs.Model'],
+          remappings=[(arm_prefix + '/joint_state', '/joint_states')]
+      )
+      arm_bridges.append(ros2_ign_arm_joint_state_bridge)
+      # ros2_ign_gripper_joint_state_bridge = Node(
+      #     package='ros_ign_bridge',
+      #     executable='parameter_bridge',
+      #     output='screen',
+      #     arguments=[arm_prefix + '/joint_state@sensor_msgs/msg/JointState@ignition.msgs.Model'],
+      #     remappings=[(arm_prefix + '/joint_state', '/joint_states')]
+      # )
+
+
+  bridges = [
         PushRosNamespace(model_name),
         ros2_ign_thrust_bridge,
         ros2_ign_thrust_joint_bridge,
         ros2_ign_imu_bridge,
         ros2_ign_pose_bridge,
         ros2_ign_pose_static_bridge,
-        ros2_tf_broadcaster,
-  ])
+        ros2_tf_broadcaster
+  ]
+  if arm:
+    bridges.extend(arm_bridges)
+
+  group_action = GroupAction(bridges)
 
   handler = RegisterEventHandler(
       event_handler=OnProcessExit(

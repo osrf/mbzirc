@@ -335,8 +335,30 @@
       <self_collide>true</self_collide>
     </link>
 
+    <!-- Controller -->
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>finger_left_joint</joint_name>
+      <topic>/oberon7_gripper/finger_left</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>finger_right_joint</joint_name>
+      <topic>/oberon7_gripper/finger_right</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <!-- Joint state publisher -->
+    <plugin filename="libignition-gazebo-joint-state-publisher-system.so" name="ignition::gazebo::systems::JointStatePublisher">
+        <joint_name>finger_left_joint</joint_name>
+        <joint_name>finger_right_joint</joint_name>
+    </plugin>
+
     <frame name="mount_point"/>
 
-    <!-- Controller -->
   </model>
 </sdf>

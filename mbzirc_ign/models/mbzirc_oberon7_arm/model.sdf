@@ -743,6 +743,16 @@
       <use_velocity_commands>true</use_velocity_commands>
     </plugin>
 
+    <!-- Joint state publisher -->
+    <plugin filename="libignition-gazebo-joint-state-publisher-system.so" name="ignition::gazebo::systems::JointStatePublisher">
+        <joint_name>azimuth</joint_name>
+        <joint_name>shoulder</joint_name>
+        <joint_name>elbow</joint_name>
+        <joint_name>roll</joint_name>
+        <joint_name>pitch</joint_name>
+        <joint_name>wrist</joint_name>
+    </plugin>
+
     <frame name="mount_point"/>
   </model>
 </sdf>
