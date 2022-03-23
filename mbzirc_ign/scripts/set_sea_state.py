@@ -75,7 +75,7 @@ def update_params_by_date(hist_date, wind_dir):
 
     if wave_height == None or wave_period == None or wind_speed_kmh == None:
         print ("No weather data found for date:", hist_date, ".")
-        print (f"Make sure the specified date exits in {csv_file_path}",
+        print (f"Make sure the specified date exists in {csv_file_path}",
                "and it is in the format: [yyyymmdd]T[hhmm], e.g. 20201225T1200")
         sys.exit(1)
 
