@@ -46,7 +46,13 @@ See Installation instructions for:
     rosdep install -r --from-paths src -i -y --rosdistro galactic
     ```
 
-    Make sure the `ros-galactic-mavros-msgs` package is installed. If not:
+    Make sure the `ros-galactic-mavros-msgs` package is installed, e.g.
+
+    ```
+    dpkg -l | grep ros-galactic-mavros-msgs
+    ```
+
+    If not, install it:
 
     ```
     sudo apt install ros-galactic-mavros-msgs
