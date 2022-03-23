@@ -1,29 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version='1.9'>
   <model name="oberon7_gripper">
-<!--    <joint name='wrist' type='revolute'>
-      <pose relative_to='wrist_link'>0.19304 0 0 -1.570796326794896 0 0</pose>
-      <parent>wrist_link</parent>
-      <child>end_effector</child>
-      <axis>
-        <xyz>1 0 0</xyz>
-        <limit>
-          <lower>-6.2831853071795862</lower>
-          <upper>6.2831853071795862</upper>
-          <effort>10</effort>
-          <velocity>0.14999999999999999</velocity>
-        </limit>
-        <dynamics>
-          <damping>10</damping>
-          <friction>5</friction>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
-        </dynamics>
-      </axis>
-    </joint>
--->
     <link name='end_effector'>
-<!--      <pose relative_to='wrist'>0 0 0 0 0 0</pose>-->
       <inertial>
         <pose>0.024426 0 -1.4e-05 0 0 0</pose>
         <mass>3.4611458108218058</mass>
