@@ -267,6 +267,7 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Make an entity static
   /// \param[in] _entity Entity to make static
   /// \param[in] _ecm Mutable reference to Entity Component Manager
+  /// \return True if the entity is made static
   public: bool MakeStatic(Entity _entity, EntityComponentManager &_ecm);
 
   /// \brief Callback invoked in the rendering thread after a render update
@@ -845,7 +846,7 @@ void GameLogicPlugin::PostUpdate(
   }
 
   // find the sensor associated with the input stream
-  // used for valdiating target reports
+  // used for validating target reports
   {
     std::lock_guard<std::mutex> lock(this->dataPtr->streamMutex);
     if (!this->dataPtr->targetStreamTopic.empty())
@@ -1009,8 +1010,8 @@ void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
 bool GameLogicPluginPrivate::MakeStatic(Entity _entity,
     EntityComponentManager &_ecm)
 {
-  // make breadcrumb static by spawning a static model and attaching the
-  // breadcrumb to the static model
+  // make entity static by spawning a static model and attaching the
+  // entity to the static model
   // todo(anyone) Add a feature in ign-physics to support making a model
   // static
   if (this->staticModelToSpawn.LinkCount() == 0u)
