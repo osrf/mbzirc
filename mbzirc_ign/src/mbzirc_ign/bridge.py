@@ -8,8 +8,8 @@ class BridgeDirection(Enum):
 
 DIRECTION_SYMS = {
         BridgeDirection.BIDIRECTIONAL: '@',
-        BridgeDirection.IGN_TO_ROS: ']',
-        BridgeDirection.ROS_TO_IGN: '[',
+        BridgeDirection.IGN_TO_ROS: '[',
+        BridgeDirection.ROS_TO_IGN: ']',
 }
 
 @dataclass
