@@ -35,6 +35,7 @@ end
 <sdf version='1.9'>
 <model name="<%= $model_name%>">
   <static>false</static>
+  <self_collide>true</self_collide>
 
   <!-- Platform base model-->
   <include merge="true">
@@ -52,20 +53,6 @@ end
     <parent>arm_slot_0</parent>
     <child>arm::arm_mount_point</child>
   </joint>
-
-
-<!--  <include>
-    <name>gripper</name>
-    <uri>model://<%= $gripper_name%></uri>
-    <placement_frame>mount_point</placement_frame>
-    <pose relative_to="gripper_mount_point">0 0 0 0 0 0</pose>
-  </include>
-
-  <joint name='gripper_joint' type='fixed'>
-    <parent>arm::end_effector_connector</parent>
-    <child>gripper::mount_point</child>
-  </joint>
--->
 
   <% end %>
 

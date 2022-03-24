@@ -386,6 +386,10 @@
       </material>
     </visual>
 
+    <!-- self_collide enabled in parent usv model for usv-arm collision
+         so disable mesh collision here otherwise dart's ode collision
+         checker outputs trimesh error msgs -->
+    <!--
     <collision name="Motor_L_collision">
       <geometry>
         <mesh>
@@ -397,6 +401,7 @@
         </mesh>
       </geometry>
     </collision>
+    -->
   </link>
 
   <link name="left_propeller_link">
@@ -430,6 +435,10 @@
       </material>
     </visual>
 
+    <!-- self_collide enabled in parent usv model for usv-arm collision
+         so disable mesh collision here otherwise dart's ode collision
+         checker outputs trimesh error msgs -->
+    <!--
     <collision name= "Prop_L_collisoin">
       <geometry>
         <mesh>
@@ -441,6 +450,7 @@
         </mesh>
       </geometry>
     </collision>
+    -->
   </link>
 
   <link name="right_engine_link">
@@ -473,6 +483,10 @@
       </material>
     </visual>
 
+    <!-- self_collide enabled in parent usv model for usv-arm collision
+         so disable mesh collision here otherwise dart's ode collision
+         checker outputs trimesh error msgs -->
+    <!--
     <collision name="Motor_R_collision">
       <geometry>
         <mesh>
@@ -484,6 +498,7 @@
         </mesh>
       </geometry>
     </collision>
+    -->
   </link>
 
 
@@ -517,6 +532,10 @@
       </material>
     </visual>
 
+    <!-- self_collide enabled in parent usv model for usv-arm collision
+         so disable mesh collision here otherwise dart's ode collision
+         checker outputs trimesh error msgs -->
+    <!--
     <collision name="Prop_R_collision">
       <geometry>
         <mesh>
@@ -528,6 +547,7 @@
         </mesh>
       </geometry>
     </collision>
+    -->
   </link>
 
   <joint name="left_chassis_engine_joint" type="revolute">
@@ -592,7 +612,7 @@
 
   <!-- arm slot -->
   <frame name="arm_slot_0">
-    <pose>0.0 0 0.7 0 0 0</pose>
+    <pose>0.0 1.2 0.6 0 0 1.5708</pose>
   </frame>
 
 </model>
