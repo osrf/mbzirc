@@ -49,10 +49,10 @@ TEST_F(GripperTestFixture, GripperController)
     node.Advertise<ignition::msgs::Double>(
       "/model/suction_gripper/joint/suction_gripper_joint/0/cmd_pos");
 
-  //auto suction_pub = node.Advertise<ignition::msgs::Boolean>(
-  //  "/gripper/suction_on");
+  auto suction_pub = node.Advertise<ignition::msgs::Boolean>(
+    "/gripper/suction_on");
 
-  ignition::math::Vector3d pos;
+  ignition::math::Vector3d pos, vel;
   OnPreUpdate([&](const ignition::gazebo::UpdateInfo &_info,
     ignition::gazebo::EntityComponentManager &_ecm)
   {
@@ -62,6 +62,7 @@ TEST_F(GripperTestFixture, GripperController)
     ignition::gazebo::Model model(modelEntity);
     auto linkEntity = model.LinkByName(_ecm, "object_1");
     ignition::gazebo::enableComponent<ignition::gazebo::components::WorldPose>(_ecm, linkEntity);
+    ignition::gazebo::enableComponent<ignition::gazebo::components::WorldLinearVelocity>(_ecm, linkEntity);
   });
 
   OnPostupdate([&](const ignition::gazebo::UpdateInfo &_info,
@@ -75,18 +76,27 @@ TEST_F(GripperTestFixture, GripperController)
 
     ignition::gazebo::Link link(linkEntity);
     auto optional = link.WorldPose(_ecm);
+    auto velocity = link.WorldLinearVelocity(_ecm);
     if (optional.has_value())
     {
       static int count = 0;
       count++;
-      if (count % 100 == 0)
-      {
-        igndbg << "suction_gripper_joint world pose: " << optional->Pos() << std::endl;
-      }
+      //if (count % 100 == 0)
+      //{
+        igndbg << "model world pose: " << optional->Pos() << std::endl;
+      //}
       if (!tornDown.load())
       {
         std::lock_guard<std::mutex> lock(pos_mutex);
         pos = optional->Pos();
+      }
+    }
+    if (velocity.has_value())
+    {
+      if (!tornDown.load())
+      {
+        std::lock_guard<std::mutex> lock(pos_mutex);
+        vel = velocity.value();
       }
     }
   });
@@ -109,18 +119,29 @@ TEST_F(GripperTestFixture, GripperController)
 
   // Move object
   gripperMsg.set_data(1.2);
-  for(int i = 0;i < 3; i++)
-    gripper_pub.Publish(gripperMsg);
-  std::this_thread::sleep_for(2000ms);
+  gripper_pub.Publish(gripperMsg);
+  WaitForMaxIter();
+
   // Check if object was moved by arm
-  //{
-  //  std::lock_guard<std::mutex> lock(pos_mutex);
-  //  EXPECT_LT(pos.X(), 1);
-  //  EXPECT_LT(pos.Y(), 0);
-  //}
-  /*ignition::msgs::Boolean suction;
+  {
+    std::lock_guard<std::mutex> lock(pos_mutex);
+    EXPECT_LT(pos.X(), 1);
+    EXPECT_LT(pos.Y(), 0);
+  }
+
+  // Detach gripper and swing the arm
+  ignition::msgs::Boolean suction;
   suction.set_data(false);
   suction_pub.Publish(suction);
-  std::this_thread::sleep_for(1000ms);*/
-  WaitForMaxIter();
+  std::this_thread::sleep_for(1000ms);
+  gripperMsg.set_data(0);
+  gripper_pub.Publish(gripperMsg);
+
+  Step(1000);
+
+  {
+    // Object should be still as its been dropped off
+    std::lock_guard<std::mutex> lock(pos_mutex);
+    EXPECT_NEAR(vel.Length(), 0, 1e-3);
+  }
 }
