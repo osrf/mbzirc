@@ -32,8 +32,9 @@ from launch_ros.actions import Node
 import subprocess
 import codecs
 
-def spawn_uav(context, model_path, world_name, model_name, link_name):
+from mbzirc_ign.bridge import Bridge, BridgeDirection
 
+def spawn_uav(context, model_path, world_name, model_name, link_name):
   x_pos = LaunchConfiguration('x').perform(context)
   y_pos = LaunchConfiguration('y').perform(context)
   z_pos = LaunchConfiguration('z').perform(context)
@@ -116,54 +117,58 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                 ],
   )
 
-  sensor_prefix = '/world/' + world_name + '/model/' + model_name + '/link/' + link_name + '/sensor'
+  sensor_prefix = f'/world/{world_name}/model/{model_name}/link/{link_name}/sensor'
 
-  # imu
-  ros2_ign_imu_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[sensor_prefix +  '/imu_sensor/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU'],
-      remappings=[(sensor_prefix + "/imu_sensor/imu", 'imu/data')]
-  )
+  bridges = []
+  payloads = []
+
+  # IMU
+  bridges.append(Bridge(
+      ign_topic=f'{sensor_prefix}/imu_sensor/imu',
+      ros_topic='imu/data',
+      ign_type='ignition.msgs.IMU',
+      ros_type='sensor_msgs/msg/Imu',
+      direction=BridgeDirection.IGN_TO_ROS))
 
   # magnetometer
-  ros2_ign_magnetometer_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[sensor_prefix +  '/magnetometer/magnetometer@sensor_msgs/msg/MagneticField@ignition.msgs.Magnetometer'],
-      remappings=[(sensor_prefix + '/magnetometer/magnetometer', 'magnetic_field')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'{sensor_prefix}/magnetometer/magnetometer',
+      ros_topic='magnetic_field',
+      ign_type='ignition.msgs.Magnetometer',
+      ros_type='sensor_msgs/msg/MagneticField',
+      direction=BridgeDirection.IGN_TO_ROS))
 
   # air pressure
-  ros2_ign_air_pressure_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[sensor_prefix +  '/air_pressure/air_pressure@sensor_msgs/msg/FluidPressure@ignition.msgs.FluidPressure'],
-      remappings=[(sensor_prefix + '/air_pressure/air_pressure', 'air_pressure')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'{sensor_prefix}/air_pressure/air_pressure',
+      ros_topic='air_pressure',
+      ign_type='ignition.msgs.FluidPressure',
+      ros_type='sensor_msgs/msg/FluidPressure',
+      direction=BridgeDirection.IGN_TO_ROS))
 
-  payloads = []
   check = [slot0_payload, slot1_payload, slot2_payload, slot3_payload,
            slot4_payload, slot5_payload, slot6_payload, slot7_payload]
 
-  for idx in range(0, 4):
+  for idx in range(0, 8):
       payload = check[idx]
       if len(payload) == 0:
           continue
-      prefix = f'/world/{world_name}/model/{model_name}/model/sensor_{idx}/link/sensor_link/sensor'
+      slot_prefix = f'/world/{world_name}/model/{model_name}/model/sensor_{idx}/link/sensor_link/sensor'
 
       if payload in ['mbzirc_vga_camera', 'mbzirc_hd_camera']:
-          camera_bridge = Node(
-              package='ros_ign_bridge',
-              executable='parameter_bridge',
-              arguments=[prefix +  '/camera/image@sensor_msgs/msg/Image@ignition.msgs.Image',
-                         prefix +  '/camera/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
-              remappings=[(prefix + '/camera/image', f'slot{idx}/image_raw'),
-                          (prefix + '/camera/camera_info', f'slot{idx}/camera_info')]
-          )
+          bridges.append(Bridge(
+              ign_topic=f'{slot_prefix}/camera/image',
+              ros_topic=f'slot{idx}/image_raw',
+              ign_type='ignition.msgs.Image',
+              ros_type='sensor_msgs/msg/Image',
+              direction=BridgeDirection.IGN_TO_ROS))
+
+          bridges.append(Bridge(
+              ign_topic=f'{slot_prefix}/camera/camera_info',
+              ros_topic=f'slot{idx}/camera_info',
+              ign_type='ignition.msgs.CameraInfo',
+              ros_type='sensor_msgs/msg/CameraInfo',
+              direction=BridgeDirection.IGN_TO_ROS))
 
           # camera optical frame publisher
           ros2_camera_optical_frame_publisher = Node(
@@ -176,36 +181,44 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                           ('output/camera_info', f'slot{idx}/optical/camera_info'),
                          ]
           )
-
-          payloads.append(camera_bridge)
           payloads.append(ros2_camera_optical_frame_publisher)
+
       elif payload in ['mbzirc_planar_lidar', 'mbzirc_3d_lidar']:
-          ros2_ign_lidar_bridge = Node(
-              package='ros_ign_bridge',
-              executable='parameter_bridge',
-              output='screen',
-              arguments=[prefix + '/lidar/scan/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked'],
-              remappings=[(prefix + '/lidar/scan/points', f'slot{idx}/points')]
-          )
-          payloads.append(ros2_ign_lidar_bridge)
+          bridges.append(Bridge(
+              ign_topic=f'{slot_prefix}/lidar/scan/points',
+              ros_topic=f'slot{idx}/points',
+              ign_type='ignition.msgs.PointCloudPacked',
+              ros_type='sensor_msgs/msg/PointCloud2',
+              direction=BridgeDirection.IGN_TO_ROS))
+
       elif payload in ['mbzirc_rgbd_camera']:
-          rgbd_pointcloud_bridge = Node(
-              package='ros_ign_bridge',
-              executable='parameter_bridge',
-              output='screen',
-              arguments=[
-                  prefix + '/camera/image@sensor_msgs/msg/Image@ignition.msgs.Image',
-                  prefix + '/camera/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo',
-                  prefix + '/camera/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked',
-                  prefix + '/camera/depth_image@sensor_msgs/msg/Image@ignition.msgs.Image',
-              ],
-              remappings=[
-                  (prefix + '/camera/image', f'slot{idx}/image_raw'),
-                  (prefix + '/camera/points', f'slot{idx}/points'),
-                  (prefix + '/camera/camera_info', f'slot{idx}/camera_info'),
-                  (prefix + '/camera/depth_image', f'slot{idx}/depth'),
-              ]
-          )
+          bridges.append(Bridge(
+              ign_topic=f'{slot_prefix}/camera/image',
+              ros_topic=f'slot{idx}/image_raw',
+              ign_type='ignition.msgs.Image',
+              ros_type='sensor_msgs/msg/Image',
+              direction=BridgeDirection.IGN_TO_ROS))
+
+          bridges.append(Bridge(
+              ign_topic=f'{slot_prefix}/camera/depth_image',
+              ros_topic=f'slot{idx}/depth',
+              ign_type='ignition.msgs.Image',
+              ros_type='sensor_msgs/msg/Image',
+              direction=BridgeDirection.IGN_TO_ROS))
+
+          bridges.append(Bridge(
+              ign_topic=f'{slot_prefix}/camera/camera_info',
+              ros_topic=f'slot{idx}/camera_info',
+              ign_type='ignition.msgs.CameraInfo',
+              ros_type='sensor_msgs/msg/CameraInfo',
+              direction=BridgeDirection.IGN_TO_ROS))
+
+          bridges.append(Bridge(
+              ign_topic=f'{slot_prefix}/camera/points',
+              ros_topic=f'slot{idx}/points',
+              ign_type='ignition.msgs.PointCloudPacked',
+              ros_type='sensor_msgs/msg/PointCloud2',
+              direction=BridgeDirection.IGN_TO_ROS))
 
           image_optical_frame = Node(
               package='mbzirc_ros',
@@ -227,7 +240,6 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
                          ]
           )
 
-          payloads.append(rgbd_pointcloud_bridge)
           payloads.append(image_optical_frame)
           payloads.append(depth_image_optical_frame)
       else:
@@ -235,57 +247,52 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
 
   if model_path == "mbzirc_fixed_wing":
     # Left Flap
-    ros2_ign_left_flap_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/joint/left_flap_joint/cmd_pos@std_msgs/msg/Float64@ignition.msgs.Double'],
-      remappings=[('/model/' + model_name + '/joint/left_flap_joint/cmd_pos', 'cmd/left_flap')]
-    )
+    bridges.append(Bridge(
+        ign_topic=f'/model/{model_name}/joint/left_flap_joint/cmd_pos',
+        ros_topic='cmd/left_flap',
+        ign_type='ignition.msgs.Double',
+        ros_type='std_msgs/msg/Float64',
+        direction=BridgeDirection.ROS_TO_IGN))
+
     # Right Flap
-    ros2_ign_right_flap_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/joint/right_flap_joint/cmd_pos@std_msgs/msg/Float64@ignition.msgs.Double'],
-      remappings=[('/model/' + model_name + '/joint/right_flap_joint/cmd_pos', 'cmd/right_flap')]
-    )
-    # Propeller
-    ros2_ign_propeller_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/joint/propeller_joint/cmd_vel@std_msgs/msg/Float64@ignition.msgs.Double'],
-      remappings=[('/model/' + model_name + '/joint/propeller_joint/cmd_vel', 'cmd/motor_speed')]
-    )
+    bridges.append(Bridge(
+        ign_topic=f'/model/{model_name}/joint/right_flap_joint/cmd_pos',
+        ros_topic='cmd/right_flap',
+        ign_type='ignition.msgs.Double',
+        ros_type='std_msgs/msg/Float64',
+        direction=BridgeDirection.ROS_TO_IGN))
+
+    # Propeller 
+    bridges.append(Bridge(
+        ign_topic=f'/model/{model_name}/joint/propeller_joint/cmd_pos',
+        ros_topic='cmd/motor_speed',
+        ign_type='ignition.msgs.Double',
+        ros_type='std_msgs/msg/Float64',
+        direction=BridgeDirection.ROS_TO_IGN))
   else:
     # twist
-    ros2_ign_twist_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist'],
-      remappings=[('/model/' + model_name +'/cmd_vel', 'cmd_vel')]
-    )
+    bridges.append(Bridge(
+        ign_topic=f'/model/{model_name}/cmd_vel',
+        ros_topic='cmd_vel',
+        ign_type='ignition.msgs.Twist',
+        ros_type='geometry_msgs/msg/Twist',
+        direction=BridgeDirection.ROS_TO_IGN))
 
   # pose
-  ros2_ign_pose_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/pose@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V'],
-      remappings=[('/model/' + model_name +'/pose', 'pose')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'/model/{model_name}/pose',
+      ros_topic='pose',
+      ign_type='ignition.msgs.Pose_V',
+      ros_type='tf2_msgs/msg/TFMessage',
+      direction=BridgeDirection.IGN_TO_ROS))
 
   # pose static
-  ros2_ign_pose_static_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/pose_static@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V'],
-      remappings=[('/model/' + model_name +'/pose_static', 'pose_static')]
-  )
-
+  bridges.append(Bridge(
+      ign_topic=f'/model/{model_name}/pose_static',
+      ros_topic='pose_static',
+      ign_type='ignition.msgs.Pose_V',
+      ros_type='tf2_msgs/msg/TFMessage',
+      direction=BridgeDirection.IGN_TO_ROS))
 
   # tf broadcaster
   ros2_tf_broadcaster = Node(
@@ -297,32 +304,20 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
       ]
   )
 
-  if model_path == "mbzirc_fixed_wing":
-      group_action = GroupAction([
-          PushRosNamespace(model_name),
-          ros2_ign_imu_bridge,
-          ros2_ign_magnetometer_bridge,
-          ros2_ign_air_pressure_bridge,
-          ros2_ign_left_flap_bridge,
-          ros2_ign_right_flap_bridge,
-          ros2_ign_propeller_bridge,
-          ros2_ign_pose_bridge,
-          ros2_ign_pose_static_bridge,
-          ros2_tf_broadcaster,
-          *payloads
-    ])
-  else:
-    group_action = GroupAction([
-          PushRosNamespace(model_name),
-          ros2_ign_imu_bridge,
-          ros2_ign_magnetometer_bridge,
-          ros2_ign_air_pressure_bridge,
-          ros2_ign_twist_bridge,
-          ros2_ign_pose_bridge,
-          ros2_ign_pose_static_bridge,
-          ros2_tf_broadcaster,
-          *payloads
-    ])
+  model_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[bridge.argument() for bridge in bridges],
+      remappings=[bridge.remapping() for bridge in bridges],
+  )
+
+  group_action = GroupAction([
+    PushRosNamespace(model_name),
+    ros2_tf_broadcaster,
+    model_bridge,
+    *payloads
+  ])
 
   handler = RegisterEventHandler(
       event_handler=OnProcessExit(

@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 project(mbzirc_ign)
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 
 find_package(ignition-gazebo6 REQUIRED)
 set(IGN_GAZEBO_VER ${ignition-gazebo6_VERSION_MAJOR})
@@ -71,6 +72,11 @@ ament_target_dependencies(FixedWingController PUBLIC rclcpp mavros_msgs)
 install(
   TARGETS ${MBZIRC_IGN_PLUGINS}
   DESTINATION lib)
+
+ament_python_install_package(
+  mbzirc_ign
+  PACKAGE_DIR src/mbzirc_ign
+)
 
 #============================================================================
 # Resources

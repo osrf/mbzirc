@@ -23,7 +23,7 @@ See Installation instructions for:
 
 ### Installation from Source
 
-1. Create a colcon workspace and clone the repo
+1. Create a colcon workspace and clone the mbzirc repo
 
     ```
     mkdir -p ~/mbzirc_ws/src
@@ -31,11 +31,31 @@ See Installation instructions for:
     git clone https://github.com/osrf/mbzirc.git
     ```
 
+1. Clone the `ros_ign` repo and check out the `ros2` branch
+
+    ```
+    cd ~/mbzirc_ws/src
+    git clone https://github.com/ignitionrobotics/ros_ign.git -b ros2
+    ```
+
 1. Install dependencies using [rosdep](https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Binary.html#installing-and-initializing-rosdep)
 
     ```
     cd ~/mbzirc_ws
+    rosdep update
     rosdep install -r --from-paths src -i -y --rosdistro galactic
+    ```
+
+    Make sure the `ros-galactic-mavros-msgs` package is installed, e.g.
+
+    ```
+    dpkg -l | grep ros-galactic-mavros-msgs
+    ```
+
+    If not, install it:
+
+    ```
+    sudo apt install ros-galactic-mavros-msgs
     ```
 
 1. Build the workspace
@@ -44,7 +64,6 @@ See Installation instructions for:
     cd ~/mbzirc_ws
     colcon build --merge-install
     ```
-
 
 ### Docker setup
 
