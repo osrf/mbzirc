@@ -342,8 +342,14 @@
     </include>
 
     <include>
+      <name>Start Gate</name>
+      <pose>-1495 0 0 0 0 -1.570796</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Dock</uri>
+    </include>
+
+    <include>
       <name>Beach</name>
-      <pose>-1500 0 0 0 0 -1.57079</pose>
+      <pose>-1500 0 0 0 0 -1.570796</pose>
       <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Beach</uri>
     </include>
 
