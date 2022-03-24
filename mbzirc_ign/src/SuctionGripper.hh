@@ -24,6 +24,25 @@ namespace mbzirc
 {
   class SuctionGripperPrivate;
 
+  ////////////////////////////////////////////////////
+  /// \brief This plugin implements a suction gripper.
+  /// When the gripper makes contact with an item it picks up the item.
+  /// One can command the release of the item through a configurable topic.
+  /// The plugin requires a contact sensor to detect when an item is in contact.
+  ///
+  /// # Parameters
+  /// <parent_link>
+  /// The link to which this gripper should be attached. [string]
+  /// <contact_sensor_topic>
+  /// The topic to listen to for contact sensor inputs. [string]
+  /// <command_topic>
+  /// The topic to listen to for commands. [string]
+  ///
+  /// # Subscribers
+  /// <contact_sensor_topic> used to detect when an item is in
+  /// contact. [ignition::msgs::Contacts]
+  /// <command_topic> - used to command the release of an item.
+  /// [igntion::msgs::Boolean]
   class SuctionGripperPlugin:
     public ignition::gazebo::System,
     public ignition::gazebo::ISystemConfigure,
