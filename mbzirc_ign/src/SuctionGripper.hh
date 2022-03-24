@@ -41,8 +41,11 @@ namespace mbzirc
   /// # Subscribers
   /// <contact_sensor_topic> used to detect when an item is in
   /// contact. [ignition::msgs::Contacts]
-  /// <command_topic> - used to command the release of an item.
-  /// [igntion::msgs::Boolean]
+  /// <command_topic> - used to command the release of an item. Sending a False
+  /// to this topic will cause the suction to stop. If there is an object then
+  /// it will be released, otherwise new objects will not be picked up. Sending
+  /// a true signal again will cause the suction to start again. By default
+  /// suction is on. [igntion::msgs::Boolean]
   class SuctionGripperPlugin:
     public ignition::gazebo::System,
     public ignition::gazebo::ISystemConfigure,

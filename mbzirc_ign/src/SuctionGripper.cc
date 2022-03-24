@@ -18,28 +18,42 @@ using namespace gazebo;
 
 class mbzirc::SuctionGripperPrivate
 {
+  /// \brief The item being moved
   public: Entity childItem;
 
+  /// \brief The gripper link name
   public: std::string linkName;
 
+  /// \brief Used to store the joint when we attach to an object
   public: Entity joint;
 
+  /// \brief The gripper link entity
   public: Entity gripperEntity;
 
+  /// \brief The transport node
   public: transport::Node node;
 
+  /// \brief Used for determining when the suction is on.
   public: bool suctionOn{true};
 
+  /// \brief Set to true when we detect the suction gripper is in contact
   public: bool pendingJointCreation{false};
 
+  /// \brief True when we are holding an object
   public: bool jointCreated{false};
 
+  /// \brief mutex for accessing member variables
   public: std::mutex _mtx;
 
+  /// \brief Callback for when contact is made
   public: void OnContact(const ignition::msgs::Contacts &_msg)
   {
+    // If the suction is not on or the gripper is already holding an object
+    // dont hold an object.
     if (!suctionOn || jointCreated) return;
 
+    // Grasp an aobject
+    // TODO(arjo): What happens when there are many objects in contact
     for (int i = 0; i < _msg.contact_size(); ++i)
     {
       auto contact = _msg.contact(i);
@@ -49,6 +63,7 @@ class mbzirc::SuctionGripperPrivate
     }
   }
 
+  /// \brief Command callback
   public: void OnCmd(const ignition::msgs::Boolean &_suctionOn)
   {
     std::lock_guard<std::mutex> lock(this->_mtx);
@@ -132,6 +147,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
   std::lock_guard<std::mutex> lock(this->dataPtr->_mtx);
   if (this->dataPtr->pendingJointCreation)
   {
+    // If we need to create a new joint
     this->dataPtr->pendingJointCreation = false;
     this->dataPtr->joint = _ecm.CreateEntity();
     auto parentLink = _ecm.ParentEntity(this->dataPtr->childItem);
@@ -147,6 +163,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
 
   if (!this->dataPtr->suctionOn && this->dataPtr->jointCreated)
   {
+    // If e have an item and were commanded to release it
     _ecm.RequestRemoveEntity(this->dataPtr->joint);
     this->dataPtr->joint = kNullEntity;
     this->dataPtr->jointCreated = false;
