@@ -262,7 +262,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
         ros_type='std_msgs/msg/Float64',
         direction=BridgeDirection.ROS_TO_IGN))
 
-    # Propeller 
+    # Propeller
     bridges.append(Bridge(
         ign_topic=f'/model/{model_name}/joint/propeller_joint/cmd_pos',
         ros_topic='cmd/motor_speed',
@@ -369,6 +369,7 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   print(command, str_output)
 
   # run erb for arm to attach the user specified gripper
+  # and also for arm and gripper to generate unique topic names
   if arm:
       arm_model_file = os.path.join(
           get_package_share_directory('mbzirc_ign'), 'models', arm, 'model.sdf.erb')
@@ -376,11 +377,26 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
           get_package_share_directory('mbzirc_ign'), 'models', arm, 'model.sdf')
       command = ['erb']
       if gripper: command.append(f'gripper={gripper}')
+      command.append(f'topic_prefix={model_name}')
       command.append(arm_model_file)
       process = subprocess.Popen(command, stdout=subprocess.PIPE)
       stdout = process.communicate()[0]
       str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
       f = open(arm_model_output_file, 'w')
+      f.write(str_output)
+      print(command, str_output)
+
+      gripper_model_file = os.path.join(
+          get_package_share_directory('mbzirc_ign'), 'models', gripper, 'model.sdf.erb')
+      gripper_model_output_file = os.path.join(
+          get_package_share_directory('mbzirc_ign'), 'models', gripper, 'model.sdf')
+      command = ['erb']
+      command.append(f'topic_prefix={model_name}/{arm}')
+      command.append(gripper_model_file)
+      process = subprocess.Popen(command, stdout=subprocess.PIPE)
+      stdout = process.communicate()[0]
+      str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
+      f = open(gripper_model_output_file, 'w')
       f.write(str_output)
       print(command, str_output)
 
@@ -400,18 +416,25 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
                 ],
   )
 
+  bridges = []
+
   # thrust cmd
-  left_thrust_topic = '/model/' + model_name + '/joint/left_engine_propeller_joint/cmd_thrust'
-  right_thrust_topic = '/model/' + model_name + '/joint/right_engine_propeller_joint/cmd_thrust'
-  ros2_ign_thrust_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[left_thrust_topic + '@std_msgs/msg/Float64@ignition.msgs.Double',
-                 right_thrust_topic + '@std_msgs/msg/Float64@ignition.msgs.Double'],
-      remappings=[(left_thrust_topic, 'left/thrust/cmd_thrust'),
-                  (right_thrust_topic, 'right/thrust/cmd_thrust')]
-  )
+  left_thrust_topic = f'/model/{model_name}/joint/left_engine_propeller_joint/cmd_thrust'
+  right_thrust_topic = f'/model/{model_name}/joint/right_engine_propeller_joint/cmd_thrust'
+
+  bridges.append(Bridge(
+      ign_topic=left_thrust_topic,
+      ros_topic='left/thrust/cmd_thrust',
+      ign_type='ignition.msgs.Double',
+      ros_type='std_msgs/msg/Float64',
+      direction=BridgeDirection.ROS_TO_IGN))
+
+  bridges.append(Bridge(
+      ign_topic=right_thrust_topic,
+      ros_topic='right/thrust/cmd_thrust',
+      ign_type='ignition.msgs.Double',
+      ros_type='std_msgs/msg/Float64',
+      direction=BridgeDirection.ROS_TO_IGN))
 
   # thrust joint pos cmd
   # ROS naming policy indicates that first character of a name must be an alpha
@@ -423,43 +446,45 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   left_joint_topic = model_name + '/left/thruster/joint/cmd_pos'
   right_joint_topic = model_name + '/right/thruster/joint/cmd_pos'
 
-  ros2_ign_thrust_joint_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[left_joint_topic + '@std_msgs/msg/Float64@ignition.msgs.Double',
-                 right_joint_topic + '@std_msgs/msg/Float64@ignition.msgs.Double'],
-      remappings=[(left_joint_topic, 'left/thrust/joint/cmd_pos'),
-                  (right_joint_topic, 'right/thrust/joint/cmd_pos')]
-  )
+  bridges.append(Bridge(
+      ign_topic=left_joint_topic,
+      ros_topic='left/thrust/joint/cmd_pos',
+      ign_type='ignition.msgs.Double',
+      ros_type='std_msgs/msg/Float64',
+      direction=BridgeDirection.ROS_TO_IGN))
 
-  sensor_prefix = '/world/' + world_name + '/model/' + model_name + '/link/' + link_name + '/sensor'
+  bridges.append(Bridge(
+      ign_topic=right_joint_topic,
+      ros_topic='right/thrust/joint/cmd_pos',
+      ign_type='ignition.msgs.Double',
+      ros_type='std_msgs/msg/Float64',
+      direction=BridgeDirection.ROS_TO_IGN))
+
+  sensor_prefix = f'/world/{world_name}/model/{model_name}/link/{link_name}/sensor'
+
   # imu
-  ros2_ign_imu_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[sensor_prefix +  '/imu_sensor/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU'],
-      remappings=[(sensor_prefix + "/imu_sensor/imu", 'imu/data')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'{sensor_prefix}/imu_sensor/imu',
+      ros_topic='imu/data',
+      ign_type='ignition.msgs.IMU',
+      ros_type='sensor_msgs/msg/Imu',
+      direction=BridgeDirection.ROS_TO_IGN))
 
   # pose
-  ros2_ign_pose_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/pose@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V'],
-      remappings=[('/model/' + model_name +'/pose', 'pose')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'/model/{model_name}/pose',
+      ros_topic='pose',
+      ign_type='ignition.msgs.Pose_V',
+      ros_type='tf2_msgs/msg/TFMessage',
+      direction=BridgeDirection.IGN_TO_ROS))
 
   # pose static
-  ros2_ign_pose_static_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/pose_static@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V'],
-      remappings=[('/model/' + model_name +'/pose_static', 'pose_static')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'/model/{model_name}/pose_static',
+      ros_topic='pose_static',
+      ign_type='ignition.msgs.Pose_V',
+      ros_type='tf2_msgs/msg/TFMessage',
+      direction=BridgeDirection.IGN_TO_ROS))
 
   # tf broadcaster
   ros2_tf_broadcaster = Node(
@@ -474,38 +499,68 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   # bridges for arm and gripper
   arm_bridges = []
   if arm:
-      print("spawning arm bridges " )
-      arm_prefix = 'world/' + world_name + '/model/' + model_name + '/model/arm'
-      ros2_ign_arm_joint_state_bridge = Node(
-          package='ros_ign_bridge',
-          executable='parameter_bridge',
-          output='screen',
-          arguments=[arm_prefix + '/joint_state@sensor_msgs/msg/JointState@ignition.msgs.Model'],
-          remappings=[(arm_prefix + '/joint_state', '/joint_states')]
-      )
-      ros2_ign_gripper_joint_state_bridge = Node(
-          package='ros_ign_bridge',
-          executable='parameter_bridge',
-          output='screen',
-          arguments=[arm_prefix + '/joint_state@sensor_msgs/msg/JointState@ignition.msgs.Model'],
-          remappings=[(arm_prefix + '/model/gripper/joint_state', '/joint_states')]
-      )
-      arm_bridges.append(ros2_ign_arm_joint_state_bridge)
-      arm_bridges.append(ros2_ign_gripper_joint_state_bridge)
+      arm_prefix = f'/world/{world_name}/model/{model_name}/model/arm'
 
-  bridges = [
-        PushRosNamespace(model_name),
-        ros2_ign_thrust_bridge,
-        ros2_ign_thrust_joint_bridge,
-        ros2_ign_imu_bridge,
-        ros2_ign_pose_bridge,
-        ros2_ign_pose_static_bridge,
-        ros2_tf_broadcaster
+      arm_bridges.append(Bridge(
+          ign_topic=f'{arm_prefix}/joint_state',
+          ros_topic='/joint_states',
+          ign_type='ignition.msgs.Model',
+          ros_type='sensor_msgs/msg/JointState',
+          direction=BridgeDirection.IGN_TO_ROS))
+
+      arm_bridges.append(Bridge(
+          ign_topic=f'{arm_prefix}/model/gripper/joint_state',
+          ros_topic='/joint_states',
+          ign_type='ignition.msgs.Model',
+          ros_type='sensor_msgs/msg/JointState',
+          direction=BridgeDirection.IGN_TO_ROS))
+
+      if arm == 'mbzirc_oberon7_arm':
+          arm_joints = ['azimuth', 'shoulder', 'elbow', 'roll', 'pitch', 'wrist']
+          for joint in arm_joints:
+            arm_bridges.append(Bridge(
+               ign_topic=f'/{model_name}/oberon7_arm/{joint}',
+               ros_topic=f'arm/joint/{joint}/cmd_pos',
+               ign_type='ignition.msgs.Double',
+               ros_type='std_msgs/msg/Float64',
+               direction=BridgeDirection.ROS_TO_IGN))
+
+      if gripper == 'mbzirc_oberon7_gripper':
+          gripper_joints = ['finger_left', 'finger_right']
+          for joint in gripper_joints:
+            arm_bridges.append(Bridge(
+               ign_topic=f'/{model_name}/{arm}/oberon7_gripper/{joint}',
+               ros_topic=f'arm/gripper/joint/{joint}/cmd_pos',
+               ign_type='ignition.msgs.Double',
+               ros_type='std_msgs/msg/Float64',
+               direction=BridgeDirection.ROS_TO_IGN))
+
+  usv_model_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[bridge.argument() for bridge in bridges],
+      remappings=[bridge.remapping() for bridge in bridges],
+  )
+
+  nodes = [
+    PushRosNamespace(model_name),
+    ros2_tf_broadcaster,
+    usv_model_bridge,
   ]
   if arm:
-    bridges.extend(arm_bridges)
+    print ("spawning arm bridges")
+    arm_model_bridge = Node(
+        package='ros_ign_bridge',
+        executable='parameter_bridge',
+        output='screen',
+        arguments=[bridge.argument() for bridge in arm_bridges],
+        remappings=[bridge.remapping() for bridge in arm_bridges],
+    )
 
-  group_action = GroupAction(bridges)
+    nodes.append(arm_model_bridge)
+
+  group_action = GroupAction(nodes)
 
   handler = RegisterEventHandler(
       event_handler=OnProcessExit(

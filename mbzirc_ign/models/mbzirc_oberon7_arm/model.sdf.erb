@@ -1,8 +1,14 @@
 <%
-if !defined?(gripper) || gripper== nil || gripper.empty?
-  $gripper_name = 'mbzirc_oberon7_gripper'
+if !defined?(topic_prefix) || topic_prefix == nil || topic_prefix.empty?
+  $topic_prefix = ''
 else
-  $gripper_name = gripper
+  $topic_prefix = topic_prefix
+end
+
+if !defined?(gripper) || gripper== nil || gripper.empty?
+  $gripper_model = 'mbzirc_oberon7_gripper'
+else
+  $gripper_model = gripper
 end
 %>
 
@@ -363,7 +369,7 @@ end
 
     <include>
       <name>gripper</name>
-      <uri>model://<%= $gripper_name%></uri>
+      <uri>model://<%= $gripper_model%></uri>
       <placement_frame>mount_point</placement_frame>
       <pose relative_to="gripper_mount_point">0 0 0 0 0 0</pose>
     </include>
@@ -393,7 +399,7 @@ end
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>azimuth</joint_name>
-      <topic>/oberon7_arm/azimuth</topic>
+      <topic><%= $topic_prefix %>/oberon7_arm/azimuth</topic>
       <use_velocity_commands>true</use_velocity_commands>
     </plugin>
 
@@ -401,7 +407,7 @@ end
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>shoulder</joint_name>
-      <topic>/oberon7_arm/shoulder</topic>
+      <topic><%= $topic_prefix %>/oberon7_arm/shoulder</topic>
       <use_velocity_commands>true</use_velocity_commands>
       <initial_position>1.0</initial_position>
     </plugin>
@@ -410,7 +416,7 @@ end
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>elbow</joint_name>
-      <topic>/oberon7_arm/elbow</topic>
+      <topic><%= $topic_prefix %>/oberon7_arm/elbow</topic>
       <use_velocity_commands>true</use_velocity_commands>
     </plugin>
 
@@ -418,7 +424,7 @@ end
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>roll</joint_name>
-      <topic>/oberon7_arm/roll</topic>
+      <topic><%= $topic_prefix %>/oberon7_arm/roll</topic>
       <use_velocity_commands>true</use_velocity_commands>
     </plugin>
 
@@ -426,7 +432,7 @@ end
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>pitch</joint_name>
-      <topic>/oberon7_arm/pitch</topic>
+      <topic><%= $topic_prefix %>/oberon7_arm/pitch</topic>
       <use_velocity_commands>true</use_velocity_commands>
     </plugin>
 
@@ -434,7 +440,7 @@ end
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>wrist</joint_name>
-      <topic>/oberon7_arm/wrist</topic>
+      <topic><%= $topic_prefix %>/oberon7_arm/wrist</topic>
       <use_velocity_commands>true</use_velocity_commands>
     </plugin>
 

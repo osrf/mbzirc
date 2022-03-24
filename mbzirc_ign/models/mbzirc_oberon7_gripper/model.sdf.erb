@@ -1,3 +1,11 @@
+<%
+if !defined?(topic_prefix) || topic_prefix == nil || topic_prefix.empty?
+  $topic_prefix = ''
+else
+  $topic_prefix = topic_prefix
+end
+%>
+
 <?xml version="1.0" ?>
 <sdf version='1.9'>
   <model name="oberon7_gripper">
@@ -318,7 +326,7 @@
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>finger_left_joint</joint_name>
-      <topic>/oberon7_gripper/finger_left</topic>
+      <topic><%= $topic_prefix %>/oberon7_gripper/finger_left</topic>
       <use_velocity_commands>true</use_velocity_commands>
     </plugin>
 
@@ -326,7 +334,7 @@
       filename="ignition-gazebo-joint-position-controller-system"
       name="ignition::gazebo::systems::JointPositionController">
       <joint_name>finger_right_joint</joint_name>
-      <topic>/oberon7_gripper/finger_right</topic>
+      <topic><%= $topic_prefix %>/oberon7_gripper/finger_right</topic>
       <use_velocity_commands>true</use_velocity_commands>
     </plugin>
 
