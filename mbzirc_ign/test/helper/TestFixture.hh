@@ -64,11 +64,18 @@ pid_t launchProcess(std::string &_command)
 /// would like to run.
 class MBZIRCTestFixture : public ::testing::Test
 {
+  public: std::atomic<bool> tornDown{false};
+
   // Documentation inherited
   protected: void SetUp() override
   {
     // Debug Everything
     ignition::common::Console::SetVerbosity(4);
+  }
+
+  protected: void TearDown() override
+  {
+    tornDown = true;
   }
 
   /// \brief Loads the specified world. Note you should call this at the start

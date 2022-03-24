@@ -5,7 +5,7 @@
 
     <physics name="4ms" type="dart">
       <max_step_size>0.004</max_step_size>
-      <real_time_factor>1.0</real_time_factor>
+      <real_time_factor>0</real_time_factor>
     </physics>
 
     <plugin
@@ -122,7 +122,7 @@
           <limit>
             <lower>-1.57</lower>
             <upper>1.57</upper>
-            <effort>0.1</effort>
+            <effort>0.5</effort>
           </limit>
         </axis>
       </joint>
@@ -137,7 +137,7 @@
         name="mbzirc::SuctionGripperPlugin">
         <parent_link>arm_link</parent_link>
         <contact_sensor_topic>arm_contact</contact_sensor_topic>
-        <command_topic>gipper/suction_on</command_topic>
+        <command_topic>gripper/suction_on</command_topic>
       </plugin>
     </model>
 

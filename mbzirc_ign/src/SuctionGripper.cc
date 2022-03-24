@@ -145,7 +145,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
     this->dataPtr->jointCreated = true;
   }
 
-  if (!this->suctionOn && this->dataPtr->jointCreated)
+  if (!this->dataPtr->suctionOn && this->dataPtr->jointCreated)
   {
     _ecm.RequestRemoveEntity(this->dataPtr->gripperEntity);
     this->dataPtr->gripperEntity = kNullEntity;
