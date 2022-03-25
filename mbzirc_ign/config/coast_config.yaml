@@ -1,0 +1,73 @@
+---
+- model_name: 'quadrotor_1'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1503, 0, 3.6]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+    slot1:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot2:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot3:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot4:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot5:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot6:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot7:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+
+- model_name: 'hexrotor_1'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1503, 3, 3.6]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_3d_lidar'
+      rpy: [0, 0, 0]
+    slot1:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot2:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot3:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot4:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot5:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot6:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+    slot7:
+      sensor: 'None'
+      rpy: [0, 0, 0]
+
+
+- model_name: 'usv'
+  model_type: 'usv'
+  # Position for coast.sdf
+  position:
+    xyz: [-1455, 0, 0.3]
+    rpy: [0, 0, 0]
+

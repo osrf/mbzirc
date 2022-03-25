@@ -1,0 +1,33 @@
+---
+model_name: 'quadrotor_0'
+model_type: 'mbzirc_quadrotor'
+flight_time: 15
+position:
+  xyz: [1, 2, 1.05]
+  rpy: [0, 0, 0]
+payload:
+  slot0:
+    sensor: 'mbzirc_vga_camera'
+    rpy: [0, 0, 0]
+  slot1:
+    sensor: 'mbzirc_hd_camera'
+    rpy: [0, 0, 0]
+  slot2:
+    sensor: 'mbzirc_rgbd_camera'
+    rpy: [0, 0, 0]
+  slot3:
+    sensor: 'None'
+    rpy: [0, 0, 0]
+  slot4:
+    sensor: 'None'
+    rpy: [0, 0, 0]
+  slot5:
+    sensor: 'None'
+    rpy: [0, 0, 0]
+  slot6:
+    sensor: 'None'
+    rpy: [0, 0, 0]
+  slot7:
+    sensor: 'None'
+    rpy: [0, 0, 0]
+

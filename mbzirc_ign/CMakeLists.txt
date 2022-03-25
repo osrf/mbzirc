@@ -81,6 +81,7 @@ ament_python_install_package(
 #============================================================================
 # Resources
 install(DIRECTORY
+  config
   worlds
   models
   launch
@@ -88,7 +89,11 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
+  find_package(python_cmake_module REQUIRED)
+  find_package(PythonExtra MODULE REQUIRED)
+
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_pytest REQUIRED)
 
   # Build-time constants
   set("PROJECT_BINARY_PATH" ${CMAKE_CURRENT_BINARY_DIR})
@@ -105,6 +110,22 @@ if(BUILD_TESTING)
       PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto mavros_msgs)
     target_link_libraries(${TEST_TARGET} ignition-gazebo${IGN_GAZEBO_VER}::ignition-gazebo${IGN_GAZEBO_VER} rclcpp::rclcpp ${mavros_msgs_LIBRARIES})
     set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
+  endforeach()
+
+
+  set (_pytest_tests
+    src/mbzirc_ign/test_model.py
+    src/mbzirc_ign/test_bridges.py
+  )
+  foreach(_test_path ${_pytest_tests})
+    get_filename_component(_test_name ${_test_path} NAME_WE)
+    ament_add_pytest_test(${_test_name} ${_test_path}
+      PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}"
+      APPEND_ENV AMENT_PREFIX_PATH=${ament_index_build_path}
+        PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
+      TIMEOUT 120
+      WERROR ON
+    )
   endforeach()
 endif()
 

@@ -1,0 +1,7 @@
+---
+model_name: 'usv'
+model_type: 'usv'
+position:
+  xyz: [15, 0, 0.3]
+  rpy: [0, 0, 0]
+
