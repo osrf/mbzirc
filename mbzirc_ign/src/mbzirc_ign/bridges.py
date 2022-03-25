@@ -102,3 +102,37 @@ def thrust_joint_pos(model_name, side):
         ign_type='ignition.msgs.Double',
         ros_type='std_msgs/msg/Float64',
         direction=BridgeDirection.ROS_TO_IGN)
+
+def arm_joint_states(world_name, model_name):
+    arm_prefix = f'/world/{world_name}/model/{model_name}/model/arm'
+    return Bridge(
+        ign_topic=f'{arm_prefix}/joint_state',
+        ros_topic='/joint_states',
+        ign_type='ignition.msgs.Model',
+        ros_type='sensor_msgs/msg/JointState',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+def gripper_joint_states(world_name, model_name):
+    gripper_prefix = f'/world/{world_name}/model/{model_name}/model/arm/model/gripper'
+    return Bridge(
+        ign_topic=f'{gripper_prefix}/joint_state',
+        ros_topic='/joint_states',
+        ign_type='ignition.msgs.Model',
+        ros_type='sensor_msgs/msg/JointState',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+def arm_joint_pos(model_name, joint_name):
+    return Bridge(
+        ign_topic=f'/{model_name}/arm/{joint_name}',
+        ros_topic=f'arm/joint/{joint_name}/cmd_pos',
+        ign_type='ignition.msgs.Double',
+        ros_type='std_msgs/msg/Float64',
+        direction=BridgeDirection.ROS_TO_IGN)
+
+def gripper_joint_pos(model_name, joint_name):
+    return Bridge(
+        ign_topic=f'/{model_name}/arm/gripper/{joint_name}',
+        ros_topic=f'arm/gripper/joint/{joint_name}/cmd_pos',
+        ign_type='ignition.msgs.Double',
+        ros_type='std_msgs/msg/Float64',
+        direction=BridgeDirection.ROS_TO_IGN)

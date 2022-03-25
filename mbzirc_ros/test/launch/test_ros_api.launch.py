@@ -89,6 +89,27 @@ def generate_test_description():
             period=13.0,
             actions=[spawn_hexrotor])
 
+    # spawn usv with arm and gripper
+    arguments={'name'   : 'usv',
+               'world'  : 'empty_platform',
+               'model'  : 'usv',
+               'type'   : 'usv',
+               'x'      : '4',
+               'z'      : '0.08',
+               'arm'    : 'mbzirc_oberon7_arm',
+               'gripper': 'mbzirc_oberon7_gripper',}
+
+    spawn_usv = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('mbzirc_ign'),
+                'launch/spawn.launch.py')
+        ),
+        launch_arguments=arguments.items())
+    delay_launch_usv = TimerAction(
+            period=16.0,
+            actions=[spawn_usv])
+
     # ros launch does not bring down the ign gazebo process so manually kill it
     # \todo(anyone) figure out a proper way to terminate the ign gazebo process
     pid = 'ps aux | grep -v grep | grep \'ign gazebo ' + ign_args + '\' | awk \'{print $2}\''
@@ -110,6 +131,7 @@ def generate_test_description():
         gazebo,
         delay_launch_quadrotor,
         delay_launch_hexrotor,
+        delay_launch_usv,
         process_under_test,
         kill_proc_handler,
         launch_testing.util.KeepAliveProc(),
@@ -120,7 +142,7 @@ def generate_test_description():
 class RosApiTest(unittest.TestCase):
 
     def test_termination(self, process_under_test, proc_info):
-        proc_info.assertWaitForShutdown(process=process_under_test, timeout=200)
+        proc_info.assertWaitForShutdown(process=process_under_test, timeout=220)
 
 @launch_testing.post_shutdown_test()
 class RosApiTestAfterShutdown(unittest.TestCase):

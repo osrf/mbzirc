@@ -22,6 +22,7 @@
 #include <sensor_msgs/msg/fluid_pressure.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/magnetic_field.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
@@ -211,6 +212,17 @@ TEST(RosApiTest, UAVTopics)
   EXPECT_TRUE(rgbdOpticalDepth.callbackExecuted);
 
   // \todo check cmd_vel and points (lidar) topics
+}
+
+/////////////////////////////////////////////////
+TEST(RosApiTest, ArmTopics)
+{
+  // joint states
+  MyTestClass<sensor_msgs::msg::JointState> jointStates(
+      "/joint_states");
+  waitUntilBoolVarAndSpin(
+    node, jointStates.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(jointStates.callbackExecuted);
 }
 
 /////////////////////////////////////////////////

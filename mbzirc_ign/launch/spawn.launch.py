@@ -65,7 +65,13 @@ def spawn(context, model_type, world_name, model_name, position):
         model.set_flight_time(flight_time)
         model.set_payload(payloads)
     elif model.isUSV():
+        arm = LaunchConfiguration('arm').perform(context)
+        gripper = LaunchConfiguration('gripper').perform(context)
+
         model.set_wavefield(world_name)
+
+        model.set_arm(arm)
+        model.set_gripper(gripper)
 
     ignition_spawn_entity = Node(
         package='ros_ign_gazebo',
@@ -173,6 +179,14 @@ def generate_launch_description():
             'flightTime',
             default_value='10',
             description='Battery flight time in minutes (only for UAVs)'),
+        DeclareLaunchArgument(
+            'arm',
+            default_value='',
+            description="arm model to attach to usv"),
+        DeclareLaunchArgument(
+            'gripper',
+            default_value='mbzirc_oberon7_gripper',
+            description="gripper model to attach to arm"),
         DeclareLaunchArgument(
             'slot0',
             default_value='',
