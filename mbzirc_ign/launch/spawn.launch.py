@@ -12,30 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-from ament_index_python.packages import get_package_share_directory
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-                        #, ExecuteProcess, IncludeLaunchDescription
 from launch.actions import OpaqueFunction
 from launch.actions import RegisterEventHandler
 from launch.actions import GroupAction
-from launch_ros.actions import PushRosNamespace
 from launch.event_handlers import OnProcessExit
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
-
-import subprocess
-import codecs
+from launch_ros.actions import PushRosNamespace
 
 from mbzirc_ign.model import Model
-from mbzirc_ign.bridge import Bridge, BridgeDirection
-import mbzirc_ign.bridges
-import mbzirc_ign.payload_bridges
+
 
 def spawn(context, model_type, world_name, model_name, position):
     model = Model(model_name, model_type, position)
@@ -120,24 +109,25 @@ def spawn(context, model_type, world_name, model_name, position):
         event_handler=OnProcessExit(
             target_action=ignition_spawn_entity,
             on_exit=[group_action],
-    ))
+        )
+    )
     return [ignition_spawn_entity, handler]
 
 
 def launch(context, *args, **kwargs):
-  robot_name = LaunchConfiguration('name').perform(context)
-  model_type = LaunchConfiguration('model').perform(context)
-  world_name = LaunchConfiguration('world').perform(context)
+    robot_name = LaunchConfiguration('name').perform(context)
+    model_type = LaunchConfiguration('model').perform(context)
+    world_name = LaunchConfiguration('world').perform(context)
 
-  x_pos = LaunchConfiguration('x').perform(context)
-  y_pos = LaunchConfiguration('y').perform(context)
-  z_pos = LaunchConfiguration('z').perform(context)
-  r_rot = LaunchConfiguration('R').perform(context)
-  p_rot = LaunchConfiguration('P').perform(context)
-  y_rot = LaunchConfiguration('Y').perform(context)
+    x_pos = LaunchConfiguration('x').perform(context)
+    y_pos = LaunchConfiguration('y').perform(context)
+    z_pos = LaunchConfiguration('z').perform(context)
+    r_rot = LaunchConfiguration('R').perform(context)
+    p_rot = LaunchConfiguration('P').perform(context)
+    y_rot = LaunchConfiguration('Y').perform(context)
 
-  position = [x_pos, y_pos, z_pos, r_rot, p_rot, y_rot]
-  return spawn(context, model_type, world_name, robot_name, position)
+    position = [x_pos, y_pos, z_pos, r_rot, p_rot, y_rot]
+    return spawn(context, model_type, world_name, robot_name, position)
 
 
 def generate_launch_description():
@@ -248,5 +238,5 @@ def generate_launch_description():
             default_value='0 0 0',
             description='Roll, Pitch, Yaw in degrees of payload mount'),
         # launch setup
-        OpaqueFunction(function = launch)
+        OpaqueFunction(function=launch)
     ])

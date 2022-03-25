@@ -12,27 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-from ament_index_python.packages import get_package_share_directory
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-                        #, ExecuteProcess, IncludeLaunchDescription
 from launch.actions import OpaqueFunction
 from launch.actions import RegisterEventHandler
 from launch.actions import GroupAction
-from launch_ros.actions import PushRosNamespace
 from launch.event_handlers import OnProcessExit
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
+from launch_ros.actions import PushRosNamespace
 
-import yaml
+from mbzirc_ign.model import Model
 
-from mbzirc_ign.bridge import Bridge, BridgeDirection
-from mbzirc_ign.model import Model 
 
 def spawn(context, config_file, world_name):
     with open(config_file, "r") as stream:
@@ -86,13 +78,16 @@ def spawn(context, config_file, world_name):
         event_handler=OnProcessExit(
             target_action=ignition_spawn_entity,
             on_exit=[group_action],
-    ))
+        )
+    )
     return [ignition_spawn_entity, handler]
+
 
 def launch(context, *args, **kwargs):
     config_file = LaunchConfiguration('config_file').perform(context)
     world_name = LaunchConfiguration('world').perform(context)
     return spawn(context, config_file, world_name)
+
 
 def generate_launch_description():
     return LaunchDescription([
@@ -107,5 +102,5 @@ def generate_launch_description():
             description='YAML configuration file to spawn'),
 
         # launch setup
-        OpaqueFunction(function = launch)
+        OpaqueFunction(function=launch)
     ])
