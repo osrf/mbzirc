@@ -34,7 +34,6 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
     {"name", "usv"},
     {"world", "faster_than_realtime"},
     {"model", "usv"},
-    {"type",  "usv"},
     {"x", "15"},
     {"y", "0"},
     {"z", "-0.7"}

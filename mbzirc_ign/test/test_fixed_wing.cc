@@ -64,7 +64,6 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
     {"name", "zephyr"},
     {"world", "empty_platform"},
     {"model", "mbzirc_fixed_wing"},
-    {"type",  "uav"},
     {"x", "15"},
     {"y", "0"},
     {"z", "10"}

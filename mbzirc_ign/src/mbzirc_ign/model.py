@@ -157,7 +157,8 @@ class Model:
     def set_wavefield(self, world_name):
         if world_name not in WAVEFIELD_SIZE:
             print(f'Wavefield size not found for {world_name}')
-        self.wavefield_size = WAVEFIELD_SIZE[world_name]
+        else:
+            self.wavefield_size = WAVEFIELD_SIZE[world_name]
 
     def generate(self):
         # Generate SDF by executing ERB and populating templates
