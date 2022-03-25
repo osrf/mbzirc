@@ -95,6 +95,12 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_cmake_pytest REQUIRED)
 
+  find_package(ament_cmake_flake8 REQUIRED)
+  ament_flake8()
+
+  find_package(ament_cmake_pycodestyle REQUIRED)
+  ament_pycodestyle()
+
   # Build-time constants
   set("PROJECT_BINARY_PATH" ${CMAKE_CURRENT_BINARY_DIR})
   set("PROJECT_SOURCE_PATH" ${CMAKE_CURRENT_SOURCE_DIR})

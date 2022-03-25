@@ -15,13 +15,15 @@
 import codecs
 import os
 import subprocess
-import yaml
 
 from ament_index_python.packages import get_package_share_directory
+
 from launch_ros.actions import Node
 
 import mbzirc_ign.bridges
 import mbzirc_ign.payload_bridges
+
+import yaml
 
 FIXED_WING_UAVS = [
     'mbzirc_fixed_wing',
@@ -41,6 +43,7 @@ WAVEFIELD_SIZE = {'simple_demo': 1000, 'coast': 6000}
 
 
 class Model:
+
     def __init__(self, model_name, model_type, position):
         self.model_name = model_name
         self.model_type = model_type
@@ -178,7 +181,7 @@ class Model:
                         r, p, y = payload['rpy'].split(' ')
                     else:
                         r, p, y = payload['rpy']
-                    command.append(f"{slot}_pos={r} {p} {y}")
+                    command.append(f'{slot}_pos={r} {p} {y}')
 
         if self.model_type in USVS:
             command.append(f'wavefieldSize={self.wavefield_size}')
@@ -191,13 +194,13 @@ class Model:
         # evaluate error output to see if there were undefined variables
         # for the ERB process
         stderr = process.communicate()[1]
-        err_output = codecs.getdecoder("unicode_escape")(stderr)[0]
+        err_output = codecs.getdecoder('unicode_escape')(stderr)[0]
         for line in err_output.splitlines():
             if line.find('undefined local') > 0:
                 raise RuntimeError(line)
 
         stdout = process.communicate()[0]
-        model_sdf = codecs.getdecoder("unicode_escape")(stdout)[0]
+        model_sdf = codecs.getdecoder('unicode_escape')(stdout)[0]
         print(command)
 
         return command, model_sdf
@@ -239,14 +242,14 @@ class Model:
     def _FromConfigDict(cls, config):
         # Parse a single configuration
         if 'model_name' not in config:
-            raise RuntimeError("Cannot construct model without model_name in config")
+            raise RuntimeError('Cannot construct model without model_name in config')
         if 'model_type' not in config:
-            raise RuntimeError("Cannot construct model without model_type in config")
+            raise RuntimeError('Cannot construct model without model_type in config')
 
         xyz = [0, 0, 0]
         rpy = [0, 0, 0]
         if 'position' not in config:
-            print("Position not found in config, defaulting to (0, 0, 0), (0, 0, 0)")
+            print('Position not found in config, defaulting to (0, 0, 0), (0, 0, 0)')
         else:
             if 'xyz' in config['position']:
                 xyz = config['position']['xyz']

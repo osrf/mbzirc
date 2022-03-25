@@ -14,9 +14,9 @@
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.actions import GroupAction
 from launch.actions import OpaqueFunction
 from launch.actions import RegisterEventHandler
-from launch.actions import GroupAction
 from launch.event_handlers import OnProcessExit
 from launch.substitutions import LaunchConfiguration
 
@@ -27,11 +27,11 @@ from mbzirc_ign.model import Model
 
 
 def spawn(context, config_file, world_name):
-    with open(config_file, "r") as stream:
+    with open(config_file, 'r') as stream:
         m = Model.FromConfig(stream)
 
     if type(m) == list:
-        print("Spawn Config only supports one model currently")
+        print('Spawn Config only supports one model currently')
         model = m[0]
     else:
         model = m
@@ -65,7 +65,7 @@ def spawn(context, config_file, world_name):
         executable='pose_tf_broadcaster',
         output='screen',
         parameters=[
-            {"world_frame": world_name}
+            {'world_frame': world_name}
         ]
     ))
 

@@ -14,9 +14,9 @@
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.actions import GroupAction
 from launch.actions import OpaqueFunction
 from launch.actions import RegisterEventHandler
-from launch.actions import GroupAction
 from launch.event_handlers import OnProcessExit
 from launch.substitutions import LaunchConfiguration
 
@@ -96,7 +96,7 @@ def spawn(context, model_type, world_name, model_name, position):
         executable='pose_tf_broadcaster',
         output='screen',
         parameters=[
-            {"world_frame": world_name}
+            {'world_frame': world_name}
         ]
     ))
 

@@ -1,13 +1,11 @@
-import os
 import unittest
-
-from ament_index_python.packages import get_package_share_directory
 
 from mbzirc_ign import bridges
 from mbzirc_ign import payload_bridges
 
 
 class TestBridges(unittest.TestCase):
+
     world_name = 'foo'
     model_name = 'bar'
     link_name = 'baz'
