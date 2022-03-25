@@ -262,7 +262,7 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
         ros_type='std_msgs/msg/Float64',
         direction=BridgeDirection.ROS_TO_IGN))
 
-    # Propeller 
+    # Propeller
     bridges.append(Bridge(
         ign_topic=f'/model/{model_name}/joint/propeller_joint/cmd_pos',
         ros_topic='cmd/motor_speed',
@@ -358,16 +358,13 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   process = subprocess.Popen(command, stdout=subprocess.PIPE)
   stdout = process.communicate()[0]
   str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
-  f = open(model_output_file, 'w')
-  f.write(str_output)
-
   print(command, str_output)
 
   ignition_spawn_entity = Node(
       package='ros_ign_gazebo',
       executable='create',
       output='screen',
-      arguments=['-file', model_output_file,
+      arguments=['-string', str_output,
                  '-name', model_name,
                  '-allow_renaming', 'false',
                  '-x', x_pos,
