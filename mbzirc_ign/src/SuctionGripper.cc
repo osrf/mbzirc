@@ -19,16 +19,16 @@ using namespace gazebo;
 class mbzirc::SuctionGripperPrivate
 {
   /// \brief The item being moved
-  public: Entity childItem;
+  public: Entity childItem{kNullEntity};
 
   /// \brief The gripper link name
   public: std::string linkName;
 
   /// \brief Used to store the joint when we attach to an object
-  public: Entity joint;
+  public: Entity joint{kNullEntity};
 
   /// \brief The gripper link entity
-  public: Entity gripperEntity;
+  public: Entity gripperEntity{kNullEntity};
 
   /// \brief The transport node
   public: transport::Node node;
@@ -43,21 +43,21 @@ class mbzirc::SuctionGripperPrivate
   public: bool jointCreated{false};
 
   /// \brief mutex for accessing member variables
-  public: std::mutex _mtx;
+  public: std::mutex mtx;
 
   /// \brief Callback for when contact is made
   public: void OnContact(const ignition::msgs::Contacts &_msg)
   {
     // If the suction is not on or the gripper is already holding an object
     // dont hold an object.
-    if (!suctionOn || jointCreated) return;
+    if (!this->suctionOn || this->jointCreated) return;
 
     // Grasp an aobject
     // TODO(arjo): What happens when there are many objects in contact
     for (int i = 0; i < _msg.contact_size(); ++i)
     {
       auto contact = _msg.contact(i);
-      std::lock_guard<std::mutex> lock(this->_mtx);
+      std::lock_guard<std::mutex> lock(this->mtx);
       this->childItem = contact.collision2().id();
       pendingJointCreation = true;
     }
@@ -66,7 +66,7 @@ class mbzirc::SuctionGripperPrivate
   /// \brief Command callback
   public: void OnCmd(const ignition::msgs::Boolean &_suctionOn)
   {
-    std::lock_guard<std::mutex> lock(this->_mtx);
+    std::lock_guard<std::mutex> lock(this->mtx);
     this->suctionOn = _suctionOn.data();
   }
 };
@@ -144,7 +144,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
 {
   if (_info.paused) return;
 
-  std::lock_guard<std::mutex> lock(this->dataPtr->_mtx);
+  std::lock_guard<std::mutex> lock(this->dataPtr->mtx);
   if (this->dataPtr->pendingJointCreation)
   {
     // If we need to create a new joint
