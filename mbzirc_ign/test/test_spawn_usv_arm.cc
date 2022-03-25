@@ -36,9 +36,11 @@
 
 #include "helper/TestFixture.hh"
 
-TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
+TEST_F(MBZIRCTestFixture, USVOberon7ArmGripper)
 {
-  /// This test checks that the USV is spawned correctly.
+  /// This test checks that the USV oberon7 arm and gripper are
+  /// spawned correctly and we can send joint pos commands to control
+  /// them
   std::vector<std::pair<std::string,std::string>> params{
     {"name", "usv"},
     {"world", "faster_than_realtime"},
@@ -53,15 +55,12 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
 
   bool spawnedSuccessfully = false;
 
+  // create a list of joint pos command publishers for the arm and gripper
   ignition::transport::Node node;
-
-
   std::vector<std::string> armJointNames =
       {"azimuth", "shoulder", "elbow", "roll", "pitch", "wrist"};
-
   std::vector<std::string> gripperJointNames =
       {"finger_left", "finger_right"};
-
   std::vector<ignition::transport::Node::Publisher> armPublishers;
   for (auto joint : armJointNames)
   {
@@ -69,7 +68,6 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
        "/usv/arm/" + joint);
     armPublishers.push_back(pub);
   }
-
   std::vector<ignition::transport::Node::Publisher> gripperPublishers;
   for (auto joint : gripperJointNames)
   {
@@ -89,6 +87,7 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
   std::vector<ignition::gazebo::Link> gripperLinks;
   std::mutex mutex;
 
+  // get all the arm and gripper links and poses in PostUpdate
   OnPostupdate([&](const ignition::gazebo::UpdateInfo &_info,
           const ignition::gazebo::EntityComponentManager &_ecm)
   {
@@ -180,6 +179,7 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
     Step(100);
   }
 
+  // make sure we have the links
   EXPECT_EQ(armLinks.size(), armLinkPoses.size());
   EXPECT_EQ(gripperLinks.size(), gripperLinkPoses.size());
 
@@ -187,7 +187,8 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
 
   // get initial link positions
   std::map<ignition::gazebo::Entity, ignition::math::Pose3d> armLinkPosesInit;
-  std::map<ignition::gazebo::Entity, ignition::math::Pose3d> gripperLinkPosesInit;
+  std::map<ignition::gazebo::Entity, ignition::math::Pose3d>
+      gripperLinkPosesInit;
   {
     std::lock_guard<std::mutex> lock(mutex);
     armLinkPosesInit = armLinkPoses;
@@ -219,7 +220,7 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
   for (auto & pub : gripperPublishers)
     pub.Publish(jointPosMsg);
 
-  // wait for a bit
+  // wait a bit and step to make sure the arm moves
   using namespace std::chrono_literals;
   std::this_thread::sleep_for(1000ms);
   Step(2000);
