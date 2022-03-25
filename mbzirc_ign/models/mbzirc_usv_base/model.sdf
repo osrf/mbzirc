@@ -1,0 +1,601 @@
+<?xml version="1.0"?>
+
+<sdf version='1.6'>
+<model name="mbzirc_usv_base">
+  <static>false</static>
+  <link name="base_link">
+    <enable_wind>true</enable_wind>
+    <inertial>
+      <mass>727.247</mass>
+      <inertia>
+        <ixx>935.646</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>1285.757</iyy>
+        <iyz>0.0</iyz>
+        <izz>2072.475</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="base_visual">
+      <pose>0 0 0.0 0 0 1.57079</pose>
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>USV</name>
+            <center>false</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <material>
+        <ambient>0.8 0.8 0.8 1</ambient>
+        <diffuse>1.0 1.0 1.0 1</diffuse>
+        <specular>0.8 0.8 0.8 1</specular>
+          <pbr>
+            <metal>
+                <albedo_map>materials/textures/USV_Albedo.jpg</albedo_map>
+                <normal_map>materials/textures/USV_Normal.jpg</normal_map>
+                <roughness_map>materials/textures/USV_Roughness.jpg</roughness_map>
+                <metalness_map>materials/textures/USV_Metalness.jpg</metalness_map>
+            </metal>
+          </pbr>
+      </material>
+    </visual>
+
+    <sensor name="imu_sensor" type="imu">
+      <always_on>1</always_on>
+      <update_rate>250</update_rate>
+      <imu>
+        <angular_velocity>
+          <x>
+            <noise type="gaussian">
+              <mean>0</mean>
+              <stddev>0.009</stddev>
+              <bias_mean>0.00075</bias_mean>
+              <bias_stddev>0.005</bias_stddev>
+              <dynamic_bias_stddev>0.00002</dynamic_bias_stddev>
+              <dynamic_bias_correlation_time>400.0</dynamic_bias_correlation_time>
+              <precision>0.00025</precision>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0</mean>
+              <stddev>0.009</stddev>
+              <bias_mean>0.00075</bias_mean>
+              <bias_stddev>0.005</bias_stddev>
+              <dynamic_bias_stddev>0.00002</dynamic_bias_stddev>
+              <dynamic_bias_correlation_time>400.0</dynamic_bias_correlation_time>
+              <precision>0.00025</precision>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0</mean>
+              <stddev>0.009</stddev>
+              <bias_mean>0.00075</bias_mean>
+              <bias_stddev>0.005</bias_stddev>
+              <dynamic_bias_stddev>0.00002</dynamic_bias_stddev>
+              <dynamic_bias_correlation_time>400.0</dynamic_bias_correlation_time>
+              <precision>0.00025</precision>
+            </noise>
+          </z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x>
+            <noise type="gaussian">
+              <mean>0</mean>
+              <stddev>0.021</stddev>
+              <bias_mean>0.05</bias_mean>
+              <bias_stddev>0.0075</bias_stddev>
+              <dynamic_bias_stddev>0.000375</dynamic_bias_stddev>
+              <dynamic_bias_correlation_time>175.0</dynamic_bias_correlation_time>
+              <precision>0.005</precision>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0</mean>
+              <stddev>0.021</stddev>
+              <bias_mean>0.05</bias_mean>
+              <bias_stddev>0.0075</bias_stddev>
+              <dynamic_bias_stddev>0.000375</dynamic_bias_stddev>
+              <dynamic_bias_correlation_time>175.0</dynamic_bias_correlation_time>
+              <precision>0.005</precision>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0</mean>
+              <stddev>0.021</stddev>
+              <bias_mean>0.05</bias_mean>
+              <bias_stddev>0.0075</bias_stddev>
+              <dynamic_bias_stddev>0.000375</dynamic_bias_stddev>
+              <dynamic_bias_correlation_time>175.0</dynamic_bias_correlation_time>
+              <precision>0.005</precision>
+            </noise>
+          </z>
+        </linear_acceleration>
+      </imu>
+    </sensor>
+
+    <collision name="box_collision001">
+      <pose>0.0 0.0 0.389269 0.0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>1.99008 1.50858 0.559889</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision002">
+      <pose>-1.41327 0.0 0.120878 0.0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>1.99008 1.11563 0.0231074</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision003">
+      <pose>1.41327 0.0 0.120878 0.0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>1.99008 1.11563 0.0231074</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="cylinder_collision025">
+      <pose>0.0 -1.36239 -0.240119 1.5708 0.0 1.57079</pose>
+      <geometry>
+        <cylinder>
+          <length>5.29989</length>
+          <radius>0.272196</radius>
+        </cylinder>
+      </geometry>
+    </collision>
+    <collision name="box_collision004">
+      <pose>0.0 -1.36239 -0.0436482 0.0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.5444 5.93886 0.392941</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision005">
+      <pose>0.0 -1.36239 0.0404701 0.0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.691388 4.2583 0.161106</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision013">
+      <pose>-0.802631 -1.35067 0.135418 1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision014">
+      <pose>0.802633 -1.35067 0.135418 -1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision015">
+      <pose>0.576783 -1.08572 0.448761 0.0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.182903 0.328882 0.431239</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision016">
+      <pose>-0.57678 -1.08572 0.448761 0.0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.182903 0.328882 0.431239</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision017">
+      <pose>-0.802631 1.332 0.337911 1.5708 0.392699 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision018">
+      <pose>-0.802631 -1.0028 0.456284 1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.112524 0.379202 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision019">
+      <pose>0.802633 -1.33199 0.337911 -1.5708 -0.392699 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision020">
+      <pose>0.802633 -1.0028 0.456284 1.5708 0.0 -1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.112524 0.379202 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision021">
+      <pose>-0.148006 0.757578 0.345798 1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.441853 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision022">
+      <pose> 0.185036 0.757578 0.334445 1.309 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.441853 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision023">
+      <pose>-0.148006 -0.73159 0.345798 1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.441853 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision024">
+      <pose>-0.35878 1.10465 0.225041 1.5708 0.0 3.14159</pose>
+      <geometry>
+        <box>
+          <size>0.442059 0.243019 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision025">
+      <pose>0.00359192 -1.08202 0.582752 1.5708 0.0 3.14159</pose>
+      <geometry>
+        <box>
+          <size>0.880139 0.0535857 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision026">
+      <pose>0.332458 -1.04962 0.502834 1.5708 0.0 3.14159</pose>
+      <geometry>
+        <box>
+          <size>0.290446 0.0535857 0.148965</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision030">
+      <pose>0.0 1.362 0.0404701 0.0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.691388 4.2583 0.161106</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision031">
+      <pose>0.0 1.362 -0.0436482 0.0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.5444 5.93886 0.392941</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="cylinder_collision031">
+      <pose>0.0 1.362 -0.240119 1.5708 0.0 1.57079</pose>
+      <geometry>
+        <cylinder>
+          <length>5.29989</length>
+          <radius>0.272196</radius>
+        </cylinder>
+      </geometry>
+    </collision>
+    <collision name="box_collision032">
+      <pose>-0.802631 -1.33199 0.337911 1.5708 -0.392699 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision033">
+      <pose>0.802633 1.332 0.337911 -1.5708 0.392699 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision034">
+      <pose>-0.802631 1.351 0.135418 1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision035">
+      <pose>0.802633 1.351 0.135418 -1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.803743 0.329741 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision036">
+      <pose>-0.802631 1.003 0.456284 1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.112524 0.379202 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision037">
+      <pose>0.802633 1.003 0.456284 1.5708 0.0 -1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.112524 0.379202 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="left_engine_link">
+    <pose>0 1.358 -0.716 0 0 1.57079</pose>
+    <inertial>
+      <mass>15.0</mass>
+      <inertia>
+        <ixx>0.4</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>0.25</iyy>
+        <iyz>0.0</iyz>
+        <izz>0.25</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="Motor_L_visual">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Motor_L</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <material>
+        <diffuse>1.0 1.0 1.0</diffuse>
+        <specular>1.0 1.0 1.0</specular>
+      </material>
+    </visual>
+
+    <!--
+    <collision name="Motor_L_collision">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Motor_L</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+    </collision>
+    -->
+  </link>
+
+  <link name="left_propeller_link">
+    <pose>-0.2 1.358 -0.716 0 0 1.57079</pose>
+
+    <inertial>
+      <mass>0.5</mass>
+      <inertia>
+        <ixx>0.00208</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>0.00333</iyy>
+        <iyz>0.0</iyz>
+        <izz>0.00208</izz>
+      </inertia>
+    </inertial>
+
+    <visual name= "Prop_L_visual">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Prop_L</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <material>
+        <diffuse>1.0 1.0 1.0</diffuse>
+        <specular>1.0 1.0 1.0</specular>
+      </material>
+    </visual>
+
+    <!--
+    <collision name= "Prop_L_collisoin">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Prop_L</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+    </collision>
+    -->
+  </link>
+
+  <link name="right_engine_link">
+    <pose>0 -1.358 -0.716 0 0 1.57079</pose>
+    <inertial>
+      <mass>15.0</mass>
+      <inertia>
+        <ixx>0.4</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>0.25</iyy>
+        <iyz>0.0</iyz>
+        <izz>0.25</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="Motor_R_visual">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Motor_R</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <material>
+        <diffuse>1.0 1.0 1.0</diffuse>
+        <specular>1.0 1.0 1.0</specular>
+      </material>
+    </visual>
+
+    <!--
+    <collision name="Motor_R_collision">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Motor_R</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+    </collision>
+    -->
+  </link>
+
+
+  <link name="right_propeller_link">
+    <pose>-0.2 -1.358 -0.716 0 0 1.57079</pose>
+    <inertial>
+      <mass>0.5</mass>
+      <inertia>
+        <ixx>0.00208</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>0.00333</iyy>
+        <iyz>0.0</iyz>
+        <izz>0.00208</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="Prop_R_visual">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Prop_R</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <material>
+        <diffuse>1.0 1.0 1.0</diffuse>
+        <specular>1.0 1.0 1.0</specular>
+      </material>
+    </visual>
+
+    <!--
+    <collision name="Prop_R_collision">
+      <geometry>
+        <mesh>
+          <uri>meshes/USV.dae</uri>
+          <submesh>
+            <name>Prop_R</name>
+            <center>true</center>
+          </submesh>
+        </mesh>
+      </geometry>
+    </collision>
+    -->
+  </link>
+
+  <joint name="left_chassis_engine_joint" type="revolute">
+    <axis>
+      <xyz>0 0 1</xyz>
+      <limit>
+        <lower>-1.57079</lower>
+        <upper>1.57079</upper>
+        <effort>10</effort>
+        <velocity>10</velocity>
+      </limit>
+    </axis>
+    <parent>base_link</parent>
+    <child>left_engine_link</child>
+  </joint>
+
+  <joint name="left_engine_propeller_joint" type="revolute">
+    <axis>
+      <xyz>0 -1 0</xyz>
+      <limit>
+        <effort>100</effort>
+        <velocity>100</velocity>
+      </limit>
+      <dynamics>
+        <friction>0.05</friction>
+        <damping>0.05</damping>
+      </dynamics>
+    </axis>
+    <parent>left_engine_link</parent>
+    <child>left_propeller_link</child>
+  </joint>
+
+  <joint name="right_chassis_engine_joint" type="revolute">
+    <axis>
+      <xyz>0 0 1</xyz>
+      <limit>
+        <lower>-1.57079</lower>
+        <upper>1.57079</upper>
+        <effort>10</effort>
+        <velocity>10</velocity>
+      </limit>
+    </axis>
+    <parent>base_link</parent>
+    <child>right_engine_link</child>
+  </joint>
+
+  <joint name="right_engine_propeller_joint" type="revolute">
+    <axis>
+      <xyz>0 -1 0</xyz>
+      <limit>
+        <effort>100</effort>
+        <velocity>100</velocity>
+      </limit>
+      <dynamics>
+        <friction>0.05</friction>
+        <damping>0.05</damping>
+      </dynamics>
+    </axis>
+    <parent>right_engine_link</parent>
+    <child>right_propeller_link</child>
+  </joint>
+</model>
+</sdf>
