@@ -250,7 +250,8 @@ class Model:
                     get_package_share_directory('mbzirc_ign'), 'models',
                     self.arm, 'model.sdf')
                 arm_command = ['erb']
-                if self.gripper: command.append(f'gripper={self.gripper}')
+                if self.gripper:
+                    command.append(f'gripper={self.gripper}')
                 arm_command.append(f'topic_prefix={self.model_name}')
                 arm_command.append(arm_model_file)
                 process = subprocess.Popen(arm_command, stdout=subprocess.PIPE)
@@ -258,7 +259,7 @@ class Model:
                 str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
                 f = open(arm_model_output_file, 'w')
                 f.write(str_output)
-                print(arm_command, str_output)
+                # print(arm_command, str_output)
 
                 gripper_model_file = os.path.join(
                     get_package_share_directory('mbzirc_ign'), 'models',
@@ -274,7 +275,7 @@ class Model:
                 str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
                 f = open(gripper_model_output_file, 'w')
                 f.write(str_output)
-                print(gripper_command, str_output)
+                # print(gripper_command, str_output)
 
         command.append(template_file)
         process = subprocess.Popen(command,
@@ -352,5 +353,11 @@ class Model:
 
         if 'payload' in config:
             model.set_payload(config['payload'])
+
+        if 'arm' in config:
+            model.set_arm(config['arm'])
+
+        if 'gripper' in config:
+            model.set_gripper(config['gripper'])
 
         return model
