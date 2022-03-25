@@ -1,16 +1,19 @@
 from dataclasses import dataclass
 from enum import Enum
 
+
 class BridgeDirection(Enum):
     BIDIRECTIONAL = 0
     IGN_TO_ROS = 1
     ROS_TO_IGN = 2
 
+
 DIRECTION_SYMS = {
-        BridgeDirection.BIDIRECTIONAL: '@',
-        BridgeDirection.IGN_TO_ROS: '[',
-        BridgeDirection.ROS_TO_IGN: ']',
+    BridgeDirection.BIDIRECTIONAL: '@',
+    BridgeDirection.IGN_TO_ROS: '[',
+    BridgeDirection.ROS_TO_IGN: ']',
 }
+
 
 @dataclass
 class Bridge:

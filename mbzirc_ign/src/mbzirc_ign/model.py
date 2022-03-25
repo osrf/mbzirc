@@ -39,6 +39,7 @@ USVS = [
 
 WAVEFIELD_SIZE = {'simple_demo': 1000, 'coast': 6000}
 
+
 class Model:
     def __init__(self, model_name, model_type, position):
         self.model_name = model_name
@@ -117,7 +118,7 @@ class Model:
                     package='mbzirc_ros',
                     executable='optical_frame_publisher',
                     arguments=['1'],
-                    remappings=[('input/image',  f'slot{idx}/image_raw'),
+                    remappings=[('input/image', f'slot{idx}/image_raw'),
                                 ('output/image', f'slot{idx}/optical/image_raw'),
                                 ('input/camera_info', f'slot{idx}/camera_info'),
                                 ('output/camera_info', f'slot{idx}/optical/camera_info')]))
@@ -126,7 +127,7 @@ class Model:
                     package='mbzirc_ros',
                     executable='optical_frame_publisher',
                     arguments=['1'],
-                    remappings=[('input/image',  f'slot{idx}/image_raw'),
+                    remappings=[('input/image', f'slot{idx}/image_raw'),
                                 ('output/image', f'slot{idx}/optical/image_raw'),
                                 ('input/camera_info', f'slot{idx}/camera_info'),
                                 ('output/camera_info', f'slot{idx}/optical/camera_info')]))
@@ -134,7 +135,7 @@ class Model:
                     package='mbzirc_ros',
                     executable='optical_frame_publisher',
                     arguments=['1'],
-                    remappings=[('input/image',  f'slot{idx}/depth'),
+                    remappings=[('input/image', f'slot{idx}/depth'),
                                 ('output/image', f'slot{idx}/optical/depth')]))
         return [bridges, nodes]
 
@@ -144,7 +145,7 @@ class Model:
         # calculate battery capacity from time
         # capacity (Ah) = flight time (in hours) * load (watts) / voltage
         # assume constant voltage for battery to keep things simple for now.
-        self.battery_capacity = (float(flight_time) / 60) *  6.6 / 12.694
+        self.battery_capacity = (float(flight_time) / 60) * 6.6 / 12.694
 
     def set_payload(self, payload):
         # UAV specific
@@ -183,8 +184,9 @@ class Model:
             command.append(f'wavefieldSize={self.wavefield_size}')
 
         command.append(template_file)
-        process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                            stderr=subprocess.PIPE)
+        process = subprocess.Popen(command,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
 
         # evaluate error output to see if there were undefined variables
         # for the ERB process

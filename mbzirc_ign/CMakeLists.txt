@@ -112,7 +112,6 @@ if(BUILD_TESTING)
     set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
   endforeach()
 
-
   set (_pytest_tests
     src/mbzirc_ign/test_model.py
     src/mbzirc_ign/test_bridges.py

@@ -5,10 +5,11 @@ from ament_index_python.packages import get_package_share_directory
 
 from mbzirc_ign.model import Model
 
+
 class TestModel(unittest.TestCase):
     def test_single_uav_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
-                'config', 'single_uav_config.yaml')
+                              'config', 'single_uav_config.yaml')
         with open(config, "r") as stream:
             model = Model.FromConfig(stream)
         self.assertTrue(model.isUAV())
@@ -28,7 +29,7 @@ class TestModel(unittest.TestCase):
 
     def test_single_fw_uav_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
-                'config', 'single_fw_uav_config.yaml')
+                              'config', 'single_fw_uav_config.yaml')
         with open(config, "r") as stream:
             model = Model.FromConfig(stream)
         self.assertTrue(model.isUAV())
@@ -48,7 +49,7 @@ class TestModel(unittest.TestCase):
 
     def test_single_usv_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
-                'config', 'single_usv_config.yaml')
+                              'config', 'single_usv_config.yaml')
         with open(config, "r") as stream:
             model = Model.FromConfig(stream)
 
@@ -64,11 +65,10 @@ class TestModel(unittest.TestCase):
 
     def test_multiple_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
-                'config', 'coast_config.yaml')
+                              'config', 'coast_config.yaml')
         with open(config, "r") as stream:
             models = Model.FromConfig(stream)
 
         for model in models:
             model.generate()
             args = model.spawn_args()
-
