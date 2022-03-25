@@ -391,7 +391,7 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
       gripper_model_output_file = os.path.join(
           get_package_share_directory('mbzirc_ign'), 'models', gripper, 'model.sdf')
       command = ['erb']
-      command.append(f'topic_prefix={model_name}/{arm}')
+      command.append(f'topic_prefix={model_name}/arm')
       command.append(gripper_model_file)
       process = subprocess.Popen(command, stdout=subprocess.PIPE)
       stdout = process.communicate()[0]
@@ -519,7 +519,7 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
           arm_joints = ['azimuth', 'shoulder', 'elbow', 'roll', 'pitch', 'wrist']
           for joint in arm_joints:
             arm_bridges.append(Bridge(
-               ign_topic=f'/{model_name}/oberon7_arm/{joint}',
+               ign_topic=f'/{model_name}/arm/{joint}',
                ros_topic=f'arm/joint/{joint}/cmd_pos',
                ign_type='ignition.msgs.Double',
                ros_type='std_msgs/msg/Float64',
@@ -529,7 +529,7 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
           gripper_joints = ['finger_left', 'finger_right']
           for joint in gripper_joints:
             arm_bridges.append(Bridge(
-               ign_topic=f'/{model_name}/{arm}/oberon7_gripper/{joint}',
+               ign_topic=f'/{model_name}/arm/gripper/{joint}',
                ros_topic=f'arm/gripper/joint/{joint}/cmd_pos',
                ign_type='ignition.msgs.Double',
                ros_type='std_msgs/msg/Float64',
