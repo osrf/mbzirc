@@ -94,7 +94,6 @@ def spawn_uav(context, model_path, world_name, model_name, link_name):
   if slot7_rpy: command.append(f'slot7_pos={slot7_rpy}')
 
   command.append(model_file)
-
   process = subprocess.Popen(command, stdout=subprocess.PIPE)
   stdout = process.communicate()[0]
   str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
@@ -376,18 +375,22 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
                 ],
   )
 
+  bridges = []
+
   # thrust cmd
-  left_thrust_topic = '/model/' + model_name + '/joint/left_engine_propeller_joint/cmd_thrust'
-  right_thrust_topic = '/model/' + model_name + '/joint/right_engine_propeller_joint/cmd_thrust'
-  ros2_ign_thrust_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[left_thrust_topic + '@std_msgs/msg/Float64@ignition.msgs.Double',
-                 right_thrust_topic + '@std_msgs/msg/Float64@ignition.msgs.Double'],
-      remappings=[(left_thrust_topic, 'left/thrust/cmd_thrust'),
-                  (right_thrust_topic, 'right/thrust/cmd_thrust')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'/model/{model_name}/joint/left_engine_propeller_joint/cmd_thrust',
+      ros_topic='left/thrust/cmd_thrust',
+      ign_type='ignition.msgs.Double',
+      ros_type='std_msgs/msg/Float64',
+      direction=BridgeDirection.ROS_TO_IGN))
+
+  bridges.append(Bridge(
+      ign_topic=f'/model/{model_name}/joint/right_engine_propeller_joint/cmd_thrust',
+      ros_topic='right/thrust/cmd_thrust',
+      ign_type='ignition.msgs.Double',
+      ros_type='std_msgs/msg/Float64',
+      direction=BridgeDirection.ROS_TO_IGN))
 
   # thrust joint pos cmd
   # ROS naming policy indicates that first character of a name must be an alpha
@@ -396,46 +399,46 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
   # left_joint_topic = '/model/' + model_name + '/joint/left_chasis_engine_joint/0/cmd_pos'
   # right_joint_topic = '/model/' + model_name + '/joint/right_chasis_engine_joint/0/cmd_pos'
   # For now, use erb to generate unique topic names in model.sdf.erb
-  left_joint_topic = model_name + '/left/thruster/joint/cmd_pos'
-  right_joint_topic = model_name + '/right/thruster/joint/cmd_pos'
 
-  ros2_ign_thrust_joint_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[left_joint_topic + '@std_msgs/msg/Float64@ignition.msgs.Double',
-                 right_joint_topic + '@std_msgs/msg/Float64@ignition.msgs.Double'],
-      remappings=[(left_joint_topic, 'left/thrust/joint/cmd_pos'),
-                  (right_joint_topic, 'right/thrust/joint/cmd_pos')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'{model_name}/left/thruster/joint/cmd_pos',
+      ros_topic='left/thrust/joint/cmd_pos',
+      ign_type='ignition.msgs.Double',
+      ros_type='std_msgs/msg/Float64',
+      direction=BridgeDirection.ROS_TO_IGN))
 
-  sensor_prefix = '/world/' + world_name + '/model/' + model_name + '/link/' + link_name + '/sensor'
-  # imu
-  ros2_ign_imu_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[sensor_prefix +  '/imu_sensor/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU'],
-      remappings=[(sensor_prefix + "/imu_sensor/imu", 'imu/data')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'{model_name}/right/thruster/joint/cmd_pos',
+      ros_topic='right/thrust/joint/cmd_pos',
+      ign_type='ignition.msgs.Double',
+      ros_type='std_msgs/msg/Float64',
+      direction=BridgeDirection.ROS_TO_IGN))
+
+  sensor_prefix = f'/world/{world_name}/model/{model_name}/link/{link_name}/sensor'
+
+  # IMU
+  bridges.append(Bridge(
+      ign_topic=f'{sensor_prefix}/imu_sensor/imu',
+      ros_topic='imu/data',
+      ign_type='ignition.msgs.IMU',
+      ros_type='sensor_msgs/msg/Imu',
+      direction=BridgeDirection.IGN_TO_ROS))
 
   # pose
-  ros2_ign_pose_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/pose@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V'],
-      remappings=[('/model/' + model_name +'/pose', 'pose')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'/model/{model_name}/pose',
+      ros_topic='pose',
+      ign_type='ignition.msgs.Pose_V',
+      ros_type='tf2_msgs/msg/TFMessage',
+      direction=BridgeDirection.IGN_TO_ROS))
 
   # pose static
-  ros2_ign_pose_static_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=['/model/' + model_name + '/pose_static@tf2_msgs/msg/TFMessage@ignition.msgs.Pose_V'],
-      remappings=[('/model/' + model_name +'/pose_static', 'pose_static')]
-  )
+  bridges.append(Bridge(
+      ign_topic=f'/model/{model_name}/pose_static',
+      ros_topic='pose_static',
+      ign_type='ignition.msgs.Pose_V',
+      ros_type='tf2_msgs/msg/TFMessage',
+      direction=BridgeDirection.IGN_TO_ROS))
 
   # tf broadcaster
   ros2_tf_broadcaster = Node(
@@ -447,13 +450,17 @@ def spawn_usv(context, model_path, world_name, model_name, link_name):
       ]
   )
 
+  model_bridge = Node(
+      package='ros_ign_bridge',
+      executable='parameter_bridge',
+      output='screen',
+      arguments=[bridge.argument() for bridge in bridges],
+      remappings=[bridge.remapping() for bridge in bridges],
+  )
+
   group_action = GroupAction([
         PushRosNamespace(model_name),
-        ros2_ign_thrust_bridge,
-        ros2_ign_thrust_joint_bridge,
-        ros2_ign_imu_bridge,
-        ros2_ign_pose_bridge,
-        ros2_ign_pose_static_bridge,
+        model_bridge,
         ros2_tf_broadcaster,
   ])
 
