@@ -612,7 +612,7 @@
 
   <!-- arm slot -->
   <frame name="arm_slot_0">
-    <pose>0.0 1.2 0.6 0 0 1.5708</pose>
+    <pose>0.0 1.1 0.74 0 0 1.5708</pose>
   </frame>
 
 </model>
