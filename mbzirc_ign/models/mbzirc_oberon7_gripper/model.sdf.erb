@@ -1,0 +1,350 @@
+<%
+if !defined?(topic_prefix) || topic_prefix == nil || topic_prefix.empty?
+  $topic_prefix = ''
+else
+  $topic_prefix = topic_prefix
+end
+%>
+
+<?xml version="1.0" ?>
+<sdf version='1.9'>
+  <model name="oberon7_gripper">
+    <link name='end_effector'>
+      <inertial>
+        <pose>0.024426 0 -1.4e-05 0 0 0</pose>
+        <mass>3.4611458108218058</mass>
+        <inertia>
+          <ixx>0.0077452174065793973</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0053614264845439769</iyy>
+          <iyz>0</iyz>
+          <izz>0.0055705568526005127</izz>
+        </inertia>
+      </inertial>
+      <collision name='end_effector_collision'>
+        <pose>0.024426 0 -1.4e-05 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.074326 0.117427 0.114298</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='end_effector_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/parallel_gripper/visual/BaseGripper.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='finger_left_joint' type='revolute'>
+      <pose relative_to='end_effector'>0.0444267 0.0391376 0 0 0 0</pose>
+      <parent>end_effector</parent>
+      <child>finger_left</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>1.047092831441478</upper>
+          <effort>30</effort>
+          <velocity>0.14999999999999999</velocity>
+        </limit>
+        <dynamics>
+          <damping>5</damping>
+          <friction>10</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='finger_left'>
+      <pose relative_to='finger_left_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.025268 -0.001931 -7.9e-05 0 0 0</pose>
+        <mass>0.87977051184948352</mass>
+        <inertia>
+          <ixx>0.00037833060584903811</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00088614833021662045</iyy>
+          <iyz>0</iyz>
+          <izz>0.00091923080428042659</izz>
+        </inertia>
+      </inertial>
+      <collision name='finger_left_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/parallel_gripper/visual/Finger.dae</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>1</max_contacts>
+      </collision>
+      <visual name='finger_left_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/parallel_gripper/visual/Finger.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>false</self_collide>
+    </link>
+    <joint name='finger_tip_left_joint' type='revolute'>
+      <pose relative_to='finger_left'>0.06431000000000001 0 0 3.141592653589793 0 0</pose>
+      <parent>finger_left</parent>
+      <child>finger_tip_left</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <damping>5</damping>
+          <friction>10</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='finger_tip_left'>
+      <pose relative_to='finger_tip_left_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.027744 0.017278 0 0 0 0</pose>
+        <mass>1.1255052405358521</mass>
+        <inertia>
+          <ixx>0.00061104700181938674</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.001349030810390408</iyy>
+          <iyz>0</iyz>
+          <izz>0.0012155560985734151</izz>
+        </inertia>
+      </inertial>
+      <collision name='finger_tip_left_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/parallel_gripper/visual/FingerTip.dae</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <visual name='finger_tip_left_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/parallel_gripper/visual/FingerTip.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>true</self_collide>
+    </link>
+    <joint name='finger_right_joint' type='revolute'>
+      <pose relative_to='end_effector'>0.0444267 -0.0391376 0 -1.224646799147353e-16 1.224646799147353e-16 -1.224646799147353e-16</pose>
+      <parent>end_effector</parent>
+      <child>finger_right</child>
+      <axis>
+        <xyz>0 0 -1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>1.047092831441478</upper>
+          <effort>30</effort>
+          <velocity>0.14999999999999999</velocity>
+        </limit>
+        <dynamics>
+          <damping>5</damping>
+          <friction>10</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='finger_right'>
+      <pose relative_to='finger_right_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.025268 -0.001931 -7.9e-05 0 0 0</pose>
+        <mass>0.87977051184948352</mass>
+        <inertia>
+          <ixx>0.00037833060584903811</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00088614833021662045</iyy>
+          <iyz>0</iyz>
+          <izz>0.00091923080428042659</izz>
+        </inertia>
+      </inertial>
+      <collision name='finger_right_collision'>
+        <pose>0 0 0 3.141592653589793 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/parallel_gripper/visual/Finger.dae</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>1</max_contacts>
+      </collision>
+      <visual name='finger_right_visual'>
+        <pose>0 0 0 3.141592653589793 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/parallel_gripper/visual/Finger.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>false</self_collide>
+    </link>
+    <joint name='finger_tip_right_joint' type='revolute'>
+      <pose relative_to='finger_right'>0.06431000000000001 0 0 0 0 0</pose>
+      <parent>finger_right</parent>
+      <child>finger_tip_right</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+          <effort>0</effort>
+          <velocity>0</velocity>
+        </limit>
+        <dynamics>
+          <damping>5</damping>
+          <friction>10</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='finger_tip_right'>
+      <pose relative_to='finger_tip_right_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.027744 0.017278 0 0 0 0</pose>
+        <mass>1.1255052405358521</mass>
+        <inertia>
+          <ixx>0.00061104700181938674</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.001349030810390408</iyy>
+          <iyz>0</iyz>
+          <izz>0.0012155560985734151</izz>
+        </inertia>
+      </inertial>
+      <collision name='finger_tip_right_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/parallel_gripper/visual/FingerTip.dae</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <visual name='finger_tip_right_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/parallel_gripper/visual/FingerTip.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>true</self_collide>
+    </link>
+
+    <!-- Controller -->
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>finger_left_joint</joint_name>
+      <topic><%= $topic_prefix %>/gripper/finger_left</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>finger_right_joint</joint_name>
+      <topic><%= $topic_prefix %>/gripper/finger_right</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <!-- Joint state publisher -->
+    <plugin filename="libignition-gazebo-joint-state-publisher-system.so" name="ignition::gazebo::systems::JointStatePublisher">
+        <joint_name>finger_left_joint</joint_name>
+        <joint_name>finger_right_joint</joint_name>
+    </plugin>
+
+    <frame name="mount_point"/>
+
+  </model>
+</sdf>
