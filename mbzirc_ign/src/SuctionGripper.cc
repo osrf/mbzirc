@@ -157,7 +157,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
                                        parentLink, "fixed"}));
     igndbg << "Created joint between gripper and "
       << this->dataPtr->childItem
-      << std::endl;
+      << std::endl << "at time step " << _info.simTime.count() << std::endl;
     this->dataPtr->jointCreated = true;
   }
 
@@ -167,6 +167,10 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
     _ecm.RequestRemoveEntity(this->dataPtr->joint);
     this->dataPtr->joint = kNullEntity;
     this->dataPtr->jointCreated = false;
+    igndbg << "Remove joint between gripper and "
+      << this->dataPtr->childItem
+      << std::endl << "at time step " << _info.simTime.count() << std::endl;
+
   }
 }
 

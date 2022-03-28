@@ -151,11 +151,12 @@ class MBZIRCTestFixture : public ::testing::Test
 
   /// \brief Start the simulation in a background thread and run up to maxIter
   /// steps.
-  public: void StartSim()
+  public: void StartSim(bool _runAsync=true)
   {
     this->fixture->Finalize();
     this->fixture->Server()->Run(true, 1, false);
-    this->fixture->Server()->Run(false, maxIter, false);
+    if(_runAsync)
+      this->fixture->Server()->Run(false, maxIter, false);
   }
 
   /// \brief Launch a launch file with parameters

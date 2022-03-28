@@ -79,12 +79,6 @@ TEST_F(GripperTestFixture, GripperController)
     auto velocity = link.WorldLinearVelocity(_ecm);
     if (optional.has_value())
     {
-      static int count = 0;
-      count++;
-      //if (count % 100 == 0)
-      //{
-        igndbg << "model world pose: " << optional->Pos() << std::endl;
-      //}
       if (!tornDown.load())
       {
         std::lock_guard<std::mutex> lock(pos_mutex);
@@ -101,47 +95,53 @@ TEST_F(GripperTestFixture, GripperController)
     }
   });
 
-  SetMaxIter(10000);
-  StartSim();
-
+  // Run the simulation synchronously.
+  StartSim(false);
   // Move arm to pick up object
   ignition::msgs::Double gripperMsg;
   gripperMsg.set_data(1.57);
   gripper_pub.Publish(gripperMsg);
-
-  using namespace std::chrono_literals;
-  std::this_thread::sleep_for(2000ms);
+  Step(20000);
+  //using namespace std::chrono_literals;
+  //std::this_thread::sleep_for(2000ms);
   {
-    std::lock_guard<std::mutex> lock(pos_mutex);
+    //std::lock_guard<std::mutex> lock(pos_mutex);
     EXPECT_NEAR(pos.X(), 1, 1e-3);
     EXPECT_NEAR(pos.Y(), 0, 1e-2);
+    igndbg << pos <<"\n";
   }
 
   // Move object
-  gripperMsg.set_data(1.2);
+  igndbg << "Commanding object to be \n";
+  gripperMsg.set_data(0);
   gripper_pub.Publish(gripperMsg);
-  WaitForMaxIter();
+  Step(5000);
 
   // Check if object was moved by arm
   {
-    std::lock_guard<std::mutex> lock(pos_mutex);
+    //std::lock_guard<std::mutex> lock(pos_mutex);
     EXPECT_LT(pos.X(), 1);
     EXPECT_LT(pos.Y(), 0);
+    igndbg << pos <<"\n";
+
   }
 
+  igndbg << "Detaching gripper\n";
   // Detach gripper and swing the arm
   ignition::msgs::Boolean suction;
   suction.set_data(false);
   suction_pub.Publish(suction);
-  std::this_thread::sleep_for(1000ms);
-  gripperMsg.set_data(0);
+  //std::this_thread::sleep_for(1000ms);
+  gripperMsg.set_data(-1.57);
   gripper_pub.Publish(gripperMsg);
 
-  Step(1000);
+  Step(3000);
 
   {
     // Object should be still as its been dropped off
-    std::lock_guard<std::mutex> lock(pos_mutex);
+    //std::lock_guard<std::mutex> lock(pos_mutex);
     EXPECT_NEAR(vel.Length(), 0, 1e-3);
+        igndbg << pos <<"\n";
+
   }
 }
