@@ -196,19 +196,15 @@ TEST_F(MBZIRCTestFixture, GameLogicPhase)
   ignition::transport::Node node;
 
   // Run clock callback to keep track of current competition state
-  std::mutex runClockMutex;
+  std::mutex phaseMutex;
   std::string phaseData;
-  std::function<void(const ignition::msgs::Clock &_msg)> runClockCb =
-    [&](const ignition::msgs::Clock &_msg)
+  std::function<void(const ignition::msgs::StringMsg &_msg)> phaseCb =
+    [&](const ignition::msgs::StringMsg &_msg)
     {
-      std::lock_guard<std::mutex> lock(runClockMutex);
-      EXPECT_EQ(1, _msg.header().data_size());
-      auto data = _msg.header().data(0);
-      EXPECT_EQ(1, data.value_size());
-      EXPECT_EQ("phase", data.key());
-      phaseData = data.value(0);
+      std::lock_guard<std::mutex> lock(phaseMutex);
+      phaseData = _msg.data();
     };
-  node.Subscribe("/mbzirc/run_clock", runClockCb);
+  node.Subscribe("/mbzirc/phase", phaseCb);
 
   // verify that initial phase is "setup"
   int sleep = 0;
@@ -218,7 +214,7 @@ TEST_F(MBZIRCTestFixture, GameLogicPhase)
   {
     std::this_thread::sleep_for(1000ms);
     Step(10);
-    std::lock_guard<std::mutex> lock(runClockMutex);
+    std::lock_guard<std::mutex> lock(phaseMutex);
     reachedPhase = phaseData == "setup";
   }
   EXPECT_EQ("setup", phaseData);
@@ -236,17 +232,17 @@ TEST_F(MBZIRCTestFixture, GameLogicPhase)
     EXPECT_TRUE(rep.data());
   }
 
-  // check that phase is now "run"
+  // check that phase is now "started"
   sleep = 0;
   reachedPhase = false;
   while(!reachedPhase && sleep++ < maxSleep)
   {
     std::this_thread::sleep_for(1000ms);
     Step(10);
-    std::lock_guard<std::mutex> lock(runClockMutex);
-    reachedPhase = phaseData == "run";
+    std::lock_guard<std::mutex> lock(phaseMutex);
+    reachedPhase = phaseData == "started";
   }
-  EXPECT_EQ("run", phaseData);
+  EXPECT_EQ("started", phaseData);
 
   // publish finish event
   {
@@ -268,7 +264,7 @@ TEST_F(MBZIRCTestFixture, GameLogicPhase)
   {
     std::this_thread::sleep_for(1000ms);
     Step(10);
-    std::lock_guard<std::mutex> lock(runClockMutex);
+    std::lock_guard<std::mutex> lock(phaseMutex);
     reachedPhase = phaseData == "finished";
   }
   EXPECT_EQ("finished", phaseData);
@@ -708,6 +704,20 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
 
   ASSERT_TRUE(spawnedSuccessfully);
 
+  // create callback for verifying competition phase
+  std::string phase;
+  ignition::transport::Node node;
+  std::mutex phaseMutex;
+  auto cb = [&](const ignition::msgs::StringMsg &_msg) -> void
+  {
+    std::lock_guard<std::mutex> lock(phaseMutex);
+    phase = _msg.data();
+  };
+
+  // Subscribe to a topic by registering a callback.
+  auto cbFunc = std::function<void(const ignition::msgs::StringMsg &)>(cb);
+  EXPECT_TRUE(node.Subscribe("/mbzirc/phase", cbFunc));
+
   std::string logPath = "mbzirc_logs";
   std::string eventsLogPath =
       ignition::common::joinPaths(logPath, "events.yml");
@@ -759,9 +769,20 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
   EXPECT_TRUE(logged);
 
-  int startTime = simTimeSec;
+  sleep = 0;
+  bool phaseReached = false;
+  while(!phaseReached && sleep++ < maxSleep)
+  {
+    {
+      std::lock_guard<std::mutex> lock(phaseMutex);
+      phaseReached = phase == "started";
+    }
+    Step(1);
+    std::this_thread::sleep_for(1000ms);
+  }
+  EXPECT_TRUE(phaseReached);
 
-  ignition::transport::Node node;
+  int startTime = simTimeSec;
 
   // start stream
   {
@@ -981,6 +1002,19 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
     EXPECT_NEAR(expectedScore, score, 1);
   }
 
+  sleep = 0;
+  phaseReached = false;
+  while(!phaseReached && sleep++ < maxSleep)
+  {
+    {
+      std::lock_guard<std::mutex> lock(phaseMutex);
+      phaseReached = phase == "vessel_id_success";
+    }
+    Step(1);
+    std::this_thread::sleep_for(1000ms);
+  }
+  EXPECT_TRUE(phaseReached);
+
   // advance time
   Step(100);
 
@@ -1144,6 +1178,19 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   // advance time
   Step(100);
 
+  sleep = 0;
+  phaseReached = false;
+  while(!phaseReached && sleep++ < maxSleep)
+  {
+    {
+      std::lock_guard<std::mutex> lock(phaseMutex);
+      phaseReached = phase == "small_object_id_success";
+    }
+    Step(1);
+    std::this_thread::sleep_for(1000ms);
+  }
+  EXPECT_TRUE(phaseReached);
+
   moveAboveTargetSmallObjectDone = true;
   moveAboveTargetLargeObject = true;
   Step(20);
@@ -1304,6 +1351,20 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   }
 
   moveAboveTargetLargeObjectDone = true;
+
+  sleep = 0;
+  phaseReached = false;
+  while(!phaseReached && sleep++ < maxSleep)
+  {
+    {
+      std::lock_guard<std::mutex> lock(phaseMutex);
+      phaseReached = phase == "large_object_id_success";
+    }
+    Step(1);
+    std::this_thread::sleep_for(1000ms);
+  }
+  EXPECT_TRUE(phaseReached);
+
 
   StopLaunchFile(launchHandle);
   ignition::common::removeAll(logPath);

@@ -299,6 +299,14 @@ class mbzirc::GameLogicPluginPrivate
   public: rendering::VisualPtr VisualAt(
       unsigned int _x, unsigned int _y, const std::string &_type) const;
 
+  /// \brief Set the competition phase
+  /// \param[in] _phase Competition phase string
+  public: void SetPhase(const std::string &_phase);
+
+  /// \brief Get the competition phase
+  /// \return Competition phase string
+  public: std::string Phase();
+
   /// \brief Ignition Transport node.
   public: transport::Node node;
 
@@ -345,11 +353,17 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Mutex to protect target stream.
   public: std::mutex streamMutex;
 
+  /// \brief Mutex to protect phase.
+  public: std::mutex phaseMutex;
+
   /// \brief Target reports
   public: std::vector<ignition::msgs::StringMsg_V> reports;
 
   /// \brief Ignition transport competition clock publisher.
   public: transport::Node::Publisher competitionClockPub;
+
+  /// \brief Ignition transport competition phase publisher.
+  public: transport::Node::Publisher competitionPhasePub;
 
   /// \brief Logpath.
   public: std::string logPath{"/dev/null"};
@@ -485,6 +499,9 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Max allowed error (%) for reported target object image position
   public: const double kTargetObjInImageTol = 0.008;
+
+  /// \brief Compeition phase.
+  public: std::string phase{"setup"};
 };
 
 //////////////////////////////////////////////////
@@ -678,6 +695,9 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
 
   this->dataPtr->competitionClockPub =
     this->dataPtr->node.Advertise<ignition::msgs::Clock>("/mbzirc/run_clock");
+
+  this->dataPtr->competitionPhasePub =
+    this->dataPtr->node.Advertise<ignition::msgs::StringMsg>("/mbzirc/phase");
 
   this->dataPtr->node.Advertise("/mbzirc/target/stream/start",
       &GameLogicPluginPrivate::OnTargetStreamStart, this->dataPtr.get());
@@ -895,30 +915,23 @@ void GameLogicPlugin::PostUpdate(
   if (currentTime - this->dataPtr->lastStatusPubTime > std::chrono::seconds(1))
   {
     ignition::msgs::Clock competitionClockMsg;
-    ignition::msgs::Header::Map *mapData =
-      competitionClockMsg.mutable_header()->add_data();
-    mapData->set_key("phase");
-    if (this->dataPtr->started)
+    ignition::msgs::StringMsg phaseMsg;
+    std::string p = this->dataPtr->Phase();
+    phaseMsg.set_data(p);
+    if (p == "setup")
     {
-      mapData->add_value(this->dataPtr->finished ? "finished" : "run");
-      auto secondsRemaining = std::chrono::duration_cast<std::chrono::seconds>(
-          remainingCompetitionTime);
-      competitionClockMsg.mutable_sim()->set_sec(secondsRemaining.count());
-    }
-    else if (!this->dataPtr->finished)
-    {
-      mapData->add_value("setup");
       competitionClockMsg.mutable_sim()->set_sec(
           this->dataPtr->setupTimeSec - this->dataPtr->simTime.sec());
     }
     else
     {
-      // It's possible for a team to call Finish before starting.
-      mapData->add_value("finished");
+      auto secondsRemaining = std::chrono::duration_cast<std::chrono::seconds>(
+          remainingCompetitionTime);
+      competitionClockMsg.mutable_sim()->set_sec(secondsRemaining.count());
     }
 
     this->dataPtr->competitionClockPub.Publish(competitionClockMsg);
-
+    this->dataPtr->competitionPhasePub.Publish(phaseMsg);
     this->dataPtr->lastStatusPubTime = currentTime;
   }
 
@@ -1144,6 +1157,7 @@ bool GameLogicPluginPrivate::Start(const ignition::msgs::Time &_simTime)
     ignmsg << "Scoring has Started" << std::endl;
     this->Log(_simTime) << "scoring_started" << std::endl;
     this->LogEvent("started");
+    this->SetPhase("started");
   }
 
   // Update files when scoring has started.
@@ -1201,6 +1215,7 @@ void GameLogicPluginPrivate::Finish(const ignition::msgs::Time &_simTime)
     this->logStream.flush();
 
     this->LogEvent("finished");
+    this->SetPhase("finished");
   }
 
   this->finished = true;
@@ -1382,6 +1397,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
         this->targets[vessel] = target;
         this->LogEvent("target_reported", "vessel_id_success");
         this->currentTargetVessel = vessel;
+        this->SetPhase("vessel_id_success");
         continue;
       }
       // target has already been reported
@@ -1402,6 +1418,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               target.smallObjectsReported.insert(smallObj);
               this->targets[vessel] = target;
               this->LogEvent("target_reported", "small_object_id_success");
+              this->SetPhase("small_object_id_success");
               continue;
             }
             else
@@ -1463,6 +1480,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
                 target.largeObjectsReported.insert(largeObj);
                 this->targets[vessel] = target;
                 this->LogEvent("target_reported", "large_object_id_success");
+                this->SetPhase("large_object_id_success");
                 continue;
               }
               else
@@ -1991,4 +2009,18 @@ rendering::VisualPtr GameLogicPluginPrivate::VisualAt(
     return target;
   }
   return nullptr;
+}
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::SetPhase(const std::string &_phase)
+{
+  std::lock_guard<std::mutex> lock(this->phaseMutex);
+  this->phase = _phase;
+}
+
+/////////////////////////////////////////////////
+std::string GameLogicPluginPrivate::Phase()
+{
+  std::lock_guard<std::mutex> lock(this->phaseMutex);
+  return this->phase;
 }
