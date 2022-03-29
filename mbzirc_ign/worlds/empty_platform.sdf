@@ -93,5 +93,12 @@
       </link>
     </model>
 
+    <!-- The MBZIRC competition logic plugin -->
+    <plugin filename="libGameLogicPlugin.so"
+            name="mbzirc::GameLogicPlugin">
+      <run_duration_seconds>60</run_duration_seconds>
+      <setup_duration_seconds>30</setup_duration_seconds>
+    </plugin>
+
   </world>
 </sdf>

@@ -34,6 +34,8 @@
 #include "ignition/gazebo/rendering/Events.hh"
 
 #include <ignition/gazebo/components/Camera.hh>
+#include <ignition/gazebo/components/CanonicalLink.hh>
+#include <ignition/gazebo/components/DetachableJoint.hh>
 #include <ignition/gazebo/components/Link.hh>
 #include <ignition/gazebo/components/Model.hh>
 #include <ignition/gazebo/components/Name.hh>
@@ -41,8 +43,10 @@
 #include <ignition/gazebo/components/Pose.hh>
 #include <ignition/gazebo/components/RgbdCamera.hh>
 #include <ignition/gazebo/components/Sensor.hh>
+#include <ignition/gazebo/components/World.hh>
 #include <ignition/gazebo/EntityComponentManager.hh>
 #include <ignition/gazebo/Events.hh>
+#include <ignition/gazebo/SdfEntityCreator.hh>
 #include <ignition/gazebo/Util.hh>
 
 #include <ignition/common/Console.hh>
@@ -252,6 +256,20 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Valid target reports, add time penalties, and update score
   public: void ValidateTargetReports();
 
+  /// \brief Check if robots are inside geofence boundary. Time penalties are
+  /// given if the robots exceed the first geofence two times, and the
+  /// is terminated on the third occurence. If a robot moves outside of the
+  /// outer geofence, the robot is disabled
+  /// \param[in] _ecm Mutable reference to Entity Component Manager
+  public: void CheckRobotsInGeofenceBoundary(
+      EntityComponentManager &_ecm);
+
+  /// \brief Make an entity static
+  /// \param[in] _entity Entity to make static
+  /// \param[in] _ecm Mutable reference to Entity Component Manager
+  /// \return True if the entity is made static
+  public: bool MakeStatic(Entity _entity, EntityComponentManager &_ecm);
+
   /// \brief Callback invoked in the rendering thread after a render update
   public: void OnPostRender();
 
@@ -280,6 +298,14 @@ class mbzirc::GameLogicPluginPrivate
   /// \return Visual at the specified image position
   public: rendering::VisualPtr VisualAt(
       unsigned int _x, unsigned int _y, const std::string &_type) const;
+
+  /// \brief Set the competition phase
+  /// \param[in] _phase Competition phase string
+  public: void SetPhase(const std::string &_phase);
+
+  /// \brief Get the competition phase
+  /// \return Competition phase string
+  public: std::string Phase();
 
   /// \brief Ignition Transport node.
   public: transport::Node node;
@@ -327,11 +353,17 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Mutex to protect target stream.
   public: std::mutex streamMutex;
 
+  /// \brief Mutex to protect phase.
+  public: std::mutex phaseMutex;
+
   /// \brief Target reports
   public: std::vector<ignition::msgs::StringMsg_V> reports;
 
   /// \brief Ignition transport competition clock publisher.
   public: transport::Node::Publisher competitionClockPub;
+
+  /// \brief Ignition transport competition phase publisher.
+  public: transport::Node::Publisher competitionPhasePub;
 
   /// \brief Logpath.
   public: std::string logPath{"/dev/null"};
@@ -376,12 +408,32 @@ class mbzirc::GameLogicPluginPrivate
   /// This is geofenceBoundary - geofenceBoundaryBuffer
   public: math::AxisAlignedBox geofenceBoundaryInner;
 
+  /// \brief Outer / hard boundary of competition area
+  /// This is geofenceBoundary + geofenceBoundaryBufferOuter.
+  /// If any vehicles moves outside of this boundary, it will be disabled
+  public: math::AxisAlignedBox geofenceBoundaryOuter;
+
   /// \brief Inner boundary of competition area
   public: double geofenceBoundaryBuffer = 5.0;
+
+  /// \brief Outer / hard boundary of competition area
+  public: double geofenceBoundaryBufferOuter = 25.0;
 
   /// \brief Map of robot entity id and bool var to indicate if they are inside
   ///  the competition boundary
   public: std::map<Entity, bool> robotsInBoundary;
+
+  /// \brief SDF DOM of a static model with empty link
+  public: sdf::Model staticModelToSpawn;
+
+  /// \brief Creator interface
+  public: std::unique_ptr<SdfEntityCreator> creator{nullptr};
+
+  /// \brief World entity
+  public: Entity worldEntity{kNullEntity};
+
+  /// \brief A list of robots that have been disabled
+  public: std::set<Entity> disabledRobots;
 
   /// \brief Number of times robot moved beyond competition boundary
   public: unsigned int geofenceBoundaryPenaltyCount = 0u;
@@ -447,6 +499,9 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Max allowed error (%) for reported target object image position
   public: const double kTargetObjInImageTol = 0.008;
+
+  /// \brief Compeition phase.
+  public: std::string phase{"setup"};
 };
 
 //////////////////////////////////////////////////
@@ -470,9 +525,11 @@ GameLogicPlugin::~GameLogicPlugin()
 //////////////////////////////////////////////////
 void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
                            const std::shared_ptr<const sdf::Element> &_sdf,
-                           ignition::gazebo::EntityComponentManager & /*_ecm*/,
+                           ignition::gazebo::EntityComponentManager & _ecm,
                            ignition::gazebo::EventManager & _eventMgr)
 {
+  this->dataPtr->creator = std::make_unique<SdfEntityCreator>(_ecm, _eventMgr);
+  this->dataPtr->worldEntity = _ecm.EntityByComponents(components::World());
   this->dataPtr->eventManager = &_eventMgr;
 
   // Check if the game logic plugin has a <logging> element.
@@ -548,6 +605,9 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
       this->dataPtr->geofenceBoundaryInner =
           math::AxisAlignedBox(min + this->dataPtr->geofenceBoundaryBuffer,
                                max - this->dataPtr->geofenceBoundaryBuffer);
+      this->dataPtr->geofenceBoundaryOuter =
+          math::AxisAlignedBox(min - this->dataPtr->geofenceBoundaryBufferOuter,
+                               max + this->dataPtr->geofenceBoundaryBufferOuter);
       ignmsg << "Geofence boundary min: " << min << ", max: " << max << std::endl;
     }
     else
@@ -636,6 +696,9 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
   this->dataPtr->competitionClockPub =
     this->dataPtr->node.Advertise<ignition::msgs::Clock>("/mbzirc/run_clock");
 
+  this->dataPtr->competitionPhasePub =
+    this->dataPtr->node.Advertise<ignition::msgs::StringMsg>("/mbzirc/phase");
+
   this->dataPtr->node.Advertise("/mbzirc/target/stream/start",
       &GameLogicPluginPrivate::OnTargetStreamStart, this->dataPtr.get());
 
@@ -685,6 +748,13 @@ void GameLogicPluginPrivate::OnBatteryMsg(
 void GameLogicPlugin::PreUpdate(const UpdateInfo &_info,
     EntityComponentManager &_ecm)
 {
+  if (!this->dataPtr->started)
+    return;
+
+  // check if any robots moved outside of geofence
+  // give time penalties or disable robots if they exceeded
+  // boundaries
+  this->dataPtr->CheckRobotsInGeofenceBoundary(_ecm);
 }
 
 //////////////////////////////////////////////////
@@ -795,58 +865,8 @@ void GameLogicPlugin::PostUpdate(
     }
   }
 
-  // check if robots are inside the competition boundary
-  for (const auto &it : this->dataPtr->robotNames)
-  {
-    Entity robotEnt = it.first;
-    std::string robotName = it.second;
-    bool wasInBounds = true;
-    auto bIt = this->dataPtr->robotsInBoundary.find(robotEnt);
-    if (bIt == this->dataPtr->robotsInBoundary.end())
-      this->dataPtr->robotsInBoundary[robotEnt] = wasInBounds;
-    else
-      wasInBounds = bIt->second;
-
-    // If robot was outside of boundary, allow some buffer distance before
-    // counting it as returning to the inside boundary.
-    // This is so that we don't immediately trigger another exceed_boundary
-    // event if the robot oscillates slightly at the boundary line,
-    // e.g. USV motion due to waves
-    auto boundary = wasInBounds ? this->dataPtr->geofenceBoundary :
-        this->dataPtr->geofenceBoundaryInner;
-
-    bool isInBounds = this->dataPtr->CheckEntityInBoundary(_ecm,
-        robotEnt, boundary);
-
-    if (isInBounds != wasInBounds)
-    {
-      // robot moved outside the boundary!
-      if (!isInBounds)
-      {
-        this->dataPtr->geofenceBoundaryPenaltyCount++;
-        if (this->dataPtr->geofenceBoundaryPenaltyCount == 1)
-        {
-          this->dataPtr->timePenalty +=
-              this->dataPtr->kTimePenalties.at(
-              GameLogicPluginPrivate::BOUNDARY_1);
-          this->dataPtr->LogEvent("exceed_boundary_1", robotName);
-          this->dataPtr->UpdateScoreFiles(this->dataPtr->simTime);
-        }
-        else if (this->dataPtr->geofenceBoundaryPenaltyCount >= 2)
-        {
-          this->dataPtr->timePenalty =
-              this->dataPtr->kTimePenalties.at(
-              GameLogicPluginPrivate::BOUNDARY_2);
-          this->dataPtr->LogEvent("exceed_boundary_2", robotName);
-          // terminate run
-          this->dataPtr->Finish(this->dataPtr->simTime);
-        }
-      }
-      this->dataPtr->robotsInBoundary[robotEnt] = isInBounds;
-    }
-  }
-
   // find the sensor associated with the input stream
+  // used for validating target reports
   {
     std::lock_guard<std::mutex> lock(this->dataPtr->streamMutex);
     if (!this->dataPtr->targetStreamTopic.empty())
@@ -862,7 +882,6 @@ void GameLogicPlugin::PostUpdate(
     }
     this->dataPtr->targetStreamTopic.clear();
   }
-
 
   // validate target reports
   this->dataPtr->ValidateTargetReports();
@@ -896,30 +915,23 @@ void GameLogicPlugin::PostUpdate(
   if (currentTime - this->dataPtr->lastStatusPubTime > std::chrono::seconds(1))
   {
     ignition::msgs::Clock competitionClockMsg;
-    ignition::msgs::Header::Map *mapData =
-      competitionClockMsg.mutable_header()->add_data();
-    mapData->set_key("phase");
-    if (this->dataPtr->started)
+    ignition::msgs::StringMsg phaseMsg;
+    std::string p = this->dataPtr->Phase();
+    phaseMsg.set_data(p);
+    if (p == "setup")
     {
-      mapData->add_value(this->dataPtr->finished ? "finished" : "run");
-      auto secondsRemaining = std::chrono::duration_cast<std::chrono::seconds>(
-          remainingCompetitionTime);
-      competitionClockMsg.mutable_sim()->set_sec(secondsRemaining.count());
-    }
-    else if (!this->dataPtr->finished)
-    {
-      mapData->add_value("setup");
       competitionClockMsg.mutable_sim()->set_sec(
           this->dataPtr->setupTimeSec - this->dataPtr->simTime.sec());
     }
     else
     {
-      // It's possible for a team to call Finish before starting.
-      mapData->add_value("finished");
+      auto secondsRemaining = std::chrono::duration_cast<std::chrono::seconds>(
+          remainingCompetitionTime);
+      competitionClockMsg.mutable_sim()->set_sec(secondsRemaining.count());
     }
 
     this->dataPtr->competitionClockPub.Publish(competitionClockMsg);
-
+    this->dataPtr->competitionPhasePub.Publish(phaseMsg);
     this->dataPtr->lastStatusPubTime = currentTime;
   }
 
@@ -929,6 +941,134 @@ void GameLogicPlugin::PostUpdate(
   {
     this->dataPtr->UpdateScoreFiles(this->dataPtr->simTime);
   }
+}
+
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
+    EntityComponentManager &_ecm)
+{
+  // check if robots are inside the competition boundary
+  for (const auto &it : this->robotNames)
+  {
+    Entity robotEnt = it.first;
+    std::string robotName = it.second;
+
+    if (this->disabledRobots.find(robotEnt) != this->disabledRobots.end())
+    {
+      continue;
+    }
+
+    // update list of robot and whether or not it is inside boundary
+    bool wasInBounds = true;
+    auto bIt = this->robotsInBoundary.find(robotEnt);
+    if (bIt == this->robotsInBoundary.end())
+      this->robotsInBoundary[robotEnt] = wasInBounds;
+    else
+      wasInBounds = bIt->second;
+
+    // check if it exceeded the outer / hard boundary
+    // if so, disable the robot
+    if (!wasInBounds && !this->CheckEntityInBoundary(_ecm,
+          robotEnt, this->geofenceBoundaryOuter))
+    {
+      this->MakeStatic(robotEnt, _ecm);
+
+      this->disabledRobots.insert(robotEnt);
+      this->LogEvent("exceed_boundary_outer", robotName);
+      continue;
+    }
+
+    // If robot was outside of boundary, allow some buffer distance before
+    // counting it as returning to the inside boundary.
+    // This is so that we don't immediately trigger another exceed_boundary
+    // event if the robot oscillates slightly at the boundary line,
+    // e.g. USV motion due to waves
+    auto boundary = wasInBounds ? this->geofenceBoundary :
+        this->geofenceBoundaryInner;
+
+    bool isInBounds = this->CheckEntityInBoundary(_ecm,
+        robotEnt, boundary);
+
+    if (isInBounds != wasInBounds)
+    {
+      // robot moved outside the boundary!
+      if (!isInBounds)
+      {
+        this->geofenceBoundaryPenaltyCount++;
+        if (this->geofenceBoundaryPenaltyCount == 1)
+        {
+          this->timePenalty +=
+              this->kTimePenalties.at(
+              GameLogicPluginPrivate::BOUNDARY_1);
+          this->LogEvent("exceed_boundary_1", robotName);
+          this->UpdateScoreFiles(this->simTime);
+        }
+        else if (this->geofenceBoundaryPenaltyCount >= 2)
+        {
+          this->timePenalty =
+              this->kTimePenalties.at(
+              GameLogicPluginPrivate::BOUNDARY_2);
+          this->LogEvent("exceed_boundary_2", robotName);
+          // terminate run
+          this->Finish(this->simTime);
+        }
+      }
+      this->robotsInBoundary[robotEnt] = isInBounds;
+    }
+  }
+}
+
+//////////////////////////////////////////////////
+bool GameLogicPluginPrivate::MakeStatic(Entity _entity,
+    EntityComponentManager &_ecm)
+{
+  // make entity static by spawning a static model and attaching the
+  // entity to the static model
+  // todo(anyone) Add a feature in ign-physics to support making a model
+  // static
+  if (this->staticModelToSpawn.LinkCount() == 0u)
+  {
+    sdf::ElementPtr staticModelSDF(new sdf::Element);
+    sdf::initFile("model.sdf", staticModelSDF);
+    staticModelSDF->GetAttribute("name")->Set("static_model");
+    staticModelSDF->GetElement("static")->Set(true);
+    sdf::ElementPtr linkElem = staticModelSDF->AddElement("link");
+    linkElem->GetAttribute("name")->Set("static_link");
+    this->staticModelToSpawn.Load(staticModelSDF);
+  }
+
+  auto poseComp = _ecm.Component<components::Pose>(_entity);
+  if (!poseComp)
+    return false;
+  math::Pose3d p = poseComp->Data();
+  this->staticModelToSpawn.SetRawPose(p);
+
+  auto nameComp = _ecm.Component<components::Name>(_entity);
+  this->staticModelToSpawn.SetName(nameComp->Data() + "__static__");
+
+  Entity staticEntity = this->creator->CreateEntities(&staticModelToSpawn);
+  this->creator->SetParent(staticEntity, this->worldEntity);
+
+  Entity parentLinkEntity = _ecm.EntityByComponents(
+      components::Link(), components::ParentEntity(staticEntity),
+      components::Name("static_link"));
+
+  if (parentLinkEntity == kNullEntity)
+    return false;
+
+  Entity childLinkEntity = _ecm.EntityByComponents(
+      components::CanonicalLink(), components::ParentEntity(_entity));
+
+  if (childLinkEntity == kNullEntity)
+    return false;
+
+  Entity detachableJointEntity = _ecm.CreateEntity();
+  _ecm.CreateComponent(detachableJointEntity,
+      components::DetachableJoint(
+      {parentLinkEntity, childLinkEntity, "fixed"}));
+
+  return true;
 }
 
 /////////////////////////////////////////////////
@@ -948,7 +1088,6 @@ bool GameLogicPluginPrivate::CheckEntityInBoundary(
   math::Pose3d pose = poseComp->Data();
   return _boundary.Contains(pose.Pos());
 }
-
 
 /////////////////////////////////////////////////
 void GameLogicPluginPrivate::PublishScore()
@@ -1018,6 +1157,7 @@ bool GameLogicPluginPrivate::Start(const ignition::msgs::Time &_simTime)
     ignmsg << "Scoring has Started" << std::endl;
     this->Log(_simTime) << "scoring_started" << std::endl;
     this->LogEvent("started");
+    this->SetPhase("started");
   }
 
   // Update files when scoring has started.
@@ -1075,6 +1215,7 @@ void GameLogicPluginPrivate::Finish(const ignition::msgs::Time &_simTime)
     this->logStream.flush();
 
     this->LogEvent("finished");
+    this->SetPhase("finished");
   }
 
   this->finished = true;
@@ -1256,6 +1397,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
         this->targets[vessel] = target;
         this->LogEvent("target_reported", "vessel_id_success");
         this->currentTargetVessel = vessel;
+        this->SetPhase("vessel_id_success");
         continue;
       }
       // target has already been reported
@@ -1276,6 +1418,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               target.smallObjectsReported.insert(smallObj);
               this->targets[vessel] = target;
               this->LogEvent("target_reported", "small_object_id_success");
+              this->SetPhase("small_object_id_success");
               continue;
             }
             else
@@ -1337,6 +1480,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
                 target.largeObjectsReported.insert(largeObj);
                 this->targets[vessel] = target;
                 this->LogEvent("target_reported", "large_object_id_success");
+                this->SetPhase("large_object_id_success");
                 continue;
               }
               else
@@ -1865,4 +2009,18 @@ rendering::VisualPtr GameLogicPluginPrivate::VisualAt(
     return target;
   }
   return nullptr;
+}
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::SetPhase(const std::string &_phase)
+{
+  std::lock_guard<std::mutex> lock(this->phaseMutex);
+  this->phase = _phase;
+}
+
+/////////////////////////////////////////////////
+std::string GameLogicPluginPrivate::Phase()
+{
+  std::lock_guard<std::mutex> lock(this->phaseMutex);
+  return this->phase;
 }
