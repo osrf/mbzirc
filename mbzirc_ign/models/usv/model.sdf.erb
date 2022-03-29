@@ -154,5 +154,46 @@ end
     <static_publisher>true</static_publisher>
     <static_update_frequency>1</static_update_frequency>
   </plugin>
+
+
+  <!-- uncomment the following to visualize valid region for placement
+      of target objects -->
+  <!--
+  <link name='target_placement_region'>
+    <visual name="v1">
+      <transparency>0.5</transparency>
+      <geometry>
+        <box>
+          <size>5 5 5</size>
+        </box>
+      </geometry>
+      <material>
+        <ambient>0.0 1.0 0.0 0.5</ambient>
+        <diffuse>0.0 1.0 0.0 0.5</diffuse>
+        <specular>0.5 0.5 0.5 0.5</specular>
+      </material>
+    </visual>
+    <cast_shadows>false</cast_shadows>
+  </link>
+  <joint name="target_placement_joint" type="fixed">
+    <parent>target_placement_region</parent>
+    <child>base_link</child>
+  </joint>
+  -->
+
+  <!-- This plugin detects when target objects are placed at the
+       the defined region. A message is published on the <topic> when these
+       events occur -->
+  <plugin filename="libRegionDetector.so"
+          name="mbzirc::RegionDetector">
+    <topic>/target_object_detector</topic>
+    <pose>0 0 0 0 0 0</pose>
+    <geometry>
+      <box>
+        <size>5 5 5</size>
+      </box>
+    </geometry>
+  </plugin>
+
 </model>
 </sdf>

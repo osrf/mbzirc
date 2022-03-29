@@ -91,6 +91,12 @@ class mbzirc::GameLogicPluginPrivate
 
     /// \brief Set of large objects that have been reported.
     public: std::set<std::string> largeObjectsReported;
+
+    /// \brief Set of small objects that have been retrieved.
+    public: std::set<std::string> smallObjectsRetrieved;
+
+    /// \brief Set of large objects that have been retrieved.
+    public: std::set<std::string> largeObjectsRetrieved;
   };
 
   /// \brief Information of target in stream
@@ -245,6 +251,11 @@ class mbzirc::GameLogicPluginPrivate
   public: bool OnTargetStreamReport(const ignition::msgs::StringMsg_V &_req,
                ignition::msgs::Boolean &_res);
 
+  /// \brief Callback triggered when objects are placed on top
+  /// of the USV
+  /// \param[in] _msg The message containing name and pose of object placed
+  public: void OnDetectObjectPlacement(const ignition::msgs::Pose &_msg);
+
   /// \brief Check if an entity's position is within the input boundary
   //// \param[in] _ecm Entity component manager
   //// \param[in] _entity Entity id
@@ -255,6 +266,10 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Valid target reports, add time penalties, and update score
   public: void ValidateTargetReports();
+
+  /// \brief Valid intervention task and make sure target objects have been
+  /// retrieved.
+  public: void ValidateTargetObjectRetrieval();
 
   /// \brief Check if robots are inside geofence boundary. Time penalties are
   /// given if the robots exceed the first geofence two times, and the
@@ -358,6 +373,9 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Target reports
   public: std::vector<ignition::msgs::StringMsg_V> reports;
+
+  /// \brief Object placements
+  public: std::vector<ignition::msgs::Pose> objectPlacements;
 
   /// \brief Ignition transport competition clock publisher.
   public: transport::Node::Publisher competitionClockPub;
@@ -696,6 +714,9 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
   this->dataPtr->competitionClockPub =
     this->dataPtr->node.Advertise<ignition::msgs::Clock>("/mbzirc/run_clock");
 
+  this->dataPtr->node.Subscribe("/mbzirc/target_object_detector",
+      &GameLogicPluginPrivate::OnDetectObjectPlacement, this->dataPtr.get());
+
   this->dataPtr->competitionPhasePub =
     this->dataPtr->node.Advertise<ignition::msgs::StringMsg>("/mbzirc/phase");
 
@@ -885,6 +906,9 @@ void GameLogicPlugin::PostUpdate(
 
   // validate target reports
   this->dataPtr->ValidateTargetReports();
+
+  // validate target object retrieval - intervention task
+  this->dataPtr->ValidateTargetObjectRetrieval();
 
   // Get the start sim time in nanoseconds.
   auto startSimTime = std::chrono::nanoseconds(
@@ -1233,6 +1257,15 @@ bool GameLogicPluginPrivate::OnReportTargets(
 }
 
 /////////////////////////////////////////////////
+void GameLogicPluginPrivate::OnDetectObjectPlacement(
+    const ignition::msgs::Pose &_msg)
+{
+  std::lock_guard<std::mutex> lock(this->reportMutex);
+  this->objectPlacements.push_back(_msg);
+}
+
+
+/////////////////////////////////////////////////
 bool GameLogicPluginPrivate::OnTargetStreamStart(
     const ignition::msgs::StringMsg_V &_req,
     ignition::msgs::Boolean &_res)
@@ -1562,6 +1595,52 @@ void GameLogicPluginPrivate::ValidateTargetReports()
   }
   this->reports.clear();
 }
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
+{
+  std::lock_guard<std::mutex> lock(this->reportMutex);
+  for (const auto &msg: this->objectPlacements)
+  {
+    std::string objName = msg.name();
+    std::string v = msg.header().data(1).value(0);
+    bool in = std::stoi(v);
+    if (!in)
+      continue;
+    for (const auto &targetIt : this->targets)
+    {
+      for (const auto &smallObj : targetIt.second.smallObjectsReported)
+      {
+        if (smallObj == objName)
+        {
+          std::cerr << "small object placed! " << std::endl;
+          break;
+        }
+      }
+
+      for (const auto &largeObj : targetIt.second.largeObjectsReported)
+      {
+        if (largeObj == objName)
+        {
+          std::cerr << "large object placed! " << std::endl;
+
+          // verify all small target objects have been retrieved first
+          // if not, this will not be valid
+          if (targetIt.second.smallObjectsReported.size() !=
+              targetIt.second.smallObjectsRetrieved.size())
+          {
+            ignwarn << "Small target objects have not been retrieved yet"
+                    << std::endl;
+            break;
+          }
+        }
+      }
+
+    }
+  }
+  this->objectPlacements.clear();
+}
+
 
 /////////////////////////////////////////////////
 ignition::msgs::Time GameLogicPluginPrivate::SimTime()

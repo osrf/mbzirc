@@ -51,6 +51,7 @@ install(
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
   GameLogicPlugin
+  RegionDetector
   SimpleHydrodynamics
   Surface
   WaveVisual
