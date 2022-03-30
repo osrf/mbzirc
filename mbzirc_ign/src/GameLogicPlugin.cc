@@ -821,8 +821,8 @@ void GameLogicPlugin::PostUpdate(
     const ignition::gazebo::UpdateInfo &_info,
     const ignition::gazebo::EntityComponentManager &_ecm)
 {
-  if (_info.paused)
-    return;
+//  if (_info.paused)
+//    return;
 
   // Store sim time
   int64_t s, ns;
@@ -925,7 +925,6 @@ void GameLogicPlugin::PostUpdate(
         }
       }
     }
-    return;
   }
 
   // find the sensor associated with the input stream
@@ -964,10 +963,6 @@ void GameLogicPlugin::PostUpdate(
   {
     this->dataPtr->ValidateTargetObjectRetrieval();
   }
-
-  // check task completion
-  // update score files and pause sim if tasks are done
-  this->dataPtr->CheckTaskCompletion();
 
   // Get the start sim time in nanoseconds.
   auto startSimTime = std::chrono::nanoseconds(
@@ -1479,7 +1474,6 @@ bool GameLogicPluginPrivate::OnSkipToPhase(
   }
   this->SetPhase(p);
   ignmsg << "Skipping to phase: " << p << std::endl;
-  std::cerr << "skipping to phase " << std::endl;
 
   _res.set_data(true);
   return true;
@@ -1808,7 +1802,6 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
               target.smallObjectsRetrieved.find(objName) ==
               target.smallObjectsRetrieved.end())
           {
-            std::cerr << "small object placed! " << std::endl;
             this->LogEvent("target_retrieval", "small_object_retrieve_success");
             this->SetPhase("small_object_retrieve_success");
             target.smallObjectsRetrieved.insert(objName);
@@ -1830,7 +1823,7 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
               target.largeObjectsRetrieved.find(objName) ==
               target.largeObjectsRetrieved.end())
           {
-            target.largeObjectsRetrieved.insert(largeObj);
+            target.largeObjectsRetrieved.insert(objName);
             this->LogEvent("target_retrieval", "large_object_retrieve_success");
             this->SetPhase("large_object_retrieve_success");
             this->CheckTaskCompletion();
@@ -2329,7 +2322,6 @@ void GameLogicPluginPrivate::SetPhase(const std::string &_phase)
 {
   std::lock_guard<std::mutex> lock(this->phaseMutex);
   this->phase = _phase;
-  std::cerr << "setting phase " << _phase << std::endl;
 }
 
 /////////////////////////////////////////////////

@@ -1367,3 +1367,412 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
   StopLaunchFile(launchHandle);
   ignition::common::removeAll(logPath);
 }
+
+TEST_F(MBZIRCTestFixture, GameLogicTargetRetrieval)
+{
+  using namespace std::literals::chrono_literals;
+
+  /// This test checks reporting targets over video stream
+  std::vector<std::pair<std::string,std::string>> params{
+    {"name", "usv"},
+    {"world", "faster_than_realtime"},
+    {"model", "usv"},
+    {"type",  "usv"},
+    {"x", "15"},
+    {"y", "0"},
+    {"z", "0.3"},
+  };
+
+  bool spawnedSuccessfully = false;
+  bool dropSmallObjectAboveWater = false;
+  bool dropSmallObjectAboveWaterDone = false;
+  bool dropSmallObjectAboveUSV = false;
+  bool dropSmallObjectAboveUSVDone = false;
+  bool dropLargeObjectAboveWater = false;
+  bool dropLargeObjectAboveWaterDone = false;
+  bool dropLargeObjectAboveUSV = false;
+  bool dropLargeObjectAboveUSVDone = false;
+  SetMaxIter(1000);
+
+  LoadWorld("faster_than_realtime.sdf");
+
+  int simTimeSec = 0;
+  bool paused = false;
+  OnPreupdate([&](const ignition::gazebo::UpdateInfo &_info,
+          ignition::gazebo::EntityComponentManager &_ecm)
+  {
+    paused = _info.paused;
+    int64_t s, ns;
+    std::tie(s, ns) = ignition::math::durationToSecNsec(_info.simTime);
+    simTimeSec = s;
+
+    auto worldEntity = ignition::gazebo::worldEntity(_ecm);
+    ignition::gazebo::World world(worldEntity);
+    if (dropSmallObjectAboveWater && !dropSmallObjectAboveWaterDone)
+    {
+      auto modelEntity = world.ModelByName(_ecm, "small_box_a");
+      ignition::gazebo::Model model(modelEntity);
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
+          ignition::math::Vector3d(10, 10, 0.0),
+          ignition::math::Quaterniond::Identity));
+      dropSmallObjectAboveWaterDone = true;
+      ignmsg << "Dropping small object above water." << std::endl;
+    }
+    if (dropSmallObjectAboveUSV && !dropSmallObjectAboveUSVDone)
+    {
+      auto modelEntity = world.ModelByName(_ecm, "small_box_a_duplicate");
+      ignition::gazebo::Model model(modelEntity);
+      auto usvEntity = world.ModelByName(_ecm, "usv");
+      auto poseComp =
+          _ecm.Component<ignition::gazebo::components::Pose>(usvEntity);
+      ASSERT_TRUE(poseComp != nullptr);
+      ignition::math::Pose3d pose = poseComp->Data();
+      ignition::gazebo::Model usv(usvEntity);
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
+          pose.Pos() + ignition::math::Vector3d(0, 0, 1.0),
+          ignition::math::Quaterniond::Identity));
+      dropSmallObjectAboveUSVDone = true;
+      ignmsg << "Dropping small object above USV." << std::endl;
+    }
+    else if (dropLargeObjectAboveWater && !dropLargeObjectAboveWaterDone)
+    {
+      auto modelEntity = world.ModelByName(_ecm, "large_box_a");
+      ignition::gazebo::Model model(modelEntity);
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
+          ignition::math::Vector3d(10, -10, 0.0),
+          ignition::math::Quaterniond::Identity));
+      ignmsg << "Dropping large object above Water." << std::endl;
+      dropLargeObjectAboveWaterDone = true;
+    }
+    else if (dropLargeObjectAboveUSV && !dropLargeObjectAboveUSVDone)
+    {
+      auto modelEntity = world.ModelByName(_ecm, "large_box_a_duplicate");
+      ignition::gazebo::Model model(modelEntity);
+      auto usvEntity = world.ModelByName(_ecm, "usv");
+      auto poseComp =
+          _ecm.Component<ignition::gazebo::components::Pose>(usvEntity);
+      ASSERT_TRUE(poseComp != nullptr);
+      ignition::math::Pose3d pose = poseComp->Data();
+      ignition::gazebo::Model usv(usvEntity);
+      model.SetWorldPoseCmd(_ecm, ignition::math::Pose3d(
+          pose.Pos() + ignition::math::Vector3d(0, 0.4, 1.0),
+          ignition::math::Quaterniond::Identity));
+      ignmsg << "Dropping large object above USV." << std::endl;
+      dropLargeObjectAboveUSVDone = true;
+    }
+  });
+
+  OnPostupdate([&](const ignition::gazebo::UpdateInfo &_info,
+          const ignition::gazebo::EntityComponentManager &_ecm)
+  {
+    auto worldEntity = ignition::gazebo::worldEntity(_ecm);
+    ignition::gazebo::World world(worldEntity);
+
+    /// Check for model
+    auto modelEntity = world.ModelByName(_ecm, "usv");
+    if (modelEntity != ignition::gazebo::kNullEntity)
+    {
+      spawnedSuccessfully = true;
+    }
+
+    if (Iter() % 1000 == 0)
+      ignmsg << Iter() <<std::endl;
+  });
+
+  StartSim();
+  auto launchHandle = LaunchWithParams("spawn.launch.py", params);
+  WaitForMaxIter();
+
+  // Wait for a maximum of 50K iterations or till the vehicle has been spawned.
+  while(!spawnedSuccessfully && Iter() < 50000)
+  {
+    Step(100);
+  }
+
+  ASSERT_TRUE(spawnedSuccessfully);
+
+  // create callback for verifying competition phase
+  std::string phase;
+  ignition::transport::Node node;
+  std::mutex phaseMutex;
+  auto cb = [&](const ignition::msgs::StringMsg &_msg) -> void
+  {
+    std::lock_guard<std::mutex> lock(phaseMutex);
+    phase = _msg.data();
+  };
+
+  // Subscribe to a topic by registering a callback.
+  auto cbFunc = std::function<void(const ignition::msgs::StringMsg &)>(cb);
+  EXPECT_TRUE(node.Subscribe("/mbzirc/phase", cbFunc));
+
+  std::string logPath = "mbzirc_logs";
+  std::string eventsLogPath =
+      ignition::common::joinPaths(logPath, "events.yml");
+  EXPECT_TRUE(ignition::common::isFile(eventsLogPath));
+  std::string scoreLogPath =
+      ignition::common::joinPaths(logPath, "score.yml");
+  EXPECT_TRUE(ignition::common::isFile(scoreLogPath));
+
+   // verify initial state of logs
+  int score = 0;
+  {
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    // events log should be empty
+    EXPECT_TRUE(eventsBuffer.str().empty());
+
+    // score should be 0
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    EXPECT_EQ(0, score);
+  }
+
+  // skip to end of inspection phase / start of intervention phase
+  {
+    ignition::msgs::Boolean rep;
+    ignition::msgs::StringMsg req;
+    req.set_data("large_object_id_success");
+    bool result = false;
+    const unsigned int timeout = 5000;
+    bool executed = node.Request("/mbzirc/skip_to_phase",
+          req, timeout, rep, result);
+    EXPECT_TRUE(result);
+    EXPECT_TRUE(rep.data());
+  }
+
+  // verify that competition is started
+  int sleep = 0;
+  int maxSleep = 10;
+  bool logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    // there should be a started event
+    logged = eventsBuffer.str().find("type: started")
+               != std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  sleep = 0;
+  bool phaseReached = false;
+  while(!phaseReached && sleep++ < maxSleep)
+  {
+    {
+      std::lock_guard<std::mutex> lock(phaseMutex);
+      phaseReached = phase == "large_object_id_success";
+    }
+    Step(1);
+    std::this_thread::sleep_for(1000ms);
+  }
+  EXPECT_TRUE(phaseReached);
+
+  int startTime = simTimeSec;
+
+  int smallObjectRetrievalPenalty = 120;
+  int largeObjectRetrievalPenalty = 120;
+
+  // drop small object above water
+  dropSmallObjectAboveWater = true;
+  Step(1500);
+
+  // verify that a target object retrieval failure event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("type: target_retrieval")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: small_object_retrieve_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: small_object_retrieve_success")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        smallObjectRetrievalPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // advance time
+  Step(100);
+
+  // drop small object above usv
+  dropSmallObjectAboveUSV = true;
+  Step(100);
+
+  // verify that a target object retrieval success event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("type: target_retrieval")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: small_object_retrieve_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: small_object_retrieve_success")
+               != std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        smallObjectRetrievalPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // check that small target retrieve success phase is reached
+  sleep = 0;
+  phaseReached = false;
+  while(!phaseReached && sleep++ < maxSleep)
+  {
+    {
+      std::lock_guard<std::mutex> lock(phaseMutex);
+      phaseReached = phase == "small_object_retrieve_success";
+    }
+    Step(1);
+    std::this_thread::sleep_for(1000ms);
+  }
+  EXPECT_TRUE(phaseReached);
+
+  // advance time
+  Step(100);
+
+  // drop large object above water
+  dropLargeObjectAboveWater = true;
+  Step(1500);
+
+  // verify that a target object retrieval failure event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("type: target_retrieval")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: large_object_retrieve_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: large_object_retrieve_success")
+               == std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        smallObjectRetrievalPenalty + largeObjectRetrievalPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // advance time
+  Step(100);
+
+  // drop large object above usv
+  dropLargeObjectAboveUSV = true;
+
+  // step until finished indicated by paused state
+  // note: do not step multiple iterations otherwise we may run into inf loop
+  int step = 0;
+  while(!paused && ++step < 100)
+    Step(1);
+
+  // verify that a target object retrieval success event is logged
+  sleep = 0;
+  logged = false;
+  while(!logged && sleep++ < maxSleep)
+  {
+    std::this_thread::sleep_for(1000ms);
+
+    std::ifstream eventsLog;
+    eventsLog.open(eventsLogPath);
+    std::stringstream eventsBuffer;
+    eventsBuffer << eventsLog.rdbuf();
+
+    logged = eventsBuffer.str().find("type: target_retrieval")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: large_object_retrieve_failure_1")
+               != std::string::npos &&
+             eventsBuffer.str().find("data: large_object_retrieve_success")
+               != std::string::npos;
+  }
+  EXPECT_TRUE(logged);
+
+  // check current score
+  {
+    std::ifstream scoreLog;
+    scoreLog.open(scoreLogPath);
+    std::stringstream scoreBuffer;
+    scoreBuffer << scoreLog.rdbuf();
+    score = std::stoi(scoreBuffer.str());
+    int expectedScore = simTimeSec - startTime +
+        smallObjectRetrievalPenalty + largeObjectRetrievalPenalty;
+    EXPECT_NEAR(expectedScore, score, 1);
+  }
+
+  // phase should now be finished
+  sleep = 0;
+  phaseReached = false;
+  while(!phaseReached && sleep++ < maxSleep)
+  {
+    {
+      std::lock_guard<std::mutex> lock(phaseMutex);
+      phaseReached = phase == "finished";
+    }
+    Step(1);
+    std::this_thread::sleep_for(1000ms);
+  }
+  EXPECT_TRUE(phaseReached);
+
+  StopLaunchFile(launchHandle);
+  ignition::common::removeAll(logPath);
+}

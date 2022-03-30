@@ -24,7 +24,6 @@
 #include <ignition/transport/Node.hh>
 #include <sdf/Box.hh>
 #include <sdf/Element.hh>
-//#include <sdf/Geometry.hh>
 
 #include "ignition/gazebo/Model.hh"
 #include "ignition/gazebo/Util.hh"
@@ -82,25 +81,6 @@ void EntityDetector::Configure(const Entity &_entity,
     this->poseOffset = sdfClone->Get<math::Pose3d>("pose");
   }
 
- /* if (sdfClone->HasElement("entities"))
-  {
-    auto entities = sdfClone->GetElement("entities");
-    auto entNameElem = entities->GetElement("name");
-    while (entNameElem)
-    {
-      std::string entName = entNameElem->Get<std::string>();
-      if (!entName.empty())
-        this->entityNames.push_back(entName);
-      entNameElem = entNameElem->GetNextElement("name");
-    }
-  }
-  else
-  {
-    ignwarn << "No entities to detect in Region Detector" << std::endl;
-  }
-*/
-
-
   std::string defaultTopic{"/model/" + this->model.Name(_ecm) +
                              "/entity_detector/status"};
   auto topic = _sdf->Get<std::string>("topic", defaultTopic).first;
@@ -111,7 +91,6 @@ void EntityDetector::Configure(const Entity &_entity,
   transport::Node node;
   this->pub = node.Advertise<msgs::Pose>(topic);
   this->initialized = true;
-  std::cerr << "region detector loaded !!!!!! " << std::endl;
 }
 
 //////////////////////////////////////////////////
@@ -125,7 +104,6 @@ void EntityDetector::PreUpdate(
     this->worldPoseEnabled = true;
   }
 }
-
 
 //////////////////////////////////////////////////
 void EntityDetector::PostUpdate(
@@ -148,24 +126,6 @@ void EntityDetector::PostUpdate(
   {
     return;
   }
-
-  /*// find entity ids associated with input entity names
-  if (!this->entityNames.empty())
-  {
-    for (const auto entName : this->entityNames)
-    {
-      auto ent = _ecm.EntityByComponents(
-          components::Name(entName), components::Model());
-      if (ent != kNullEntity)
-      {
-        this->entitiesToDetect.insert(ent);
-        std::cerr << "found " << entName << std::endl;
-      }
-    }
-    this->entityNames.clear();
-    return;
-  }
-*/
 
   auto poseComp = _ecm.Component<components::Pose>(this->model.Entity());
   if (!poseComp)
@@ -203,68 +163,6 @@ void EntityDetector::PostUpdate(
         }
         return true;
       });
-
-  /*
-  for (const auto &ent : this->entitiesToDetect)
-  {
-    auto poseComp = _ecm.Component<components::WorldPose>(ent);
-    math::Pose3d pose = poseComp->Data();
-    bool alreadyDetected = this->IsAlreadyDetected(ent);
-    if (region.Contains(pose.Pos()))
-    {
-      if (!alreadyDetected)
-      {
-        this->AddToDetected(ent);
-        this->Publish(ent, name, true, relPose, _info.simTime);
-      }
-    }
-    else if (alreadyDetected)
-    {
-      this->RemoveFromDetected(ent);
-      this->Publish(ent, name, false, relPose, _info.simTime);
-    }
-  }
-
-  _ecm.Each<components::Performer, components::Geometry,
-            components::ParentEntity>(
-      [&](const Entity &_entity, const components::Performer *,
-          const components::Geometry *_geometry,
-          const components::ParentEntity *_parent) -> bool
-      {
-        auto pose = _ecm.Component<components::Pose>(_parent->Data())->Data();
-        auto name = _ecm.Component<components::Name>(_parent->Data())->Data();
-        const math::Pose3d relPose = modelPose.Inverse() * pose;
-
-        // We assume the geometry contains a box.
-        auto perfBox = _geometry->Data().BoxShape();
-        if (nullptr == perfBox)
-        {
-          ignerr << "Internal error: geometry of performer [" << _entity
-                 << "] missing box." << std::endl;
-          return true;
-        }
-
-        math::AxisAlignedBox performerVolume{pose.Pos() - perfBox->Size() / 2,
-                                             pose.Pos() + perfBox->Size() / 2};
-
-        bool alreadyDetected = this->IsAlreadyDetected(_entity);
-        if (region.Intersects(performerVolume))
-        {
-          if (!alreadyDetected)
-          {
-            this->AddToDetected(_entity);
-            this->Publish(_entity, name, true, relPose, _info.simTime);
-          }
-        }
-        else if (alreadyDetected)
-        {
-          this->RemoveFromDetected(_entity);
-          this->Publish(_entity, name, false, relPose, _info.simTime);
-        }
-
-        return true;
-      });
-  */
 }
 
 //////////////////////////////////////////////////
