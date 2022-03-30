@@ -22,6 +22,8 @@
 
 #include <chrono>
 #include <mutex>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <ignition/math/AxisAlignedBox.hh>
 
@@ -78,25 +80,25 @@ class mbzirc::GameLogicPluginPrivate
     public: std::string vessel;
 
     /// \brief List of small target objects
-    public: std::set<std::string> smallObjects;
+    public: std::unordered_set<std::string> smallObjects;
 
     /// \brief List of large target objects
-    public: std::set<std::string> largeObjects;
+    public: std::unordered_set<std::string> largeObjects;
 
     /// \brief Indicates if vessel has been reported
     public: bool vesselReported = false;
 
     /// \brief Set of small objects that have been reported.
-    public: std::set<std::string> smallObjectsReported;
+    public: std::unordered_set<std::string> smallObjectsReported;
 
     /// \brief Set of large objects that have been reported.
-    public: std::set<std::string> largeObjectsReported;
+    public: std::unordered_set<std::string> largeObjectsReported;
 
     /// \brief Set of small objects that have been retrieved.
-    public: std::set<std::string> smallObjectsRetrieved;
+    public: std::unordered_set<std::string> smallObjectsRetrieved;
 
     /// \brief Set of large objects that have been retrieved.
-    public: std::set<std::string> largeObjectsRetrieved;
+    public: std::unordered_set<std::string> largeObjectsRetrieved;
   };
 
   /// \brief Information of target in stream
@@ -143,7 +145,7 @@ class mbzirc::GameLogicPluginPrivate
           };
 
   /// \brief A map of penalty type and time penalties.
-  public: const std::map<PenaltyType, int> kTimePenalties = {
+  public: const std::unordered_map<PenaltyType, int> kTimePenalties = {
           {TARGET_VESSEL_ID_1, 180},
           {TARGET_VESSEL_ID_2, 240},
           {TARGET_VESSEL_ID_3, IGN_INT32_MAX},
@@ -399,7 +401,7 @@ class mbzirc::GameLogicPluginPrivate
   public: std::vector<ignition::msgs::Pose> objectsDropped;
 
   /// \brief Objects that need to be disabled
-  public: std::set<std::string> objectsToDisable;
+  public: std::unordered_set<std::string> objectsToDisable;
 
   /// \brief Ignition transport competition clock publisher.
   public: transport::Node::Publisher competitionClockPub;
@@ -411,10 +413,10 @@ class mbzirc::GameLogicPluginPrivate
   public: std::string logPath{"/dev/null"};
 
   /// \brief Names of the spawned robots.
-  public: std::map<Entity, std::string> robotNames;
+  public: std::unordered_map<Entity, std::string> robotNames;
 
   /// \brief Initial pose of robots
-  public: std::map<Entity, math::Vector3d> robotInitialPos;
+  public: std::unordered_map<Entity, math::Vector3d> robotInitialPos;
 
  /// \brief Current state.
   public: std::string state = "init";
@@ -429,7 +431,7 @@ class mbzirc::GameLogicPluginPrivate
   public: EventManager *eventManager{nullptr};
 
   /// \brief Models with dead batteries.
-  public: std::set<std::string> deadBatteries;
+  public: std::unordered_set<std::string> deadBatteries;
 
   /// \brief Amount of allowed setup time in seconds.
   public: int setupTimeSec = 600;
@@ -463,7 +465,7 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Map of robot entity id and bool var to indicate if they are inside
   ///  the competition boundary
-  public: std::map<Entity, bool> robotsInBoundary;
+  public: std::unordered_map<Entity, bool> robotsInBoundary;
 
   /// \brief SDF DOM of a static model with empty link
   public: sdf::Model staticModelToSpawn;
@@ -475,7 +477,7 @@ class mbzirc::GameLogicPluginPrivate
   public: Entity worldEntity{kNullEntity};
 
   /// \brief A list of robots that have been disabled
-  public: std::set<Entity> disabledRobots;
+  public: std::unordered_set<Entity> disabledRobots;
 
   /// \brief Number of times robot moved beyond competition boundary
   public: unsigned int geofenceBoundaryPenaltyCount = 0u;
@@ -485,23 +487,23 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Map of vessel to number of times small object is incorrectly
   /// identified
-  public: std::map<std::string, unsigned int> smallObjectIdPenaltyCount;
+  public: std::unordered_map<std::string, unsigned int> smallObjectIdPenaltyCount;
 
   /// \brief Map of vessel to number times large object is incorrectly
   /// identified
-  public: std::map<std::string, unsigned int> largeObjectIdPenaltyCount;
+  public: std::unordered_map<std::string, unsigned int> largeObjectIdPenaltyCount;
 
   /// \brief Map of vessel to number of times small object retrieval failed
-  public: std::map<std::string, unsigned int> smallObjectRetrievePenaltyCount;
+  public: std::unordered_map<std::string, unsigned int> smallObjectRetrievePenaltyCount;
 
   /// \brief Map of vessel to number of times small object retrieval failed
-  public: std::map<std::string, unsigned int> largeObjectRetrievePenaltyCount;
+  public: std::unordered_map<std::string, unsigned int> largeObjectRetrievePenaltyCount;
 
   /// \brief Total time penalty in seconds;
   public: int timePenalty = 0;
 
   /// \brief A map of target vessel name and targets.
-  public: std::map<std::string, Target> targets;
+  public: std::unordered_map<std::string, Target> targets;
 
   /// \brief Sensor entity on vehicle currently streaming video of target
   public: Entity targetStreamSensorEntity;
@@ -510,7 +512,7 @@ class mbzirc::GameLogicPluginPrivate
   public: std::string targetStreamTopic;
 
   /// \brief Sensor entity on vehicle currently streaming video of target
-  public: std::set<Entity> cameraSensors;
+  public: std::unordered_set<Entity> cameraSensors;
 
   /// \brief Connection to the post-render event.
   public: ignition::common::ConnectionPtr postRenderConn;
@@ -530,16 +532,16 @@ class mbzirc::GameLogicPluginPrivate
   public: std::string currentTargetVessel;
 
   /// \brief A set of target vessel visuals
-  public: std::set<rendering::VisualPtr> targetVesselVisuals;
+  public: std::unordered_set<rendering::VisualPtr> targetVesselVisuals;
 
   /// \brief A map of target vessel name and the small target object visuals
   /// on the vessel
-  public: std::map<std::string, std::set<rendering::VisualPtr>>
+  public: std::unordered_map<std::string, std::unordered_set<rendering::VisualPtr>>
       targetSmallObjectVisuals;
 
   /// \brief A map of target vessel name and the large target object visuals
   /// on the vessel
-  public: std::map<std::string, std::set<rendering::VisualPtr>>
+  public: std::unordered_map<std::string, std::unordered_set<rendering::VisualPtr>>
       targetLargeObjectVisuals;
 
   /// \brief Max allowed error (%) for reported target vessel image position

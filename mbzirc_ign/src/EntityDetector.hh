@@ -120,12 +120,6 @@ namespace mbzirc
     /// \brief Keeps a set of detected entities
     private: std::unordered_set<ignition::gazebo::Entity> detectedEntities;
 
-    /// \brief Ids of entities to detect
-//    private: std::unordered_set<std::string> entitiesToDetect;
-
-    /// \brief Names of entities to detect
-//    private: std::unordered_set<std::string> entityNames;
-
     /// \brief The model associated with this system.
     private: ignition::gazebo::Model model;
 
