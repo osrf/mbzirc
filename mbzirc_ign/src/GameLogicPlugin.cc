@@ -251,10 +251,21 @@ class mbzirc::GameLogicPluginPrivate
   public: bool OnTargetStreamReport(const ignition::msgs::StringMsg_V &_req,
                ignition::msgs::Boolean &_res);
 
+  /// \brief Ignition service for skipping to a particular phase. Used for
+  /// testing and development.
+  /// \param[in] _req String msg - phase to skip to.
+  /// \param[out] _res The response message.
+  public: bool OnSkipToPhase(const ignition::msgs::StringMsg &_req,
+               ignition::msgs::Boolean &_res);
+
   /// \brief Callback triggered when objects are placed on top
   /// of the USV
   /// \param[in] _msg The message containing name and pose of object placed
   public: void OnDetectObjectPlacement(const ignition::msgs::Pose &_msg);
+
+  /// \brief Callback triggered when objects are dropped into the ocean
+  /// \param[in] _msg The message containing name and pose of object placed
+  public: void OnDetectObjectDropped(const ignition::msgs::Pose &_msg);
 
   /// \brief Check if an entity's position is within the input boundary
   //// \param[in] _ecm Entity component manager
@@ -270,6 +281,13 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Valid intervention task and make sure target objects have been
   /// retrieved.
   public: void ValidateTargetObjectRetrieval();
+
+  /// \brief Disable objects that are dropped in the ocean
+  public: void DisableDroppedObjects(EntityComponentManager &_ecm);
+
+  /// \brief Check task completion. Make sure all target objects have been
+  /// retrieved
+  public: void CheckTaskCompletion();
 
   /// \brief Check if robots are inside geofence boundary. Time penalties are
   /// given if the robots exceed the first geofence two times, and the
@@ -377,6 +395,12 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Object placements
   public: std::vector<ignition::msgs::Pose> objectPlacements;
 
+  /// \brief Objects dropped
+  public: std::vector<ignition::msgs::Pose> objectsDropped;
+
+  /// \brief Objects that need to be disabled
+  public: std::set<std::string> objectsToDisable;
+
   /// \brief Ignition transport competition clock publisher.
   public: transport::Node::Publisher competitionClockPub;
 
@@ -461,11 +485,17 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Map of vessel to number of times small object is incorrectly
   /// identified
-  public: std::map<std::string, unsigned int> smallObjectPenaltyCount;
+  public: std::map<std::string, unsigned int> smallObjectIdPenaltyCount;
 
   /// \brief Map of vessel to number times large object is incorrectly
   /// identified
-  public: std::map<std::string, unsigned int> largeObjectPenaltyCount;
+  public: std::map<std::string, unsigned int> largeObjectIdPenaltyCount;
+
+  /// \brief Map of vessel to number of times small object retrieval failed
+  public: std::map<std::string, unsigned int> smallObjectRetrievePenaltyCount;
+
+  /// \brief Map of vessel to number of times small object retrieval failed
+  public: std::map<std::string, unsigned int> largeObjectRetrievePenaltyCount;
 
   /// \brief Total time penalty in seconds;
   public: int timePenalty = 0;
@@ -714,9 +744,6 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
   this->dataPtr->competitionClockPub =
     this->dataPtr->node.Advertise<ignition::msgs::Clock>("/mbzirc/run_clock");
 
-  this->dataPtr->node.Subscribe("/mbzirc/target_object_detector",
-      &GameLogicPluginPrivate::OnDetectObjectPlacement, this->dataPtr.get());
-
   this->dataPtr->competitionPhasePub =
     this->dataPtr->node.Advertise<ignition::msgs::StringMsg>("/mbzirc/phase");
 
@@ -729,6 +756,14 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
   this->dataPtr->node.Advertise("/mbzirc/target/stream/report",
       &GameLogicPluginPrivate::OnTargetStreamReport, this->dataPtr.get());
 
+  this->dataPtr->node.Advertise("/mbzirc/skip_to_phase",
+      &GameLogicPluginPrivate::OnSkipToPhase, this->dataPtr.get());
+
+  this->dataPtr->node.Subscribe("/mbzirc/target_object_detector/placed",
+      &GameLogicPluginPrivate::OnDetectObjectPlacement, this->dataPtr.get());
+
+  this->dataPtr->node.Subscribe("/mbzirc/target_object_detector/dropped",
+      &GameLogicPluginPrivate::OnDetectObjectDropped, this->dataPtr.get());
 
 
   ignmsg << "Starting MBZIRC" << std::endl;
@@ -776,6 +811,9 @@ void GameLogicPlugin::PreUpdate(const UpdateInfo &_info,
   // give time penalties or disable robots if they exceeded
   // boundaries
   this->dataPtr->CheckRobotsInGeofenceBoundary(_ecm);
+
+  // disable objects dropped into the ocean
+  this->dataPtr->DisableDroppedObjects(_ecm);
 }
 
 //////////////////////////////////////////////////
@@ -783,6 +821,9 @@ void GameLogicPlugin::PostUpdate(
     const ignition::gazebo::UpdateInfo &_info,
     const ignition::gazebo::EntityComponentManager &_ecm)
 {
+  if (_info.paused)
+    return;
+
   // Store sim time
   int64_t s, ns;
   std::tie(s, ns) = ignition::math::durationToSecNsec(_info.simTime);
@@ -884,6 +925,7 @@ void GameLogicPlugin::PostUpdate(
         }
       }
     }
+    return;
   }
 
   // find the sensor associated with the input stream
@@ -904,11 +946,28 @@ void GameLogicPlugin::PostUpdate(
     this->dataPtr->targetStreamTopic.clear();
   }
 
-  // validate target reports
-  this->dataPtr->ValidateTargetReports();
+
+  std::string phaseStr = this->dataPtr->Phase();
 
   // validate target object retrieval - intervention task
-  this->dataPtr->ValidateTargetObjectRetrieval();
+  if (phaseStr == "started" ||
+      phaseStr == "vessel_id_success" ||
+      phaseStr == "small_object_id_success")
+  {
+    // validate target reports
+    this->dataPtr->ValidateTargetReports();
+  }
+
+  // validate target object retrieval - intervention task
+  if (phaseStr == "large_object_id_success" ||
+      phaseStr == "small_object_retrieve_success")
+  {
+    this->dataPtr->ValidateTargetObjectRetrieval();
+  }
+
+  // check task completion
+  // update score files and pause sim if tasks are done
+  this->dataPtr->CheckTaskCompletion();
 
   // Get the start sim time in nanoseconds.
   auto startSimTime = std::chrono::nanoseconds(
@@ -966,7 +1025,6 @@ void GameLogicPlugin::PostUpdate(
     this->dataPtr->UpdateScoreFiles(this->dataPtr->simTime);
   }
 }
-
 
 /////////////////////////////////////////////////
 void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
@@ -1264,6 +1322,13 @@ void GameLogicPluginPrivate::OnDetectObjectPlacement(
   this->objectPlacements.push_back(_msg);
 }
 
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::OnDetectObjectDropped(
+    const ignition::msgs::Pose &_msg)
+{
+  std::lock_guard<std::mutex> lock(this->reportMutex);
+  this->objectsDropped.push_back(_msg);
+}
 
 /////////////////////////////////////////////////
 bool GameLogicPluginPrivate::OnTargetStreamStart(
@@ -1398,6 +1463,29 @@ bool GameLogicPluginPrivate::OnTargetStreamReport(
 }
 
 /////////////////////////////////////////////////
+bool GameLogicPluginPrivate::OnSkipToPhase(
+    const ignition::msgs::StringMsg &_req,
+    ignition::msgs::Boolean &_res)
+{
+  std::string p = _req.data();
+  if (p != "setup")
+  {
+    auto simT = this->SimTime();
+    this->Start(simT);
+  }
+  else
+  {
+    this->started = false;
+  }
+  this->SetPhase(p);
+  ignmsg << "Skipping to phase: " << p << std::endl;
+  std::cerr << "skipping to phase " << std::endl;
+
+  _res.set_data(true);
+  return true;
+}
+
+/////////////////////////////////////////////////
 void GameLogicPluginPrivate::ValidateTargetReports()
 {
   std::lock_guard<std::mutex> lock(this->reportMutex);
@@ -1464,11 +1552,11 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             // add penalty for incorrectly identifying small object
             std::string logData = "small_object_id_failure";
             unsigned int count = 0u;
-            auto it = this->smallObjectPenaltyCount.find(vessel);
-            if (it != this->smallObjectPenaltyCount.end())
+            auto it = this->smallObjectIdPenaltyCount.find(vessel);
+            if (it != this->smallObjectIdPenaltyCount.end())
               count = it->second;
 
-            this->smallObjectPenaltyCount[vessel] = ++count;
+            this->smallObjectIdPenaltyCount[vessel] = ++count;
             if (count == 1u)
             {
               this->timePenalty +=
@@ -1526,11 +1614,11 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               // add penalty for incorrectly identifying large object
               std::string logData = "large_object_id_failure";
               unsigned int count = 0u;
-              auto it = this->largeObjectPenaltyCount.find(vessel);
-              if (it != this->largeObjectPenaltyCount.end())
+              auto it = this->largeObjectIdPenaltyCount.find(vessel);
+              if (it != this->largeObjectIdPenaltyCount.end())
                 count = it->second;
 
-              this->largeObjectPenaltyCount[vessel] = ++count;
+              this->largeObjectIdPenaltyCount[vessel] = ++count;
               if (count == 1u)
               {
                 this->timePenalty +=
@@ -1599,48 +1687,194 @@ void GameLogicPluginPrivate::ValidateTargetReports()
 /////////////////////////////////////////////////
 void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
 {
+  // check if any target objects are dropped into the ocean
+  // if so, give penalty
   std::lock_guard<std::mutex> lock(this->reportMutex);
+  std::string phaseStr = this->Phase();
+  auto simT = this->SimTime();
+  // std::string vessel = this->currentTargetVessel;
+  // auto &target = this->targets[vessel];
+  for (const auto &msg: this->objectsDropped)
+  {
+    std::string objName = msg.name();
+    // ignore tmp model created to make dropped object static
+    if (objName.find("_static_") != std::string::npos)
+      continue;
+    // check of object entered region that counts as "dropped"
+    std::string v = msg.header().data(1).value(0);
+    bool enteredRegion = std::stoi(v);
+    if (!enteredRegion)
+      continue;
+
+    // check if small object is dropped
+    for (const auto &targetIt : this->targets)
+    {
+      auto &target = targetIt.second;
+      std::string vessel = targetIt.first;
+      for (const auto &smallObj : target.smallObjects)
+      {
+        if (objName.find(smallObj) != std::string::npos)
+        {
+          unsigned int count = 0u;
+          auto it = this->smallObjectRetrievePenaltyCount.find(vessel);
+          if (it != this->smallObjectRetrievePenaltyCount.end())
+            count = it->second;
+
+          this->smallObjectRetrievePenaltyCount[vessel] = ++count;
+          std::string logData = "small_object_retrieve_failure";
+          if (count == 1u)
+          {
+            this->timePenalty +=
+                this->kTimePenalties.at(SMALL_OBJECT_RETRIEVE_1);
+            this->UpdateScoreFiles(simT);
+            logData += "_1";
+            this->LogEvent("target_retrieval", logData);
+          }
+          else if (count == 2u)
+          {
+            this->timePenalty +=
+                this->kTimePenalties.at(SMALL_OBJECT_RETRIEVE_2);
+            logData += "_2";
+            this->LogEvent("target_retrieval", logData);
+            // terminate run
+            this->Finish(simT);
+          }
+          break;
+        }
+      }
+    }
+    // check if large object is dropped
+    for (const auto &targetIt : this->targets)
+    {
+      auto &target = targetIt.second;
+      std::string vessel = targetIt.first;
+      for (const auto &largeObj : target.largeObjects)
+      {
+        if (objName.find(largeObj) != std::string::npos)
+        {
+          unsigned int count = 0u;
+          auto it = this->largeObjectRetrievePenaltyCount.find(vessel);
+          if (it != this->largeObjectRetrievePenaltyCount.end())
+            count = it->second;
+
+          this->largeObjectRetrievePenaltyCount[vessel] = ++count;
+          std::string logData = "large_object_retrieve_failure";
+          if (count == 1u)
+          {
+            this->timePenalty +=
+                this->kTimePenalties.at(LARGE_OBJECT_RETRIEVE_1);
+            this->UpdateScoreFiles(simT);
+            logData += "_1";
+            this->LogEvent("target_retrieval", logData);
+          }
+          else if (count == 2u)
+          {
+            this->timePenalty +=
+                this->kTimePenalties.at(LARGE_OBJECT_RETRIEVE_2);
+            logData += "_2";
+            this->LogEvent("target_retrieval", logData);
+            // terminate run
+            this->Finish(simT);
+          }
+          break;
+        }
+      }
+    }
+
+    // make the object static
+    this->objectsToDisable.insert(objName);
+  }
+  this->objectsDropped.clear();
+
+  // iterate over object placements to see which object has been placed
   for (const auto &msg: this->objectPlacements)
   {
     std::string objName = msg.name();
     std::string v = msg.header().data(1).value(0);
-    bool in = std::stoi(v);
-    if (!in)
+    bool enteredRegion = std::stoi(v);
+    if (!enteredRegion)
       continue;
-    for (const auto &targetIt : this->targets)
+    // phase is currently large_object_id_success, that means
+    // the inspection phase is done and we are now in the intervention phase.
+    // The next task is grabbing the small target object
+    if (phaseStr == "large_object_id_success")
     {
-      for (const auto &smallObj : targetIt.second.smallObjectsReported)
+      for (auto &targetIt : this->targets)
       {
-        if (smallObj == objName)
+        auto &target = targetIt.second;
+        for (auto &smallObj : target.smallObjects)
         {
-          std::cerr << "small object placed! " << std::endl;
-          break;
-        }
-      }
-
-      for (const auto &largeObj : targetIt.second.largeObjectsReported)
-      {
-        if (largeObj == objName)
-        {
-          std::cerr << "large object placed! " << std::endl;
-
-          // verify all small target objects have been retrieved first
-          // if not, this will not be valid
-          if (targetIt.second.smallObjectsReported.size() !=
-              targetIt.second.smallObjectsRetrieved.size())
+          if (objName.find(smallObj) != std::string::npos &&
+              target.smallObjectsRetrieved.find(objName) ==
+              target.smallObjectsRetrieved.end())
           {
-            ignwarn << "Small target objects have not been retrieved yet"
-                    << std::endl;
+            std::cerr << "small object placed! " << std::endl;
+            this->LogEvent("target_retrieval", "small_object_retrieve_success");
+            this->SetPhase("small_object_retrieve_success");
+            target.smallObjectsRetrieved.insert(objName);
             break;
           }
         }
       }
-
+    }
+    // phase is currently small_object_id_success, that means
+    // the next task is grabbing the large target object
+    else if (phaseStr == "small_object_retrieve_success")
+    {
+      for (auto &targetIt : this->targets)
+      {
+        auto &target = targetIt.second;
+        for (auto &largeObj : target.largeObjects)
+        {
+          if (objName.find(largeObj) != std::string::npos &&
+              target.largeObjectsRetrieved.find(objName) ==
+              target.largeObjectsRetrieved.end())
+          {
+            target.largeObjectsRetrieved.insert(largeObj);
+            this->LogEvent("target_retrieval", "large_object_retrieve_success");
+            this->SetPhase("large_object_retrieve_success");
+            this->CheckTaskCompletion();
+          }
+        }
+      }
     }
   }
   this->objectPlacements.clear();
 }
 
+//////////////////////////////////////////////////
+void GameLogicPluginPrivate::DisableDroppedObjects(
+    EntityComponentManager &_ecm)
+{
+  for (const auto &objName : this->objectsToDisable)
+  {
+    auto entity = _ecm.EntityByComponents(components::Name(objName));
+    if (entity != kNullEntity)
+      this->MakeStatic(entity, _ecm);
+  }
+  this->objectsToDisable.clear();
+}
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::CheckTaskCompletion()
+{
+  bool completed = true;
+  for (const auto &targetIt : this->targets)
+  {
+    if (targetIt.second.largeObjectsRetrieved.empty())
+    {
+      completed = false;
+    }
+  }
+
+  if (completed)
+  {
+    auto simT = this->SimTime();
+    this->Finish(simT);
+    ignmsg << "All tasks have been completed! " << std::endl;
+    ignmsg << "Score: " << this->totalScore << std::endl;
+  }
+}
 
 /////////////////////////////////////////////////
 ignition::msgs::Time GameLogicPluginPrivate::SimTime()
@@ -2095,6 +2329,7 @@ void GameLogicPluginPrivate::SetPhase(const std::string &_phase)
 {
   std::lock_guard<std::mutex> lock(this->phaseMutex);
   this->phase = _phase;
+  std::cerr << "setting phase " << _phase << std::endl;
 }
 
 /////////////////////////////////////////////////

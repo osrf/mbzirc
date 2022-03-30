@@ -158,13 +158,27 @@ end
 
   <!-- uncomment the following to visualize valid region for placement
       of target objects -->
-  <!--
   <link name='target_placement_region'>
     <visual name="v1">
+      <pose>0 0 0.22 0 0 0</pose>
       <transparency>0.5</transparency>
       <geometry>
         <box>
-          <size>5 5 5</size>
+          <size>4 3.3 0.25</size>
+        </box>
+      </geometry>
+      <material>
+        <ambient>0.0 1.0 0.0 0.5</ambient>
+        <diffuse>0.0 1.0 0.0 0.5</diffuse>
+        <specular>0.5 0.5 0.5 0.5</specular>
+      </material>
+    </visual>
+    <visual name="v2">
+      <pose>0 0 0.8 0 0 0</pose>
+      <transparency>0.5</transparency>
+      <geometry>
+        <box>
+          <size>1.5 2.2 0.25</size>
         </box>
       </geometry>
       <material>
@@ -179,21 +193,30 @@ end
     <parent>target_placement_region</parent>
     <child>base_link</child>
   </joint>
-  -->
-
   <!-- This plugin detects when target objects are placed at the
        the defined region. A message is published on the <topic> when these
        events occur -->
-  <plugin filename="libRegionDetector.so"
-          name="mbzirc::RegionDetector">
-    <topic>/target_object_detector</topic>
-    <pose>0 0 0 0 0 0</pose>
+  <plugin filename="libEntityDetector.so"
+          name="mbzirc::EntityDetector">
+    <topic>/mbzirc/target_object_detector/placed</topic>
+    <pose>0 0 0.22 0 0 0</pose>
     <geometry>
       <box>
-        <size>5 5 5</size>
+        <size>4 3.3 0.25</size>
       </box>
     </geometry>
   </plugin>
+  <plugin filename="libEntityDetector.so"
+          name="mbzirc::EntityDetector">
+    <topic>/mbzirc/target_object_detector/placed</topic>
+    <pose>0 0 0.8 0 0 0</pose>
+    <geometry>
+      <box>
+        <size>1.5 2.2 0.25</size>
+      </box>
+    </geometry>
+  </plugin>
+
 
 </model>
 </sdf>

@@ -1074,5 +1074,23 @@
       </link>
     </model>
     -->
+
+    <model name="ocean_entity_detector">
+      <static>true</static>
+      <!-- This plugin detects when target objects are dropped into the ocean
+           at the defined region. A message is published on the <topic> when
+           these events occur -->
+      <plugin filename="libEntityDetector.so"
+              name="mbzirc::EntityDetector">
+        <topic>/mbzirc/target_object_detector/dropped</topic>
+        <pose>0 0 -100 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>3162.28 3162.28 10</size>
+          </box>
+        </geometry>
+      </plugin>
+    </model>
+
   </world>
 </sdf>

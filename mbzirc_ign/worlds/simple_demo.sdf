@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<sdf version="1.6">
+<sdf version="1.9">
   <world name="simple_demo">
 
     <physics name="4ms" type="dart">
@@ -236,6 +236,40 @@
       </plugin>
     </include>
 
+    <!--
+    <include>
+      <name>small_blue_box</name>
+      <pose relative_to="Vessel A">-0.14 0.04 0.2 0 0 1.2</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+    </include>
+
+    <include>
+      <name>small_blue_box_a</name>
+      <pose relative_to="Vessel A">-1.28 0.23 0.2 0 0 1</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+    </include>
+
+    <include>
+      <name>large_grey_box</name>
+      <pose relative_to="Vessel A">0.08 -0.64 0.2 0 0 -0.3</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box
+      </uri>
+    </include>
+
+    <include>
+      <name>large_grey_box_a</name>
+      <pose relative_to="Vessel A">0.7 0.23 0.2 0 0 0.2</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box
+      </uri>
+    </include>
+    -->
+
     <model name="small_box_a">
       <pose>24 26.5 0.5 0 0 0</pose>
       <link name="link">
@@ -365,6 +399,12 @@
       </geofence>
       <target>
         <vessel>Vessel A</vessel>
+        <!--
+        <small_object>small_blue_box</small_object>
+        <small_object>small_blue_box_a</small_object>
+        <large_object>large_grey_box</large_object>
+        <large_object>large_grey_box_a</large_object>
+        -->
         <small_object>small_box_a</small_object>
         <large_object>large_box_a</large_object>
       </target>
@@ -390,5 +430,23 @@
       </link>
     </model>
     -->
+
+    <model name="ocean_entity_detector">
+      <static>true</static>
+      <!-- This plugin detects when target objects are dropped into the ocean
+           at the defined region. A message is published on the <topic> when
+           these events occur -->
+      <plugin filename="libEntityDetector.so"
+              name="mbzirc::EntityDetector">
+        <topic>/mbzirc/target_object_detector/dropped</topic>
+        <pose>0 0 -20 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>140 140 5</size>
+          </box>
+        </geometry>
+      </plugin>
+    </model>
+
   </world>
 </sdf>
