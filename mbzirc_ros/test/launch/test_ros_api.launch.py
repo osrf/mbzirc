@@ -45,8 +45,8 @@ def generate_test_description():
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
-                get_package_share_directory('ros_ign_gazebo'),
-                'launch/ign_gazebo.launch.py')
+                get_package_share_directory('mbzirc_ros'),
+                'launch/competition.launch.py')
         ),
         launch_arguments=arguments.items())
 

@@ -1,0 +1,170 @@
+<?xml version="1.0" ?>
+
+<sdf version="1.8">
+  <world name="suction_gripper">
+
+    <physics name="4ms" type="dart">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>0</real_time_factor>
+    </physics>
+
+    <plugin
+      filename="ignition-gazebo-physics-system"
+      name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-user-commands-system"
+      name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-scene-broadcaster-system"
+      name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-contact-system"
+      name="ignition::gazebo::systems::Contact">
+    </plugin>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="suction_gripper">
+      <pose>0 0 0 0 0 0</pose>
+      <link name="base_link">
+        <static>true</static>
+        <collision name="base_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.1</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="base_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.1</radius>
+              <length>0.1</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0 0 0.8 1</ambient>
+            <diffuse>0 0 0.8 1</diffuse>
+            <specular>0 0 0.8 1</specular>
+          </material>
+        </visual>
+      </link>
+      <link name="arm_link">
+        <pose>0 0 0.1 1.57 0 0</pose>
+        <collision name="arm_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.01</radius>
+              <length>1.95</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="arm_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.01</radius>
+              <length>1.95</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0 0 0.8 1</ambient>
+            <diffuse>0 0 0.8 1</diffuse>
+            <specular>0 0 0.8 1</specular>
+          </material>
+        </visual>
+        <sensor name='sensor_contact' type='contact'>
+          <contact>
+            <collision>arm_collision</collision>
+            <topic>/arm_contact</topic>
+          </contact>
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+        </sensor>
+      </link>
+      <joint name="panda_joint_world" type="fixed">
+        <parent>world</parent>
+        <child>base_link</child>
+      </joint>
+      <joint name="suction_gripper_joint" type="revolute">
+        <parent>base_link</parent>
+        <child>arm_link</child>
+        <axis>
+          <xyz>0 1 0</xyz>
+          <limit>
+            <lower>-1.57</lower>
+            <upper>1.57</upper>
+            <effort>0.5</effort>
+          </limit>
+        </axis>
+      </joint>
+      <plugin
+        filename="ignition-gazebo-joint-position-controller-system"
+        name="ignition::gazebo::systems::JointPositionController">
+        <joint_name>suction_gripper_joint</joint_name>
+        <p_gain>0.1</p_gain>
+      </plugin>
+      <plugin
+        filename="libSuctionGripper.so"
+        name="mbzirc::SuctionGripperPlugin">
+        <parent_link>arm_link</parent_link>
+        <contact_sensor_topic>arm_contact</contact_sensor_topic>
+        <command_topic>gripper/suction_on</command_topic>
+      </plugin>
+    </model>
+
+    <model name="object">
+      <pose>1 0 0.05 0 0 0</pose>
+      <link name="object_1">
+        <collision name="object_1_col">
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="object_1_vis">
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.0 0.0 1</ambient>
+            <diffuse>0.8 0.0 0.0 1</diffuse>
+            <specular>0.8 0.0 0.0 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>
