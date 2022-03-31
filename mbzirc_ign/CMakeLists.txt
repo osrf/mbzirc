@@ -50,11 +50,12 @@ install(
 
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
+  FixedWingController
   GameLogicPlugin
   SimpleHydrodynamics
+  SuctionGripper
   Surface
   WaveVisual
-  FixedWingController
 )
 
 foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
@@ -107,7 +108,13 @@ if(BUILD_TESTING)
   configure_file(test/helper/TestConstants.hh.in TestConstants.hh @ONLY)
 
   foreach(TEST_TARGET
-    test_spawn_uav_battery test_game_logic test_spawn_usv_maxspeed test_fixed_wing test_spawn_usv_arm)
+    test_spawn_uav_battery
+    test_game_logic
+    test_spawn_usv_maxspeed
+    test_fixed_wing
+    test_gripper
+    test_spawn_usv_arm
+    )
     ament_add_gtest(
       ${TEST_TARGET}
       test/${TEST_TARGET}.cc
