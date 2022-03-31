@@ -61,7 +61,7 @@ end
       </axis>
       <sensor name="force_torque" type="force_torque">
         <update_rate>10</update_rate>
-        <topic><%= $topic_prefix %>/gripper/finger_right/forcetorque</topic>
+        <topic><%= $topic_prefix %>/gripper/finger_left/forcetorque</topic>
       </sensor>
     </joint>
     <link name='finger_left'>
@@ -205,7 +205,7 @@ end
       </axis>
       <sensor name="force_torque" type="force_torque">
         <update_rate>10</update_rate>
-        <topic><%= $topic_prefix %>/gripper/finger_left/forcetorque</topic>
+        <topic><%= $topic_prefix %>/gripper/finger_right/forcetorque</topic>
       </sensor>
     </joint>
     <link name='finger_right'>
