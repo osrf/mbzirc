@@ -1,0 +1,221 @@
+---
+- model_name: 'quadrotor_1'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1495, 0, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_2'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1495, 2, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_3'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1495, 4, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_4'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1495, 6, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_5'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1495, 8, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_6'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1497, 0, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_7'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1497, 2, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_8'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1497, 4, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_9'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1497, 6, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_10'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1497, 8, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_11'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1499, 0, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_12'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1499, 2, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_13'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1499, 4, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_14'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1499, 6, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_15'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1499, 8, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_16'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1501, 0, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_17'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1501, 2, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_18'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1501, 4, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_19'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1501, 6, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_20'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-1501, 8, 4.2]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+

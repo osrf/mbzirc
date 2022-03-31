@@ -12,479 +12,122 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-from ament_index_python.packages import get_package_share_directory
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-                        #, ExecuteProcess, IncludeLaunchDescription
+from launch.actions import GroupAction
 from launch.actions import OpaqueFunction
 from launch.actions import RegisterEventHandler
-from launch.actions import GroupAction
-from launch_ros.actions import PushRosNamespace
 from launch.event_handlers import OnProcessExit
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
+from launch_ros.actions import PushRosNamespace
 
-import subprocess
-import codecs
+from mbzirc_ign.model import Model
 
-from mbzirc_ign.bridge import Bridge, BridgeDirection
 
-def spawn_uav(context, model_path, world_name, model_name, link_name):
-  x_pos = LaunchConfiguration('x').perform(context)
-  y_pos = LaunchConfiguration('y').perform(context)
-  z_pos = LaunchConfiguration('z').perform(context)
-  r_rot = LaunchConfiguration('R').perform(context)
-  p_rot = LaunchConfiguration('P').perform(context)
-  y_rot = LaunchConfiguration('Y').perform(context)
-  # take flight time in minutes
-  flight_time = LaunchConfiguration('flightTime').perform(context)
+def spawn(context, model_type, world_name, model_name, position):
+    model = Model(model_name, model_type, position)
 
-  slot0_payload = LaunchConfiguration('slot0').perform(context)
-  slot1_payload = LaunchConfiguration('slot1').perform(context)
-  slot2_payload = LaunchConfiguration('slot2').perform(context)
-  slot3_payload = LaunchConfiguration('slot3').perform(context)
-  slot4_payload = LaunchConfiguration('slot4').perform(context)
-  slot5_payload = LaunchConfiguration('slot5').perform(context)
-  slot6_payload = LaunchConfiguration('slot6').perform(context)
-  slot7_payload = LaunchConfiguration('slot7').perform(context)
+    if model.isUAV():
+        # take flight time in minutes
+        flight_time = LaunchConfiguration('flightTime').perform(context)
 
-  slot0_rpy = LaunchConfiguration('slot0_rpy').perform(context)
-  slot1_rpy = LaunchConfiguration('slot1_rpy').perform(context)
-  slot2_rpy = LaunchConfiguration('slot2_rpy').perform(context)
-  slot3_rpy = LaunchConfiguration('slot3_rpy').perform(context)
-  slot4_rpy = LaunchConfiguration('slot4_rpy').perform(context)
-  slot5_rpy = LaunchConfiguration('slot5_rpy').perform(context)
-  slot6_rpy = LaunchConfiguration('slot6_rpy').perform(context)
-  slot7_rpy = LaunchConfiguration('slot7_rpy').perform(context)
+        slot0_payload = LaunchConfiguration('slot0').perform(context)
+        slot1_payload = LaunchConfiguration('slot1').perform(context)
+        slot2_payload = LaunchConfiguration('slot2').perform(context)
+        slot3_payload = LaunchConfiguration('slot3').perform(context)
+        slot4_payload = LaunchConfiguration('slot4').perform(context)
+        slot5_payload = LaunchConfiguration('slot5').perform(context)
+        slot6_payload = LaunchConfiguration('slot6').perform(context)
+        slot7_payload = LaunchConfiguration('slot7').perform(context)
 
-  # calculate battery capacity from time
-  # capacity (Ah) = flight time (in hours) * load (watts) / voltage
-  # assume constant voltage for battery to keep things simple for now.
-  battery_capacity = (float(flight_time) / 60) *  6.6 / 12.694
+        slot0_rpy = LaunchConfiguration('slot0_rpy').perform(context)
+        slot1_rpy = LaunchConfiguration('slot1_rpy').perform(context)
+        slot2_rpy = LaunchConfiguration('slot2_rpy').perform(context)
+        slot3_rpy = LaunchConfiguration('slot3_rpy').perform(context)
+        slot4_rpy = LaunchConfiguration('slot4_rpy').perform(context)
+        slot5_rpy = LaunchConfiguration('slot5_rpy').perform(context)
+        slot6_rpy = LaunchConfiguration('slot6_rpy').perform(context)
+        slot7_rpy = LaunchConfiguration('slot7_rpy').perform(context)
 
-  model_file = os.path.join(
-      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
-  print("spawning UAV file: " + model_file)
+        payloads = {
+            'slot0': {'sensor': slot0_payload, 'rpy': slot0_rpy},
+            'slot1': {'sensor': slot1_payload, 'rpy': slot1_rpy},
+            'slot2': {'sensor': slot2_payload, 'rpy': slot2_rpy},
+            'slot3': {'sensor': slot3_payload, 'rpy': slot3_rpy},
+            'slot4': {'sensor': slot4_payload, 'rpy': slot4_rpy},
+            'slot5': {'sensor': slot5_payload, 'rpy': slot5_rpy},
+            'slot6': {'sensor': slot6_payload, 'rpy': slot6_rpy},
+            'slot7': {'sensor': slot7_payload, 'rpy': slot7_rpy},
+        }
 
-  # run erb
-  command = ['erb']
-  command.append(f'name={model_name}')
-  command.append(f'capacity={battery_capacity}')
+        model.set_flight_time(flight_time)
+        model.set_payload(payloads)
+    elif model.isUSV():
+        model.set_wavefield(world_name)
 
-  if slot0_payload: command.append(f'slot0={slot0_payload}')
-  if slot0_rpy: command.append(f'slot0_pos={slot0_rpy}')
-  if slot1_payload: command.append(f'slot1={slot1_payload}')
-  if slot1_rpy: command.append(f'slot1_pos={slot1_rpy}')
-  if slot2_payload: command.append(f'slot2={slot2_payload}')
-  if slot2_rpy: command.append(f'slot2_pos={slot2_rpy}')
-  if slot3_payload: command.append(f'slot3={slot3_payload}')
-  if slot3_rpy: command.append(f'slot3_pos={slot3_rpy}')
-  if slot4_payload: command.append(f'slot4={slot4_payload}')
-  if slot4_rpy: command.append(f'slot4_pos={slot4_rpy}')
-  if slot5_payload: command.append(f'slot5={slot5_payload}')
-  if slot5_rpy: command.append(f'slot5_pos={slot5_rpy}')
-  if slot6_payload: command.append(f'slot6={slot6_payload}')
-  if slot6_rpy: command.append(f'slot6_pos={slot6_rpy}')
-  if slot7_payload: command.append(f'slot7={slot7_payload}')
-  if slot7_rpy: command.append(f'slot7_pos={slot7_rpy}')
+    ignition_spawn_entity = Node(
+        package='ros_ign_gazebo',
+        executable='create',
+        output='screen',
+        arguments=model.spawn_args()
+    )
 
-  command.append(model_file)
-  process = subprocess.Popen(command, stdout=subprocess.PIPE)
-  stdout = process.communicate()[0]
-  str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
+    nodes = []
+    bridges = model.bridges(world_name)
 
-  print(command, str_output)
+    if model.isUAV():
+        [payload_bridges, payload_nodes] = model.payload_bridges(world_name)
+        bridges.extend(payload_bridges)
+        nodes.extend(payload_nodes)
 
-  ignition_spawn_entity = Node(
-      package='ros_ign_gazebo',
-      executable='create',
-      output='screen',
-      arguments=['-string', str_output,
-                 '-name', model_name,
-                 '-allow_renaming', 'false',
-                 '-x', x_pos,
-                 '-y', y_pos,
-                 '-z', z_pos,
-                 '-R', r_rot,
-                 '-P', p_rot,
-                 '-Y', y_rot,
-                ],
-  )
+    nodes.append(Node(
+        package='ros_ign_bridge',
+        executable='parameter_bridge',
+        output='screen',
+        arguments=[bridge.argument() for bridge in bridges],
+        remappings=[bridge.remapping() for bridge in bridges],
+    ))
 
-  sensor_prefix = f'/world/{world_name}/model/{model_name}/link/{link_name}/sensor'
+    # tf broadcaster
+    nodes.append(Node(
+        package='mbzirc_ros',
+        executable='pose_tf_broadcaster',
+        output='screen',
+        parameters=[
+            {'world_frame': world_name}
+        ]
+    ))
 
-  bridges = []
-  payloads = []
-
-  # IMU
-  bridges.append(Bridge(
-      ign_topic=f'{sensor_prefix}/imu_sensor/imu',
-      ros_topic='imu/data',
-      ign_type='ignition.msgs.IMU',
-      ros_type='sensor_msgs/msg/Imu',
-      direction=BridgeDirection.IGN_TO_ROS))
-
-  # magnetometer
-  bridges.append(Bridge(
-      ign_topic=f'{sensor_prefix}/magnetometer/magnetometer',
-      ros_topic='magnetic_field',
-      ign_type='ignition.msgs.Magnetometer',
-      ros_type='sensor_msgs/msg/MagneticField',
-      direction=BridgeDirection.IGN_TO_ROS))
-
-  # air pressure
-  bridges.append(Bridge(
-      ign_topic=f'{sensor_prefix}/air_pressure/air_pressure',
-      ros_topic='air_pressure',
-      ign_type='ignition.msgs.FluidPressure',
-      ros_type='sensor_msgs/msg/FluidPressure',
-      direction=BridgeDirection.IGN_TO_ROS))
-
-  check = [slot0_payload, slot1_payload, slot2_payload, slot3_payload,
-           slot4_payload, slot5_payload, slot6_payload, slot7_payload]
-
-  for idx in range(0, 8):
-      payload = check[idx]
-      if len(payload) == 0:
-          continue
-      slot_prefix = f'/world/{world_name}/model/{model_name}/model/sensor_{idx}/link/sensor_link/sensor'
-
-      if payload in ['mbzirc_vga_camera', 'mbzirc_hd_camera']:
-          bridges.append(Bridge(
-              ign_topic=f'{slot_prefix}/camera/image',
-              ros_topic=f'slot{idx}/image_raw',
-              ign_type='ignition.msgs.Image',
-              ros_type='sensor_msgs/msg/Image',
-              direction=BridgeDirection.IGN_TO_ROS))
-
-          bridges.append(Bridge(
-              ign_topic=f'{slot_prefix}/camera/camera_info',
-              ros_topic=f'slot{idx}/camera_info',
-              ign_type='ignition.msgs.CameraInfo',
-              ros_type='sensor_msgs/msg/CameraInfo',
-              direction=BridgeDirection.IGN_TO_ROS))
-
-          # camera optical frame publisher
-          ros2_camera_optical_frame_publisher = Node(
-              package='mbzirc_ros',
-              executable='optical_frame_publisher',
-              arguments=['1'],
-              remappings=[('input/image',  f'slot{idx}/image_raw'),
-                          ('output/image', f'slot{idx}/optical/image_raw'),
-                          ('input/camera_info', f'slot{idx}/camera_info'),
-                          ('output/camera_info', f'slot{idx}/optical/camera_info'),
-                         ]
-          )
-          payloads.append(ros2_camera_optical_frame_publisher)
-
-      elif payload in ['mbzirc_planar_lidar', 'mbzirc_3d_lidar']:
-          bridges.append(Bridge(
-              ign_topic=f'{slot_prefix}/lidar/scan/points',
-              ros_topic=f'slot{idx}/points',
-              ign_type='ignition.msgs.PointCloudPacked',
-              ros_type='sensor_msgs/msg/PointCloud2',
-              direction=BridgeDirection.IGN_TO_ROS))
-
-      elif payload in ['mbzirc_rgbd_camera']:
-          bridges.append(Bridge(
-              ign_topic=f'{slot_prefix}/camera/image',
-              ros_topic=f'slot{idx}/image_raw',
-              ign_type='ignition.msgs.Image',
-              ros_type='sensor_msgs/msg/Image',
-              direction=BridgeDirection.IGN_TO_ROS))
-
-          bridges.append(Bridge(
-              ign_topic=f'{slot_prefix}/camera/depth_image',
-              ros_topic=f'slot{idx}/depth',
-              ign_type='ignition.msgs.Image',
-              ros_type='sensor_msgs/msg/Image',
-              direction=BridgeDirection.IGN_TO_ROS))
-
-          bridges.append(Bridge(
-              ign_topic=f'{slot_prefix}/camera/camera_info',
-              ros_topic=f'slot{idx}/camera_info',
-              ign_type='ignition.msgs.CameraInfo',
-              ros_type='sensor_msgs/msg/CameraInfo',
-              direction=BridgeDirection.IGN_TO_ROS))
-
-          bridges.append(Bridge(
-              ign_topic=f'{slot_prefix}/camera/points',
-              ros_topic=f'slot{idx}/points',
-              ign_type='ignition.msgs.PointCloudPacked',
-              ros_type='sensor_msgs/msg/PointCloud2',
-              direction=BridgeDirection.IGN_TO_ROS))
-
-          image_optical_frame = Node(
-              package='mbzirc_ros',
-              executable='optical_frame_publisher',
-              arguments=['1'],
-              remappings=[('input/image',  f'slot{idx}/image_raw'),
-                          ('output/image', f'slot{idx}/optical/image_raw'),
-                          ('input/camera_info', f'slot{idx}/camera_info'),
-                          ('output/camera_info', f'slot{idx}/optical/camera_info'),
-                         ]
-          )
-
-          depth_image_optical_frame = Node(
-              package='mbzirc_ros',
-              executable='optical_frame_publisher',
-              arguments=['0'],
-              remappings=[('input/image',  f'slot{idx}/depth'),
-                          ('output/image', f'slot{idx}/optical/depth'),
-                         ]
-          )
-
-          payloads.append(image_optical_frame)
-          payloads.append(depth_image_optical_frame)
-      else:
-          print('Unknown payload: ', payload)
-
-  if model_path == "mbzirc_fixed_wing":
-    # Left Flap
-    bridges.append(Bridge(
-        ign_topic=f'/model/{model_name}/joint/left_flap_joint/cmd_pos',
-        ros_topic='cmd/left_flap',
-        ign_type='ignition.msgs.Double',
-        ros_type='std_msgs/msg/Float64',
-        direction=BridgeDirection.ROS_TO_IGN))
-
-    # Right Flap
-    bridges.append(Bridge(
-        ign_topic=f'/model/{model_name}/joint/right_flap_joint/cmd_pos',
-        ros_topic='cmd/right_flap',
-        ign_type='ignition.msgs.Double',
-        ros_type='std_msgs/msg/Float64',
-        direction=BridgeDirection.ROS_TO_IGN))
-
-    # Propeller
-    bridges.append(Bridge(
-        ign_topic=f'/model/{model_name}/joint/propeller_joint/cmd_pos',
-        ros_topic='cmd/motor_speed',
-        ign_type='ignition.msgs.Double',
-        ros_type='std_msgs/msg/Float64',
-        direction=BridgeDirection.ROS_TO_IGN))
-  else:
-    # twist
-    bridges.append(Bridge(
-        ign_topic=f'/model/{model_name}/cmd_vel',
-        ros_topic='cmd_vel',
-        ign_type='ignition.msgs.Twist',
-        ros_type='geometry_msgs/msg/Twist',
-        direction=BridgeDirection.ROS_TO_IGN))
-
-  # pose
-  bridges.append(Bridge(
-      ign_topic=f'/model/{model_name}/pose',
-      ros_topic='pose',
-      ign_type='ignition.msgs.Pose_V',
-      ros_type='tf2_msgs/msg/TFMessage',
-      direction=BridgeDirection.IGN_TO_ROS))
-
-  # pose static
-  bridges.append(Bridge(
-      ign_topic=f'/model/{model_name}/pose_static',
-      ros_topic='pose_static',
-      ign_type='ignition.msgs.Pose_V',
-      ros_type='tf2_msgs/msg/TFMessage',
-      direction=BridgeDirection.IGN_TO_ROS))
-
-  # tf broadcaster
-  ros2_tf_broadcaster = Node(
-      package='mbzirc_ros',
-      executable='pose_tf_broadcaster',
-      output='screen',
-      parameters=[
-          {"world_frame": world_name}
-      ]
-  )
-
-  model_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[bridge.argument() for bridge in bridges],
-      remappings=[bridge.remapping() for bridge in bridges],
-  )
-
-  group_action = GroupAction([
-    PushRosNamespace(model_name),
-    ros2_tf_broadcaster,
-    model_bridge,
-    *payloads
-  ])
-
-  handler = RegisterEventHandler(
-      event_handler=OnProcessExit(
-          target_action=ignition_spawn_entity,
-          on_exit=[group_action],
-      ))
-
-  return [ignition_spawn_entity, handler]
-
-def spawn_usv(context, model_path, world_name, model_name, link_name):
-
-  x_pos = LaunchConfiguration('x').perform(context)
-  y_pos = LaunchConfiguration('y').perform(context)
-  z_pos = LaunchConfiguration('z').perform(context)
-  r_rot = LaunchConfiguration('R').perform(context)
-  p_rot = LaunchConfiguration('P').perform(context)
-  y_rot = LaunchConfiguration('Y').perform(context)
-
-  wavefield_size = {'simple_demo': 1000, 'coast': 6000}
-
-  model_file = os.path.join(
-      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.sdf.erb')
-  model_output_file = os.path.join(
-      get_package_share_directory('mbzirc_ign'), 'models', model_path, 'model.tmp.sdf')
-
-  print("spawning USV file: " + model_file)
-
-  # run erb
-  command = ['erb']
-  command.append(f'name={model_name}')
-
-  if world_name in wavefield_size:
-    command.append(f'wavefieldSize={wavefield_size[world_name]}')
-  else:
-    print(f'Wavefield size not found for world_name')
-  command.append(model_file)
-
-  process = subprocess.Popen(command, stdout=subprocess.PIPE)
-  stdout = process.communicate()[0]
-  str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
-  print(command, str_output)
-
-  ignition_spawn_entity = Node(
-      package='ros_ign_gazebo',
-      executable='create',
-      output='screen',
-      arguments=['-string', str_output,
-                 '-name', model_name,
-                 '-allow_renaming', 'false',
-                 '-x', x_pos,
-                 '-y', y_pos,
-                 '-z', z_pos,
-                 '-R', r_rot,
-                 '-P', p_rot,
-                 '-Y', y_rot,
-                ],
-  )
-
-  bridges = []
-
-  # thrust cmd
-  bridges.append(Bridge(
-      ign_topic=f'/model/{model_name}/joint/left_engine_propeller_joint/cmd_thrust',
-      ros_topic='left/thrust/cmd_thrust',
-      ign_type='ignition.msgs.Double',
-      ros_type='std_msgs/msg/Float64',
-      direction=BridgeDirection.ROS_TO_IGN))
-
-  bridges.append(Bridge(
-      ign_topic=f'/model/{model_name}/joint/right_engine_propeller_joint/cmd_thrust',
-      ros_topic='right/thrust/cmd_thrust',
-      ign_type='ignition.msgs.Double',
-      ros_type='std_msgs/msg/Float64',
-      direction=BridgeDirection.ROS_TO_IGN))
-
-  # thrust joint pos cmd
-  # ROS naming policy indicates that first character of a name must be an alpha
-  # character. In the case below, the ign topic has the joint index 0 as the
-  # first char so the following topics fail to be created on the ROS end
-  # left_joint_topic = '/model/' + model_name + '/joint/left_chasis_engine_joint/0/cmd_pos'
-  # right_joint_topic = '/model/' + model_name + '/joint/right_chasis_engine_joint/0/cmd_pos'
-  # For now, use erb to generate unique topic names in model.sdf.erb
-
-  bridges.append(Bridge(
-      ign_topic=f'{model_name}/left/thruster/joint/cmd_pos',
-      ros_topic='left/thrust/joint/cmd_pos',
-      ign_type='ignition.msgs.Double',
-      ros_type='std_msgs/msg/Float64',
-      direction=BridgeDirection.ROS_TO_IGN))
-
-  bridges.append(Bridge(
-      ign_topic=f'{model_name}/right/thruster/joint/cmd_pos',
-      ros_topic='right/thrust/joint/cmd_pos',
-      ign_type='ignition.msgs.Double',
-      ros_type='std_msgs/msg/Float64',
-      direction=BridgeDirection.ROS_TO_IGN))
-
-  sensor_prefix = f'/world/{world_name}/model/{model_name}/link/{link_name}/sensor'
-
-  # IMU
-  bridges.append(Bridge(
-      ign_topic=f'{sensor_prefix}/imu_sensor/imu',
-      ros_topic='imu/data',
-      ign_type='ignition.msgs.IMU',
-      ros_type='sensor_msgs/msg/Imu',
-      direction=BridgeDirection.IGN_TO_ROS))
-
-  # pose
-  bridges.append(Bridge(
-      ign_topic=f'/model/{model_name}/pose',
-      ros_topic='pose',
-      ign_type='ignition.msgs.Pose_V',
-      ros_type='tf2_msgs/msg/TFMessage',
-      direction=BridgeDirection.IGN_TO_ROS))
-
-  # pose static
-  bridges.append(Bridge(
-      ign_topic=f'/model/{model_name}/pose_static',
-      ros_topic='pose_static',
-      ign_type='ignition.msgs.Pose_V',
-      ros_type='tf2_msgs/msg/TFMessage',
-      direction=BridgeDirection.IGN_TO_ROS))
-
-  # tf broadcaster
-  ros2_tf_broadcaster = Node(
-      package='mbzirc_ros',
-      executable='pose_tf_broadcaster',
-      output='screen',
-      parameters=[
-          {"world_frame": world_name}
-      ]
-  )
-
-  model_bridge = Node(
-      package='ros_ign_bridge',
-      executable='parameter_bridge',
-      output='screen',
-      arguments=[bridge.argument() for bridge in bridges],
-      remappings=[bridge.remapping() for bridge in bridges],
-  )
-
-  group_action = GroupAction([
+    group_action = GroupAction([
         PushRosNamespace(model_name),
-        model_bridge,
-        ros2_tf_broadcaster,
-  ])
+        *nodes
+    ])
 
-  handler = RegisterEventHandler(
-      event_handler=OnProcessExit(
-          target_action=ignition_spawn_entity,
-          on_exit=[group_action],
-      ))
-
-  return [ignition_spawn_entity, handler]
+    handler = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=ignition_spawn_entity,
+            on_exit=[group_action],
+        )
+    )
+    return [ignition_spawn_entity, handler]
 
 
 def launch(context, *args, **kwargs):
-  robot_name = LaunchConfiguration('name').perform(context)
-  model_path = LaunchConfiguration('model').perform(context)
-  robot_type = LaunchConfiguration('type').perform(context)
-  world_name = LaunchConfiguration('world').perform(context)
-  if robot_type == 'uav':
-      link_name = 'base_link'
-      return spawn_uav(context, model_path, world_name, robot_name, link_name)
-  elif robot_type == 'usv':
-      link_name = 'base_link'
-      return spawn_usv(context, model_path, world_name, robot_name, link_name)
+    robot_name = LaunchConfiguration('name').perform(context)
+    model_type = LaunchConfiguration('model').perform(context)
+    world_name = LaunchConfiguration('world').perform(context)
 
+    x_pos = LaunchConfiguration('x').perform(context)
+    y_pos = LaunchConfiguration('y').perform(context)
+    z_pos = LaunchConfiguration('z').perform(context)
+    r_rot = LaunchConfiguration('R').perform(context)
+    p_rot = LaunchConfiguration('P').perform(context)
+    y_rot = LaunchConfiguration('Y').perform(context)
+
+    position = [x_pos, y_pos, z_pos, r_rot, p_rot, y_rot]
+    return spawn(context, model_type, world_name, robot_name, position)
 
 
 def generate_launch_description():
@@ -502,10 +145,6 @@ def generate_launch_description():
             'model',
             default_value='',
             description='SDF model to spawn'),
-        DeclareLaunchArgument(
-            'type',
-            default_value='uav',
-            description="type of model to spawn: ['uav', 'usv', 'vessel']"),
         DeclareLaunchArgument(
             'x',
             default_value='0',
@@ -530,12 +169,10 @@ def generate_launch_description():
             'Y',
             default_value='0',
             description='Y rotation to spawn'),
-
         DeclareLaunchArgument(
             'flightTime',
             default_value='10',
             description='Battery flight time in minutes (only for UAVs)'),
-
         DeclareLaunchArgument(
             'slot0',
             default_value='',
@@ -601,5 +238,5 @@ def generate_launch_description():
             default_value='0 0 0',
             description='Roll, Pitch, Yaw in degrees of payload mount'),
         # launch setup
-        OpaqueFunction(function = launch)
+        OpaqueFunction(function=launch)
     ])
