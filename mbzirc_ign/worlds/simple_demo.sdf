@@ -38,6 +38,10 @@
       name="ignition::gazebo::systems::Magnetometer">
     </plugin>
     <plugin
+      filename="ignition-gazebo-forcetorque-system"
+      name="ignition::gazebo::systems::ForceTorque">
+    </plugin>
+    <plugin
       filename="ignition-gazebo-particle-emitter2-system"
       name="ignition::gazebo::systems::ParticleEmitter2">
     </plugin>

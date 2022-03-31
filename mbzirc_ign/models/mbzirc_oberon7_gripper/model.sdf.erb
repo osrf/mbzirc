@@ -59,6 +59,10 @@ end
           <spring_stiffness>0</spring_stiffness>
         </dynamics>
       </axis>
+      <sensor name="force_torque" type="force_torque">
+        <update_rate>10</update_rate>
+        <topic><%= $topic_prefix %>/gripper/finger_right/forcetorque</topic>
+      </sensor>
     </joint>
     <link name='finger_left'>
       <pose relative_to='finger_left_joint'>0 0 0 0 0 0</pose>
@@ -199,6 +203,10 @@ end
           <spring_stiffness>0</spring_stiffness>
         </dynamics>
       </axis>
+      <sensor name="force_torque" type="force_torque">
+        <update_rate>10</update_rate>
+        <topic><%= $topic_prefix %>/gripper/finger_left/forcetorque</topic>
+      </sensor>
     </joint>
     <link name='finger_right'>
       <pose relative_to='finger_right_joint'>0 0 0 0 0 0</pose>

@@ -80,8 +80,7 @@ def spawn(context, model_type, world_name, model_name, position):
         arguments=model.spawn_args()
     )
 
-    nodes = []
-    bridges = model.bridges(world_name)
+    [bridges, nodes] = model.bridges(world_name)
 
     if model.isUAV():
         [payload_bridges, payload_nodes] = model.payload_bridges(world_name)
