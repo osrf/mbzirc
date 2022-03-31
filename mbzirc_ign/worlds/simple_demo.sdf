@@ -255,9 +255,9 @@
 
     <include>
       <name>large_grey_box</name>
-      <pose relative_to="Vessel A">0.08 -0.64 0.2 0 0 -0.3</pose>
+      <pose relative_to="Vessel A">0.08 -0.6 0.2 0 0 -0.3</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
       </uri>
     </include>
 
@@ -265,7 +265,7 @@
       <name>large_grey_box_a</name>
       <pose relative_to="Vessel A">0.7 0.23 0.2 0 0 0.2</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
       </uri>
     </include>
     -->
@@ -402,8 +402,8 @@
         <!--
         <small_object>small_blue_box</small_object>
         <small_object>small_blue_box_a</small_object>
-        <large_object>large_grey_box</large_object>
-        <large_object>large_grey_box_a</large_object>
+        <large_object>large_dry_box</large_object>
+        <large_object>large_dry_box_a</large_object>
         -->
         <small_object>small_box_a</small_object>
         <large_object>large_box_a</large_object>
