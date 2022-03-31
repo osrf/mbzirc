@@ -20,8 +20,9 @@ class TestModel(unittest.TestCase):
         args = model.spawn_args()
         self.assertEqual(len(args), 18)
 
-        bridges = model.bridges('test_world_name')
+        [bridges, nodes] = model.bridges('test_world_name')
         self.assertEqual(len(bridges), 6)
+        self.assertEqual(len(nodes), 0)
 
         [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
 
@@ -40,8 +41,9 @@ class TestModel(unittest.TestCase):
         args = model.spawn_args()
         self.assertEqual(len(args), 18)
 
-        bridges = model.bridges('test_world_name')
+        [bridges, nodes] = model.bridges('test_world_name')
         self.assertEqual(len(bridges), 8)
+        self.assertEqual(len(nodes), 0)
 
         [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
 
@@ -61,8 +63,9 @@ class TestModel(unittest.TestCase):
         args = model.spawn_args()
         self.assertEqual(len(args), 18)
 
-        bridges = model.bridges('test_world_name')
+        [bridges, nodes] = model.bridges('test_world_name')
         self.assertEqual(len(bridges), 7)
+        self.assertEqual(len(nodes), 0)
 
     def test_single_usv_with_arm_gripper_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
@@ -77,8 +80,9 @@ class TestModel(unittest.TestCase):
         args = model.spawn_args()
         self.assertEqual(len(args), 18)
 
-        bridges = model.bridges('test_world_name')
-        self.assertEqual(len(bridges), 17)
+        [bridges, nodes] = model.bridges('test_world_name')
+        self.assertEqual(len(bridges), 21)
+        self.assertEqual(len(nodes), 1)
 
     def test_multiple_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
