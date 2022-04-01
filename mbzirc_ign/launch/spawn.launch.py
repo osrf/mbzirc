@@ -29,43 +29,49 @@ from mbzirc_ign.model import Model
 def spawn(context, model_type, world_name, model_name, position):
     model = Model(model_name, model_type, position)
 
+    slot0_payload = LaunchConfiguration('slot0').perform(context)
+    slot1_payload = LaunchConfiguration('slot1').perform(context)
+    slot2_payload = LaunchConfiguration('slot2').perform(context)
+    slot3_payload = LaunchConfiguration('slot3').perform(context)
+
+    slot0_rpy = LaunchConfiguration('slot0_rpy').perform(context)
+    slot1_rpy = LaunchConfiguration('slot1_rpy').perform(context)
+    slot2_rpy = LaunchConfiguration('slot2_rpy').perform(context)
+    slot3_rpy = LaunchConfiguration('slot3_rpy').perform(context)
+
+    payloads = {
+        'slot0': {'sensor': slot0_payload, 'rpy': slot0_rpy},
+        'slot1': {'sensor': slot1_payload, 'rpy': slot1_rpy},
+        'slot2': {'sensor': slot2_payload, 'rpy': slot2_rpy},
+        'slot3': {'sensor': slot3_payload, 'rpy': slot3_rpy},
+    }
+
     if model.isUAV():
         # take flight time in minutes
         flight_time = LaunchConfiguration('flightTime').perform(context)
 
-        slot0_payload = LaunchConfiguration('slot0').perform(context)
-        slot1_payload = LaunchConfiguration('slot1').perform(context)
-        slot2_payload = LaunchConfiguration('slot2').perform(context)
-        slot3_payload = LaunchConfiguration('slot3').perform(context)
         slot4_payload = LaunchConfiguration('slot4').perform(context)
         slot5_payload = LaunchConfiguration('slot5').perform(context)
         slot6_payload = LaunchConfiguration('slot6').perform(context)
         slot7_payload = LaunchConfiguration('slot7').perform(context)
 
-        slot0_rpy = LaunchConfiguration('slot0_rpy').perform(context)
-        slot1_rpy = LaunchConfiguration('slot1_rpy').perform(context)
-        slot2_rpy = LaunchConfiguration('slot2_rpy').perform(context)
-        slot3_rpy = LaunchConfiguration('slot3_rpy').perform(context)
         slot4_rpy = LaunchConfiguration('slot4_rpy').perform(context)
         slot5_rpy = LaunchConfiguration('slot5_rpy').perform(context)
         slot6_rpy = LaunchConfiguration('slot6_rpy').perform(context)
         slot7_rpy = LaunchConfiguration('slot7_rpy').perform(context)
 
-        payloads = {
-            'slot0': {'sensor': slot0_payload, 'rpy': slot0_rpy},
-            'slot1': {'sensor': slot1_payload, 'rpy': slot1_rpy},
-            'slot2': {'sensor': slot2_payload, 'rpy': slot2_rpy},
-            'slot3': {'sensor': slot3_payload, 'rpy': slot3_rpy},
+        payloads.update({
             'slot4': {'sensor': slot4_payload, 'rpy': slot4_rpy},
             'slot5': {'sensor': slot5_payload, 'rpy': slot5_rpy},
             'slot6': {'sensor': slot6_payload, 'rpy': slot6_rpy},
             'slot7': {'sensor': slot7_payload, 'rpy': slot7_rpy},
-        }
+        })
 
         model.set_flight_time(flight_time)
-        model.set_payload(payloads)
     elif model.isUSV():
         model.set_wavefield(world_name)
+
+    model.set_payload(payloads)
 
     ignition_spawn_entity = Node(
         package='ros_ign_gazebo',
@@ -77,10 +83,9 @@ def spawn(context, model_type, world_name, model_name, position):
     nodes = []
     bridges = model.bridges(world_name)
 
-    if model.isUAV():
-        [payload_bridges, payload_nodes] = model.payload_bridges(world_name)
-        bridges.extend(payload_bridges)
-        nodes.extend(payload_nodes)
+    [payload_bridges, payload_nodes] = model.payload_bridges(world_name)
+    bridges.extend(payload_bridges)
+    nodes.extend(payload_nodes)
 
     nodes.append(Node(
         package='ros_ign_bridge',

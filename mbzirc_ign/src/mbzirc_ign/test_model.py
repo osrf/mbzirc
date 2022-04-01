@@ -64,6 +64,11 @@ class TestModel(unittest.TestCase):
         bridges = model.bridges('test_world_name')
         self.assertEqual(len(bridges), 7)
 
+        [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
+
+        self.assertEqual(len(payload_bridges), 4)
+        self.assertEqual(len(payload_nodes), 1)
+
     def test_multiple_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
                               'config', 'coast_config.yaml')
