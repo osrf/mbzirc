@@ -67,6 +67,11 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(bridges), 7)
         self.assertEqual(len(nodes), 0)
 
+        [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
+
+        self.assertEqual(len(payload_bridges), 4)
+        self.assertEqual(len(payload_nodes), 1)
+
     def test_single_usv_with_arm_gripper_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
                               'config', 'single_usv_with_arm_gripper_config.yaml')

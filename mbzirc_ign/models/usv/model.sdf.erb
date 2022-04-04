@@ -28,6 +28,43 @@ end
   max_velocity_knots = 8 # Maximum velocity in knots. Taken from the USV specification.
   max_velocity_mps = max_velocity_knots * 0.5144 # convert knots to m/s
   max_total_thrust = (x_u + x_uu * max_velocity_mps) * max_velocity_mps
+
+$slot0_payload = nil
+$slot0_rpy = '0 0 0'
+
+$slot1_payload = nil
+$slot1_rpy = '0 0 0'
+
+$slot2_payload = nil
+$slot2_rpy = '0 0 0'
+
+$slot3_payload = nil
+$slot3_rpy = '0 0 0'
+
+if defined?(slot0)
+  $slot0_payload = slot0
+end
+if defined?(slot0_pos)
+  $slot0_rpy = slot0_pos
+end
+if defined?(slot1)
+  $slot1_payload = slot1
+end
+if defined?(slot1_pos)
+  $slot1_rpy = slot1_pos
+end
+if defined?(slot2)
+  $slot2_payload = slot2
+end
+if defined?(slot2_pos)
+  $slot2_rpy = slot2_pos
+end
+if defined?(slot3)
+  $slot3_payload = slot3
+end
+if defined?(slot3_pos)
+  $slot3_rpy = slot3_pos
+end
 %>
 
 <?xml version="1.0"?>
@@ -52,6 +89,87 @@ end
   <joint name="arm_slot_0_joint" type="fixed">
     <parent>arm_slot_0</parent>
     <child>arm::arm_mount_point</child>
+  </joint>
+  <% end %>
+
+  <% if $slot0_payload != nil%>
+  <!-- Payload slot0 -->
+  <include>
+    <name>sensor_0</name>
+    <uri>model://sensors/<%= $slot0_payload%></uri>
+    <placement_frame>mount_point</placement_frame>
+    <pose relative_to="slot_0" degrees="true">
+      0 0 0 <%= $slot0_rpy%>
+    </pose>
+  </include>
+
+  <joint name="slot_0_joint" type="fixed">
+    <parent>slot_0</parent>
+    <child>sensor_0::mount_point</child>
+  </joint>
+  <% end %>
+  <% if $slot1_payload != nil%>
+  <!-- Payload slot1 -->
+  <include>
+    <name>sensor_1</name>
+    <uri>model://sensors/<%= $slot1_payload%></uri>
+    <placement_frame>mount_point</placement_frame>
+    <pose relative_to="slot_1" degrees="true">
+      0 0 0 <%= $slot1_rpy%>
+    </pose>
+  </include>
+
+  <joint name="slot_1_joint" type="fixed">
+    <parent>slot_1</parent>
+    <child>sensor_1::mount_point</child>
+  </joint>
+  <% end %>
+  <% if $slot2_payload != nil%>
+  <!-- Payload slot2 -->
+  <include>
+    <name>sensor_2</name>
+    <uri>model://sensors/<%= $slot2_payload%></uri>
+    <placement_frame>mount_point</placement_frame>
+    <pose relative_to="slot_2" degrees="true">
+      0 0 0 <%= $slot2_rpy%>
+    </pose>
+  </include>
+
+  <joint name="slot_2_joint" type="fixed">
+    <parent>slot_2</parent>
+    <child>sensor_2::mount_point</child>
+  </joint>
+  <% end %>
+  <% if $slot3_payload != nil%>
+  <!-- Payload slot3 -->
+  <include>
+    <name>sensor_3</name>
+    <uri>model://sensors/<%= $slot3_payload%></uri>
+    <placement_frame>mount_point</placement_frame>
+    <pose relative_to="slot_3" degrees="true">
+      0 0 0 <%= $slot3_rpy%>
+    </pose>
+  </include>
+
+  <joint name="slot_3_joint" type="fixed">
+    <parent>slot_3</parent>
+    <child>sensor_3::mount_point</child>
+  </joint>
+  <% end %>
+  <% if $slot4_payload != nil%>
+  <!-- Payload slot4 -->
+  <include>
+    <name>sensor_4</name>
+    <uri>model://sensors/<%= $slot4_payload%></uri>
+    <placement_frame>mount_point</placement_frame>
+    <pose relative_to="slot_4" degrees="true">
+      0 0 0 <%= $slot4_rpy%>
+    </pose>
+  </include>
+
+  <joint name="slot_4_joint" type="fixed">
+    <parent>slot_4</parent>
+    <child>sensor_4::mount_point</child>
   </joint>
   <% end %>
 

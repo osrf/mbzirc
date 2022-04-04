@@ -247,20 +247,20 @@ class Model:
         command = ['erb']
         command.append(f'name={self.model_name}')
 
+        for (slot, payload) in self.payload.items():
+            if payload['sensor'] and payload['sensor'] != 'None':
+                command.append(f"{slot}={payload['sensor']}")
+            if 'rpy' in payload:
+                if type(payload['rpy']) is str:
+                    r, p, y = payload['rpy'].split(' ')
+                else:
+                    r, p, y = payload['rpy']
+                command.append(f'{slot}_pos={r} {p} {y}')
+
         if self.model_type in UAVS:
             if self.battery_capacity == 0:
                 raise RuntimeError('Battery Capacity is zero, was flight_time set?')
             command.append(f'capacity={self.battery_capacity}')
-
-            for (slot, payload) in self.payload.items():
-                if payload['sensor'] and payload['sensor'] != 'None':
-                    command.append(f"{slot}={payload['sensor']}")
-                if 'rpy' in payload:
-                    if type(payload['rpy']) is str:
-                        r, p, y = payload['rpy'].split(' ')
-                    else:
-                        r, p, y = payload['rpy']
-                    command.append(f'{slot}_pos={r} {p} {y}')
 
         if self.model_type in USVS:
             command.append(f'wavefieldSize={self.wavefield_size}')
