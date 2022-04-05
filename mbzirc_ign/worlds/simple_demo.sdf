@@ -435,13 +435,8 @@
       </geofence>
       <target>
         <vessel>Vessel A</vessel>
-        <!--
-        <small_object>small_blue_box</small_object>
-        <small_object>small_blue_box_a</small_object>
-        -->
         <small_object>small_box_a</small_object>
         <small_object>small_box_a_duplicate</small_object>
-
         <large_object>large_dry_box_a</large_object>
         <large_object>large_dry_box_a_duplicate</large_object>
       </target>
