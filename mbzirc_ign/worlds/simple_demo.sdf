@@ -236,7 +236,7 @@
       </plugin>
     </include>
 
-    <!--
+    <!-- uncomment when small blue box switches to simple colliders
     <include>
       <name>small_blue_box</name>
       <pose relative_to="Vessel A">-0.14 0.04 0.2 0 0 1.2</pose>
@@ -252,26 +252,26 @@
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
     </include>
+    -->
 
     <include>
-      <name>large_grey_box</name>
-      <pose relative_to="Vessel A">0.08 -0.6 0.2 0 0 -0.3</pose>
+      <name>large_dry_box_a</name>
+      <pose relative_to="Vessel A">0.08 -0.59 0.2 0 0 -0.3</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
       </uri>
     </include>
 
     <include>
-      <name>large_grey_box_a</name>
+      <name>large_dry_box_a_duplicate</name>
       <pose relative_to="Vessel A">0.7 0.23 0.2 0 0 0.2</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
       </uri>
     </include>
-    -->
 
     <model name="small_box_a">
-      <pose>24 26.5 0.5 0 0 0</pose>
+      <pose relative_to="Vessel A">-0.14 0.04 0.2 0 0 1.2</pose>
       <link name="link">
         <inertial>
           <mass>1</mass>
@@ -304,6 +304,41 @@
       </link>
     </model>
 
+    <model name="small_box_a_duplicate">
+      <pose relative_to="Vessel A">-1.28 0.23 0.2 0 0 1</pose>
+      <link name="link">
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+          <ixx>0.0066667</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.0066667</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.0066667</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 0 1</diffuse>
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+<!--
     <model name="large_box_a">
       <pose>24.9 24.85 0.65 0 0 0</pose>
       <link name="link">
@@ -337,6 +372,7 @@
         </collision>
       </link>
     </model>
+-->
 
     <wind>
       <linear_velocity>0.3 0 0</linear_velocity>
@@ -402,11 +438,12 @@
         <!--
         <small_object>small_blue_box</small_object>
         <small_object>small_blue_box_a</small_object>
-        <large_object>large_dry_box</large_object>
-        <large_object>large_dry_box_a</large_object>
         -->
         <small_object>small_box_a</small_object>
-        <large_object>large_box_a</large_object>
+        <small_object>small_box_a_duplicate</small_object>
+
+        <large_object>large_dry_box_a</large_object>
+        <large_object>large_dry_box_a_duplicate</large_object>
       </target>
     </plugin>
 
