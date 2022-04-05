@@ -293,7 +293,7 @@ void FixedWingControllerPlugin::PreUpdate(
     this->dataPtr->thruster.Publish(thrusterPower);
 
     /// Detect if sufficient lift is achieved
-    if(linVel > 20) {
+    if(linVel > this->dataPtr->takeOffSpeed) {
       this->dataPtr->targetVelocity = this->dataPtr->takeOffPower;
       this->dataPtr->targetPitch = 0.1;
       this->dataPtr->mode = FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL;
