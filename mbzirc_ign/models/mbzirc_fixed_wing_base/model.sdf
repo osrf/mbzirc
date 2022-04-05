@@ -170,10 +170,42 @@
       </collision>
     </link>
 
-    <!-- This skid is added for launch purposes it makes sure the vehicle is
-    facing slightly upwards-->
-    <link name="skid">
-      <pose>0 -0.3 -0.1 0 0 0</pose>
+    <!-- This skid is added for launch purposes it makes sure the vehicle can 
+      slide-->
+    <link name="front_skid">
+      <pose>0 -0.3 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.00016667</ixx>
+          <ixy>0</ixy>
+          <iyy>0.00016667</iyy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+          <izz>0.00016667</izz>
+        </inertia>
+      </inertial>
+      <!--
+      <visual name="visual">
+        <geometry>
+          <sphere>
+            <radius>0.3</radius>
+          </sphere>
+        </geometry>
+      </visual>
+      -->
+      <collision name="collision">
+        <geometry>
+          <sphere>
+            <radius>0.31</radius>
+          </sphere>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_skid">
+      <pose>-0.6 0 0 0 0 0</pose>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
         <mass>0.1</mass>
@@ -204,10 +236,73 @@
       </collision>
     </link>
 
-    <joint name="skid_joint" type="fixed">
+    <link name="right_skid">
+      <pose>0.6 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.00016667</ixx>
+          <ixy>0</ixy>
+          <iyy>0.00016667</iyy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+          <izz>0.00016667</izz>
+        </inertia>
+      </inertial>
+      <!--
+      <visual name="visual">
+        <geometry>
+          <sphere>
+            <radius>0.3</radius>
+          </sphere>
+        </geometry>
+      </visual>
+      -->
+      <collision name="collision">
+        <geometry>
+          <sphere>
+            <radius>0.3</radius>
+          </sphere>
+        </geometry>
+      </collision>
+    </link>
+
+
+    <joint name="front_skid_joint" type="revolute">
       <parent>wing</parent>
-      <child>skid</child>
+      <child>front_skid</child>
       <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <dynamics>
+          <damping>0.002</damping>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <joint name="left_skid_joint" type="revolute">
+      <parent>wing</parent>
+      <child>left_skid</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <dynamics>
+          <damping>0.002</damping>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <joint name="right_skid_joint" type="revolute">
+      <parent>wing</parent>
+      <child>right_skid</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <dynamics>
+          <damping>0.002</damping>
+        </dynamics>
+      </axis>
     </joint>
 
     <joint name="propeller_joint" type="revolute">

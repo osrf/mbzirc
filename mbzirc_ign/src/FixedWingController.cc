@@ -22,6 +22,7 @@
 #include <ignition/gazebo/Entity.hh>
 #include <ignition/gazebo/Model.hh>
 #include <ignition/gazebo/Util.hh>
+#include <ignition/gazebo/components/AngularVelocity.hh>
 #include <ignition/gazebo/components/LinearVelocity.hh>
 #include <ignition/gazebo/components/Pose.hh>
 
@@ -47,6 +48,20 @@ using namespace gazebo;
 /// itself is underactuated.
 class mbzirc::FixedWingControllerPrivate
 {
+  /// \brief Modes
+  public: enum class Mode
+  {
+    /// \brief Take off mode
+    TAKE_OFF,
+    /// \brief Auto mode
+    ATTITUDE_CONTROL,
+    /// \brief No action
+    NO_ACTION
+  };
+
+  /// \brief Controller mode
+  public: Mode mode{Mode::TAKE_OFF};
+
   /// \brief Roll control PID
   public: math::PID rollControl;
 
@@ -61,6 +76,12 @@ class mbzirc::FixedWingControllerPrivate
 
   /// \brief Target velocity control setpoint
   public: double targetVelocity{0};
+
+  /// \brief  Power required for take-off
+  public: double takeOffPower{1000};
+
+  /// \brief Take off target speed
+  public: double takeOffSpeed{20};
 
   /// \brief Entity to be controlled
   public: Entity entity;
@@ -84,7 +105,7 @@ class mbzirc::FixedWingControllerPrivate
   public: transport::Node::Publisher thruster;
 
   /// Uncomment to enable logging for PID tuning
-  ///public: std::ofstream logFile;
+  public: std::ofstream logFile;
 
   /// \brief Mutex for setpoints
   public: std::mutex mutex;
@@ -167,6 +188,7 @@ void FixedWingControllerPlugin::Configure(
   /// Enable the Pose and Velocity components
   enableComponent<components::WorldPose>(_ecm, this->dataPtr->entity);
   enableComponent<components::WorldLinearVelocity>(_ecm, this->dataPtr->entity);
+  enableComponent<components::WorldAngularVelocity>(_ecm, this->dataPtr->entity);
 
   /// Get Control surface topics
   if (_sdf->HasElement("left_flap"))
@@ -191,7 +213,8 @@ void FixedWingControllerPlugin::Configure(
   }
 
   /// Uncomment for logging
-  ///this->dataPtr->logFile.open("zephyr_controller.csv");
+  igndbg << "initiallized log file" << std::endl;
+  this->dataPtr->logFile.open("zephyr_take_off_controller.csv");
 
   /// Setup Roll PID
   if (_sdf->HasElement("roll_p"))
@@ -244,16 +267,56 @@ void FixedWingControllerPlugin::PreUpdate(
   if (_info.paused)
     return;
 
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
   auto pose = _ecm.Component<components::WorldPose>(this->dataPtr->entity);
   auto rotation = pose->Data().Rot().Euler();
 
   /// For Logging
-  ///auto linVelocityComp =
-  ///  _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
-  ///auto linVel = linVelocityComp->Data().Length();
+  auto linVelocityComp =
+    _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
+  auto linVel = linVelocityComp->Data().Length();
 
-  {
-    std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  auto angVelocityComp =
+    _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
+
+  auto currPitch = rotation.Dot(this->dataPtr->pitchAxis);
+
+  auto cmd = 0.0;
+
+  if (this->dataPtr->mode == FixedWingControllerPrivate::Mode::TAKE_OFF) {
+    /// Goal of takeoff controller is to increase altitude as much as possible.
+    /// Once a basic airspeed is achieved we adjust the angle of attack.
+    /// Fix Thruster power-
+    msgs::Double thrusterPower;
+    thrusterPower.set_data(this->dataPtr->takeOffPower);
+    this->dataPtr->thruster.Publish(thrusterPower);
+
+    /// Detect if sufficient lift is achieved
+    if(linVel > 20) {
+      this->dataPtr->targetVelocity = this->dataPtr->takeOffPower;
+      this->dataPtr->targetPitch = 0.1;
+      this->dataPtr->mode = FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL;
+    }
+    else
+    {
+      /// Keep the Aircraft on the runway till ready to take off
+      auto pitchError = rotation.Dot(this->dataPtr->pitchAxis);
+      auto offset = this->dataPtr->pitchControl.Update(pitchError, _info.dt);
+
+      /// Control aerelions
+      msgs::Double leftFlap;
+      leftFlap.set_data(offset);
+      this->dataPtr->leftFlap.Publish(leftFlap);
+
+      msgs::Double rightFlap;
+      rightFlap.set_data(offset);
+      this->dataPtr->rightFlap.Publish(rightFlap);
+      cmd = offset;
+
+    }
+  }
+  else if (this->dataPtr->mode == FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL){
     /// Fix Thruster power
     msgs::Double thrusterPower;
     thrusterPower.set_data(this->dataPtr->targetVelocity);
@@ -270,11 +333,11 @@ void FixedWingControllerPlugin::PreUpdate(
 
     /// Control aerelions
     msgs::Double leftFlap;
-    leftFlap.set_data(-offset + difference/2);
+    leftFlap.set_data(offset + difference/2);
     this->dataPtr->leftFlap.Publish(leftFlap);
 
     msgs::Double rightFlap;
-    rightFlap.set_data(-offset - difference/2);
+    rightFlap.set_data(offset - difference/2);
     this->dataPtr->rightFlap.Publish(rightFlap);
 
     /// Log data
@@ -282,10 +345,14 @@ void FixedWingControllerPlugin::PreUpdate(
     //this->dataPtr->logFile.flush();
   }
 
+
+  this->dataPtr->logFile << currPitch << "," << linVel << ", " << cmd << "\n";
+  this->dataPtr->logFile.flush();
+
   /// ROS
   rclcpp::spin_some(this->dataPtr->rclNode);
 }
-
+ 
 IGNITION_ADD_PLUGIN(
     mbzirc::FixedWingControllerPlugin,
     ignition::gazebo::System,
