@@ -64,11 +64,18 @@ pid_t launchProcess(std::string &_command)
 /// would like to run.
 class MBZIRCTestFixture : public ::testing::Test
 {
+  public: std::atomic<bool> tornDown{false};
+
   // Documentation inherited
   protected: void SetUp() override
   {
     // Debug Everything
     ignition::common::Console::SetVerbosity(4);
+  }
+
+  protected: void TearDown() override
+  {
+    tornDown = true;
   }
 
   /// \brief Loads the specified world. Note you should call this at the start
@@ -144,11 +151,12 @@ class MBZIRCTestFixture : public ::testing::Test
 
   /// \brief Start the simulation in a background thread and run up to maxIter
   /// steps.
-  public: void StartSim()
+  public: void StartSim(bool _runAsync=true)
   {
     this->fixture->Finalize();
     this->fixture->Server()->Run(true, 1, false);
-    this->fixture->Server()->Run(false, maxIter, false);
+    if(_runAsync)
+      this->fixture->Server()->Run(false, maxIter, false);
   }
 
   /// \brief Launch a launch file with parameters
