@@ -54,13 +54,11 @@ class mbzirc::FixedWingControllerPrivate
     /// \brief Take off mode
     TAKE_OFF,
     /// \brief Auto mode
-    ATTITUDE_CONTROL,
-    /// \brief No action
-    NO_ACTION
+    ATTITUDE_CONTROL
   };
 
   /// \brief Controller mode
-  public: Mode mode{Mode::TAKE_OFF};
+  public: Mode mode{Mode::ATTITUDE_CONTROL};
 
   /// \brief Roll control PID
   public: math::PID rollControl;
@@ -82,6 +80,12 @@ class mbzirc::FixedWingControllerPrivate
 
   /// \brief Take off target speed
   public: double takeOffSpeed{20};
+
+  /// \brief Take off target altitude
+  public: double takeOffAltitude{40};
+
+  /// \brief Take off min pitch
+  public: double takeOffMinPitch{0.1};
 
   /// \brief Entity to be controlled
   public: Entity entity;
@@ -110,51 +114,77 @@ class mbzirc::FixedWingControllerPrivate
   /// \brief Mutex for setpoints
   public: std::mutex mutex;
 
-  /// \brief ROS Node
-  public: rclcpp::Node::SharedPtr rclNode;
-
-  /// \brief Attitude subscriber
-  public: rclcpp::Subscription<mavros_msgs::msg::AttitudeTarget>::SharedPtr
-    attitudeTargetSub;
-
   /// \brief Setup the ros node
   /// \param[in] _name Ros node name
   /// \param[in] _topic Topic to listen on
-  public: void SetupROS(const std::string &_name, const std::string &_topic)
+  public: void SetupROS(std::string _name, std::string _topic)
   {
-    this->rclNode = std::make_shared<rclcpp::Node>("FixedWingController" + _name);
-
-    this->attitudeTargetSub =
-      this->rclNode->create_subscription<mavros_msgs::msg::AttitudeTarget>(_topic,
-        10, std::bind(&FixedWingControllerPrivate::OnAttitudeTarget,
-        this, std::placeholders::_1));
+    node.Subscribe(_name+"/cmd/target_attitude",
+      &FixedWingControllerPrivate::OnAttitudeTarget, this);
   }
 
   /// \brief Callback for attitude target messages
   /// \param[in] _msg Attitude target message
-  public: void OnAttitudeTarget(const mavros_msgs::msg::AttitudeTarget::SharedPtr _msg)
+  public: void OnAttitudeTarget(const msgs::Float_V& _msg)
   {
+    if (_msg.data_size() != 5)
+      ignerr << "Malformed attitude target message" << std::endl;
+    /// Message format is as follows:
+    /// [q,x,y,z,thrust]
     math::Quaterniond quat(
-      _msg->orientation.w,
-      _msg->orientation.x,
-      _msg->orientation.y,
-      _msg->orientation.z);
+      _msg.data(0),
+      _msg.data(1),
+      _msg.data(2),
+      _msg.data(3));
 
     std::lock_guard<std::mutex> lock(this->mutex);
     math::Vector3d euler = quat.Euler();
     targetRoll = euler.X();
     targetPitch = euler.Y();
-    targetVelocity = _msg->thrust;
+    targetVelocity = _msg.data(4);
+  }
+
+  /// \brief Execute the control loop
+  /// \param[in] _rotation -The attitude which you would like to maintain.
+  public: void ExecuteAttitudeControlLoop(
+    const math::Vector3d &_rotation,
+    const UpdateInfo &_info)
+  {
+    /// Fix Thruster power
+    msgs::Double thrusterPower;
+    thrusterPower.set_data(this->targetVelocity);
+    this->thruster.Publish(thrusterPower);
+
+    /// Attitude control
+    auto rollError =
+      _rotation.Dot(this->rollAxis) - this->targetRoll;
+    auto difference = this->rollControl.Update(rollError, _info.dt);
+
+    auto pitchError =
+      _rotation.Dot(this->pitchAxis) - this->targetPitch;
+    auto offset = this->pitchControl.Update(pitchError, _info.dt);
+
+    /// Control aerelions
+    msgs::Double leftFlap;
+    leftFlap.set_data(offset + difference/2);
+    this->leftFlap.Publish(leftFlap);
+
+    msgs::Double rightFlap;
+    rightFlap.set_data(offset - difference/2);
+    this->rightFlap.Publish(rightFlap);
   }
 };
 
+/////////////////////////////////////////////////////////////////////
 FixedWingControllerPlugin::FixedWingControllerPlugin() :
   dataPtr(std::make_unique<FixedWingControllerPrivate>())
 {
 }
 
+/////////////////////////////////////////////////////////////////////
 FixedWingControllerPlugin::~FixedWingControllerPlugin() = default;
 
+/////////////////////////////////////////////////////////////////////
 void FixedWingControllerPlugin::Configure(
     const ignition::gazebo::Entity &_entity,
     const std::shared_ptr<const sdf::Element> &_sdf,
@@ -254,12 +284,25 @@ void FixedWingControllerPlugin::Configure(
     this->dataPtr->rollAxis = _sdf->Get<ignition::math::Vector3d>("roll_axis");
   }
 
+  // Take off power
+  if (_sdf->HasElement("take_off_power"))
+  {
+    this->dataPtr->takeOffPower = _sdf->Get<double>("take_off_power");
+  }
+
+  // Minimum speed before we pivot to a climb
+  if (_sdf->HasElement("take_off_speed"))
+  {
+    this->dataPtr->takeOffSpeed = _sdf->Get<double>("take_off_speed");
+  }
+
   /// Start listening to attitude target messages
   this->dataPtr->SetupROS(
     _sdf->Get<std::string>("model_name"),
     _sdf->Get<std::string>("cmd_topic"));
 }
 
+/////////////////////////////////////////////////////////////////////
 void FixedWingControllerPlugin::PreUpdate(
     const ignition::gazebo::UpdateInfo &_info,
     ignition::gazebo::EntityComponentManager &_ecm)
@@ -293,10 +336,16 @@ void FixedWingControllerPlugin::PreUpdate(
     this->dataPtr->thruster.Publish(thrusterPower);
 
     /// Detect if sufficient lift is achieved
-    if(linVel > this->dataPtr->takeOffSpeed) {
+    if (linVel > this->dataPtr->takeOffSpeed) {
       this->dataPtr->targetVelocity = this->dataPtr->takeOffPower;
-      this->dataPtr->targetPitch = 0.1;
-      this->dataPtr->mode = FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL;
+      this->dataPtr->targetPitch = std::max(0.1, this->dataPtr->takeOffMinPitch);
+      this->dataPtr->ExecuteAttitudeControlLoop(rotation, _info);
+
+      /// Once target altitude is reached level out.
+      if (pose->Data().Z() >= this->dataPtr->takeOffAltitude) {
+        this->dataPtr->mode = FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL;
+        this->dataPtr->targetPitch = 0;
+      }
     }
     else
     {
@@ -317,42 +366,15 @@ void FixedWingControllerPlugin::PreUpdate(
     }
   }
   else if (this->dataPtr->mode == FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL){
-    /// Fix Thruster power
-    msgs::Double thrusterPower;
-    thrusterPower.set_data(this->dataPtr->targetVelocity);
-    this->dataPtr->thruster.Publish(thrusterPower);
-
-    /// Attitude control
-    auto rollError =
-      rotation.Dot(this->dataPtr->rollAxis) - this->dataPtr->targetRoll;
-    auto difference = this->dataPtr->rollControl.Update(rollError, _info.dt);
-
-    auto pitchError =
-      rotation.Dot(this->dataPtr->pitchAxis) - this->dataPtr->targetPitch;
-    auto offset = this->dataPtr->pitchControl.Update(pitchError, _info.dt);
-
-    /// Control aerelions
-    msgs::Double leftFlap;
-    leftFlap.set_data(offset + difference/2);
-    this->dataPtr->leftFlap.Publish(leftFlap);
-
-    msgs::Double rightFlap;
-    rightFlap.set_data(offset - difference/2);
-    this->dataPtr->rightFlap.Publish(rightFlap);
-
-    /// Log data
-    //this->dataPtr->logFile << rollError << "," << pitchError << "," << linVel << "\n";
-    //this->dataPtr->logFile.flush();
+    this->dataPtr->ExecuteAttitudeControlLoop(rotation, _info);
   }
 
 
   this->dataPtr->logFile << currPitch << "," << linVel << ", " << cmd << "\n";
   this->dataPtr->logFile.flush();
 
-  /// ROS
-  rclcpp::spin_some(this->dataPtr->rclNode);
 }
- 
+
 IGNITION_ADD_PLUGIN(
     mbzirc::FixedWingControllerPlugin,
     ignition::gazebo::System,
