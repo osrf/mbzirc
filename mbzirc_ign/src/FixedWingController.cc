@@ -121,6 +121,9 @@ class mbzirc::FixedWingControllerPrivate
   {
     node.Subscribe(_name+"/cmd/target_attitude",
       &FixedWingControllerPrivate::OnAttitudeTarget, this);
+
+    node.Advertise(_name+"/cmd/takeoff",
+      &FixedWingControllerPrivate::TakeOffService, this);
   }
 
   /// \brief Callback for attitude target messages
@@ -142,6 +145,27 @@ class mbzirc::FixedWingControllerPrivate
     targetRoll = euler.X();
     targetPitch = euler.Y();
     targetVelocity = _msg.data(4);
+  }
+
+  /// \brief Take off service
+  /// \param[in] 
+  public: bool TakeOffService(
+    const msgs::Float_V& takeoff_params,
+    msgs::Boolean &_result)
+  {
+    std::lock_guard<std::mutex> lock(this->mutex);
+    if (takeoff_params.data_size() != 3)
+    {
+      ignerr << "Malformed takeoff parameters" << std::endl;
+      _result.set_data(false);
+      return false;
+    }
+    this->takeOffPower = takeoff_params.data(0);
+    this->takeOffMinPitch = takeoff_params.data(1);
+    this->takeOffAltitude = takeoff_params.data(2);
+    this->mode = Mode::TAKE_OFF;
+    _result.set_data(true);
+    return true;
   }
 
   /// \brief Execute the control loop
