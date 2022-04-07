@@ -1332,15 +1332,40 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
     const ignition::msgs::StringMsg_V &_req,
     ignition::msgs::Boolean &_res)
 {
-  if (_req.data_size() < 2)
+  if (_req.data_size() < 1)
   {
     ignwarn << "Target stream start request: Missing arguments " << std::endl;
     this->LogEvent("stream_start_request", "missing_arg");
     _res.set_data(false);
     return true;
   }
-  std::string vehicleName = _req.data(0);
-  std::string vehicleSensor = _req.data(1);
+
+  std::string vehicleName;
+  std::string vehicleSensor;
+
+  if (_req.data_size() == 1)
+  {
+    std::string sensorFrame = _req.data(0);
+    if (sensorFrame.empty())
+    {
+      ignwarn << "Target stream start request: Empty sensor frame"
+              << std::endl;
+      this->LogEvent("stream_start_request", "empty_sensor_frame");
+      _res.set_data(false);
+      return true;
+    }
+    std::vector<std::string> tokens = common::split(sensorFrame, "/");
+    if (tokens.size() >= 2)
+    {
+      vehicleName =  tokens[0];
+      vehicleSensor = tokens[1];
+    }
+  }
+  else
+  {
+    vehicleName = _req.data(0);
+    vehicleSensor = _req.data(1);
+  }
 
   if (vehicleName.empty() || vehicleSensor.empty())
   {

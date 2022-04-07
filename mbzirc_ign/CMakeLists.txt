@@ -50,6 +50,7 @@ install(
 
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
+  BaseStation
   FixedWingController
   GameLogicPlugin
   EntityDetector

@@ -11,6 +11,9 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(ros_ign_interfaces REQUIRED)
+find_package(ignition-transport11 REQUIRED)
+set(IGN_TRANSPORT_VER ${ignition-transport11_VERSION_MAJOR})
 
 add_executable(optical_frame_publisher src/optical_frame_publisher.cc)
 ament_target_dependencies(optical_frame_publisher
@@ -30,10 +33,19 @@ ament_target_dependencies(pose_tf_broadcaster
   tf2_msgs
 )
 
+add_executable(video_target_relay src/video_target_relay.cc)
+ament_target_dependencies(video_target_relay
+  rclcpp
+  ros_ign_interfaces
+  sensor_msgs
+  ignition-transport${IGN_TRANSPORT_VER}
+)
+
 # Resources
 install(TARGETS
   optical_frame_publisher
   pose_tf_broadcaster
+  video_target_relay
   DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY
   launch

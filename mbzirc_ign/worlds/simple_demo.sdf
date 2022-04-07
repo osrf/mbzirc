@@ -45,6 +45,22 @@
       filename="ignition-gazebo-scene-broadcaster-system"
       name="ignition::gazebo::systems::SceneBroadcaster">
     </plugin>
+    <plugin
+      filename="ignition-gazebo-rf-comms-system"
+      name="ignition::gazebo::systems::RFComms">
+      <range_config>
+        <max_range>500000.0</max_range>
+        <fading_exponent>2.6</fading_exponent>
+        <l0>40</l0>
+        <sigma>10.0</sigma>
+      </range_config>
+      <radio_config>
+        <capacity>1000000</capacity>
+        <tx_power>20</tx_power>
+        <noise_floor>-90</noise_floor>
+        <modulation>QPSK</modulation>
+      </radio_config>
+    </plugin>
 
     <scene>
       <sky></sky>
@@ -373,6 +389,56 @@
       </link>
     </model>
 -->
+
+    <model name="base_station">
+      <static>true</static>
+      <pose>-5 0 1.1 0 0 0</pose>
+      <link name="box_link">
+        <collision name="box_collision">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="box_visual">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.7 0.2 0.1 1</ambient>
+            <diffuse>0.7 0.2 0.1 1</diffuse>
+            <specular>0.7 0.2 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+
+      <plugin
+        filename="ignition-gazebo-comms-endpoint-system"
+        name="ignition::gazebo::systems::CommsEndpoint">
+        <address>base_station/target</address>
+        <topic>base_station/target</topic>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-comms-endpoint-system"
+        name="ignition::gazebo::systems::CommsEndpoint">
+        <address>base_station/video</address>
+        <topic>base_station/video</topic>
+      </plugin>
+
+
+      <plugin filename="libBaseStation.so"
+              name="mbzirc::BaseStation">
+        <target_topic>base_station/target</target_topic>
+        <video_topic>base_station/video</video_topic>
+      </plugin>
+
+    </model>
+
 
     <wind>
       <linear_velocity>0.3 0 0</linear_velocity>
