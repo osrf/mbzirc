@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from http.server import executable
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import GroupAction
@@ -64,6 +65,7 @@ def spawn(context, model_type, world_name, model_name, position):
 
         model.set_flight_time(flight_time)
         model.set_payload(payloads)
+
     elif model.isUSV():
         model.set_wavefield(world_name)
 
@@ -81,6 +83,14 @@ def spawn(context, model_type, world_name, model_name, position):
         [payload_bridges, payload_nodes] = model.payload_bridges(world_name)
         bridges.extend(payload_bridges)
         nodes.extend(payload_nodes)
+
+    if model.isFixedWingUAV():
+        nodes.append(Node(
+            package='mbzirc_ros',
+            executable='fixed_wing_bridge',
+            output='screen',
+            parameters=[{'model_name': model_name}],
+        ))
 
     nodes.append(Node(
         package='ros_ign_bridge',
