@@ -15,7 +15,6 @@
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rosgraph_msgs</depend>
-  <depend>mavros_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
