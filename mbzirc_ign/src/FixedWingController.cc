@@ -161,15 +161,14 @@ class mbzirc::FixedWingControllerPrivate
     msgs::Boolean &_result)
   {
     std::lock_guard<std::mutex> lock(this->mutex);
-    if (takeoff_params.data_size() != 3)
+    if (takeoff_params.data_size() != 2)
     {
       ignerr << "Malformed takeoff parameters" << std::endl;
       _result.set_data(false);
       return false;
     }
-    this->takeOffPower = takeoff_params.data(0);
-    this->takeOffMinPitch = takeoff_params.data(1);
-    this->takeOffAltitude = takeoff_params.data(2);
+    this->takeOffMinPitch = takeoff_params.data(0);
+    this->takeOffAltitude = takeoff_params.data(1);
     this->mode = Mode::TAKE_OFF;
     _result.set_data(true);
 
