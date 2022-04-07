@@ -16,6 +16,8 @@
 */
 #include "FixedWingController.hh"
 
+#include <condition_variable>
+
 #include <ignition/math.hh>
 #include <ignition/msgs.hh>
 
@@ -29,10 +31,6 @@
 #include <ignition/plugin/Register.hh>
 
 #include <ignition/transport/Node.hh>
-
-#include <mavros_msgs/msg/attitude_target.hpp>
-
-#include <rclcpp/rclcpp.hpp>
 
 /// \brief fstream for temporary file storage logging
 #include <fstream>
@@ -108,6 +106,15 @@ class mbzirc::FixedWingControllerPrivate
   /// \brief Ignition Node for thruster control
   public: transport::Node::Publisher thruster;
 
+  /// \brief for synchronizing with takeoff
+  public: std::condition_variable takeOffCv;
+
+  /// \brief for synchronizing with takeoff
+  public: std::mutex takeOffMutex;
+
+  /// \brief for synchronizing with takeoff
+  public: bool takeOffFlag{false};
+
   /// Uncomment to enable logging for PID tuning
   public: std::ofstream logFile;
 
@@ -165,6 +172,9 @@ class mbzirc::FixedWingControllerPrivate
     this->takeOffAltitude = takeoff_params.data(2);
     this->mode = Mode::TAKE_OFF;
     _result.set_data(true);
+
+    //std::unique_lock lk(takeOffMutex);
+    //takeOffCv.wait(lk, [this]{return takeOffFlag;});
     return true;
   }
 
@@ -216,9 +226,6 @@ void FixedWingControllerPlugin::Configure(
     ignition::gazebo::EventManager &_eventMgr)
 {
   char const** argv = NULL;
-  if (!rclcpp::ok())
-    rclcpp::init(0, argv);
-
   auto model = Model(_entity);
 
   /// Get the link that the controller should track
@@ -369,6 +376,11 @@ void FixedWingControllerPlugin::PreUpdate(
       if (pose->Data().Z() >= this->dataPtr->takeOffAltitude) {
         this->dataPtr->mode = FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL;
         this->dataPtr->targetPitch = 0;
+        //{
+        //  std::lock_guard<std::mutex> lock(this->dataPtr->takeOffMutex);
+        //  this->dataPtr->takeOffFlag = true;
+        //  this->dataPtr->takeOffCv.notify_one();
+        //}
       }
     }
     else
