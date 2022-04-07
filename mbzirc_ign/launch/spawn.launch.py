@@ -64,7 +64,6 @@ def spawn(context, model_type, world_name, model_name, position):
 
         model.set_flight_time(flight_time)
         model.set_payload(payloads)
-
     elif model.isUSV():
         model.set_wavefield(world_name)
 
