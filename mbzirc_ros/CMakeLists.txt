@@ -72,6 +72,7 @@ if(BUILD_TESTING)
     geometry_msgs
     rclcpp
     rosgraph_msgs
+    ros_ign_interfaces
     sensor_msgs
     std_msgs
     tf2_msgs

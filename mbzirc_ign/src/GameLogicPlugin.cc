@@ -409,6 +409,9 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Ignition transport competition phase publisher.
   public: transport::Node::Publisher competitionPhasePub;
 
+  /// \brief Ignition transport target stream status publisher.
+  public: transport::Node::Publisher targetStreamStatusPub;
+
   /// \brief Logpath.
   public: std::string logPath{"/dev/null"};
 
@@ -748,6 +751,10 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
 
   this->dataPtr->competitionPhasePub =
     this->dataPtr->node.Advertise<ignition::msgs::StringMsg>("/mbzirc/phase");
+
+  this->dataPtr->targetStreamStatusPub =
+      this->dataPtr->node.Advertise<ignition::msgs::StringMsg>(
+      "/mbzirc/target/stream/status");
 
   this->dataPtr->node.Advertise("/mbzirc/target/stream/start",
       &GameLogicPluginPrivate::OnTargetStreamStart, this->dataPtr.get());
@@ -1408,6 +1415,10 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
 
     ignmsg << "Target stream start request: success" << std::endl;
     this->LogEvent("stream_start_request", "success");
+
+    ignition::msgs::StringMsg statusMsg;
+    statusMsg.set_data("stream_started");
+    this->targetStreamStatusPub.Publish(statusMsg);
   }
   else
   {
@@ -1416,6 +1427,11 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
             << std::endl;
     _res.set_data(false);
     this->LogEvent("stream_start_request", "no_image_topic_found");
+
+    ignition::msgs::StringMsg statusMsg;
+    statusMsg.set_data("stream_start_request_failed");
+    this->targetStreamStatusPub.Publish(statusMsg);
+
     std::lock_guard<std::mutex> lock(this->streamMutex);
     this->targetStreamTopic.clear();
   }
@@ -1435,6 +1451,10 @@ bool GameLogicPluginPrivate::OnTargetStreamStop(
 
   ignmsg << "Target stream stop request: success" << std::endl;
   this->LogEvent("stream_stopped", this->targetStreamTopic);
+  ignition::msgs::StringMsg statusMsg;
+  statusMsg.set_data("stream_stopped");
+  this->targetStreamStatusPub.Publish(statusMsg);
+
   return true;
 }
 
@@ -1449,6 +1469,9 @@ bool GameLogicPluginPrivate::OnTargetStreamReport(
             << std::endl;
     this->LogEvent("target_reported_in_stream", "run_not_active");
     _res.set_data(false);
+    ignition::msgs::StringMsg statusMsg;
+    statusMsg.set_data("target_reported_run_not_active");
+    this->targetStreamStatusPub.Publish(statusMsg);
     return true;
   }
 
@@ -1479,6 +1502,10 @@ bool GameLogicPluginPrivate::OnTargetStreamReport(
   ignmsg << "Target report in stream: " << type << " " << x << " " << y
          << std::endl;
   this->LogEvent("target_reported_in_stream", eventData);
+
+  ignition::msgs::StringMsg statusMsg;
+  statusMsg.set_data("target_reported");
+  this->targetStreamStatusPub.Publish(statusMsg);
 
   _res.set_data(true);
   return true;

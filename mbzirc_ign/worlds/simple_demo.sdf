@@ -422,23 +422,18 @@
         <address>base_station/target</address>
         <topic>base_station/target</topic>
       </plugin>
-
       <plugin
         filename="ignition-gazebo-comms-endpoint-system"
         name="ignition::gazebo::systems::CommsEndpoint">
         <address>base_station/video</address>
         <topic>base_station/video</topic>
       </plugin>
-
-
       <plugin filename="libBaseStation.so"
               name="mbzirc::BaseStation">
         <target_topic>base_station/target</target_topic>
         <video_topic>base_station/video</video_topic>
       </plugin>
-
     </model>
-
 
     <wind>
       <linear_velocity>0.3 0 0</linear_velocity>

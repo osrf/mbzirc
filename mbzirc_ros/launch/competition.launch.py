@@ -23,6 +23,8 @@ from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
 
+import mbzirc_ign.bridges
+
 import os
 
 def launch(context, *args, **kwargs):
@@ -35,31 +37,25 @@ def launch(context, *args, **kwargs):
         '/ign_gazebo.launch.py']),
         launch_arguments = {'ign_args': ign_args}.items())
 
-    ros2_ign_score_bridge = Node(
-        package='ros_ign_bridge',
-        executable='parameter_bridge',
-        output='screen',
-        arguments=['/mbzirc/score@std_msgs/msg/Float32@ignition.msgs.Float'],
-    )
 
-    ros2_ign_run_clock_bridge = Node(
+    bridges = [
+      mbzirc_ign.bridges.score(),
+      mbzirc_ign.bridges.run_clock(),
+      mbzirc_ign.bridges.phase(),
+      mbzirc_ign.bridges.stream_status(),
+    ]
+    nodes = []
+    nodes.append(Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
         output='screen',
-        arguments=['/mbzirc/run_clock@rosgraph_msgs/msg/Clock@ignition.msgs.Clock'],
-    )
+        arguments=[bridge.argument() for bridge in bridges],
+        remappings=[bridge.remapping() for bridge in bridges],
+    ))
 
-    ros2_ign_phase_bridge = Node(
-        package='ros_ign_bridge',
-        executable='parameter_bridge',
-        output='screen',
-        arguments=['/mbzirc/phase@std_msgs/msg/String@ignition.msgs.StringMsg'],
-    )
 
     return [ign_gazebo,
-            ros2_ign_score_bridge,
-            ros2_ign_run_clock_bridge,
-            ros2_ign_phase_bridge]
+            *nodes]
 
 def generate_launch_description():
     return LaunchDescription([

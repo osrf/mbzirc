@@ -140,3 +140,39 @@ def gripper_joint_pos(model_name, joint_name):
         ign_type='ignition.msgs.Double',
         ros_type='std_msgs/msg/Float64',
         direction=BridgeDirection.ROS_TO_IGN)
+
+
+def score():
+    return Bridge(
+        ign_topic='/mbzirc/score',
+        ros_topic='/mbzirc/score',
+        ign_type='ignition.msgs.Float',
+        ros_type='std_msgs/msg/Float32',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
+def run_clock():
+    return Bridge(
+        ign_topic='/mbzirc/run_clock',
+        ros_topic='/mbzirc/run_clock',
+        ign_type='ignition.msgs.Clock',
+        ros_type='rosgraph_msgs/msg/Clock',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
+def phase():
+    return Bridge(
+        ign_topic='/mbzirc/phase',
+        ros_topic='/mbzirc/phase',
+        ign_type='ignition.msgs.StringMsg',
+        ros_type='std_msgs/msg/String',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
+def stream_status():
+    return Bridge(
+        ign_topic='/mbzirc/target/stream/status',
+        ros_topic='/mbzirc/target/stream/status',
+        ign_type='ignition.msgs.StringMsg',
+        ros_type='std_msgs/msg/String',
+        direction=BridgeDirection.IGN_TO_ROS)

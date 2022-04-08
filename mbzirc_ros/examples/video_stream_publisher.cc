@@ -15,46 +15,49 @@
  *
  */
 
-#include <sensor_msgs/msg/image.hpp>
-
-#include <rclcpp/rclcpp.hpp>
-
 #include <memory>
 #include <string>
 
-using std::placeholders::_1;
-using namespace std::chrono_literals;
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
-/// \brief A class that converts data from robot frame to optical frame
-/// It subscribes to existing topic, modifies the frame_id of the message to
-/// a new optical frame, then republishes the updated data to a new topic.
+using std::placeholders::_1;
+
+/// \brief A class that demonstrates how to subscribe to images from a vehicle
+/// camera, optionally updates its frame_id to indicate the source of the
+/// the image, then publishes to the base station for validation.
 class VideoStreamPublisher : public rclcpp::Node
 {
   /// \brief Constructor
-  /// \param[in] _info True to publish camera info data in optical frame. False
-  /// to publish only image data in optical frame
-  public: VideoStreamPublisher(const std::string &_topic, const std::string &_frameId)
+  /// \param[in] _topic Image topic to subscribe to
+  /// \param[in] _frameId Frame ID of the camera which the image comes from
+  public: VideoStreamPublisher(const std::string &_topic,
+      const std::string &_frameId)
       : Node("video_stream_publisher")
   {
     this->frameId = _frameId;
 
+    // subscribe to original image topic
     this->sub =
         this->create_subscription<sensor_msgs::msg::Image>(
         _topic, 10,
         std::bind(&VideoStreamPublisher::PublishTargetStream, this, _1));
 
+    // publish image to base station
     this->pub = this->create_publisher<sensor_msgs::msg::Image>(
-        "/mbzirc/target/stream", 10);
+        "/mbzirc/target/stream/start", 10);
   }
 
-  /// \brief Subscriber callback which updates the frame id of the message
-  /// and republishes the message.
-  /// \param[in] _msg Message whose frame id is to be updated
+  /// \brief Subscriber callback which updates the frame id of the image
+  /// and republishes to the base station
+  /// \param[in] _msg Image message
   private: void PublishTargetStream(
       const std::shared_ptr<sensor_msgs::msg::Image> _msg)
   {
     auto m = *_msg.get();
-    m.header.frame_id = this->frameId;
+    // update the frame_id of the image if specified by user
+    if (!this->frameId.empty())
+      m.header.frame_id = this->frameId;
     this->pub->publish(m);
   }
 
@@ -71,17 +74,18 @@ class VideoStreamPublisher : public rclcpp::Node
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  if (argc != 3)
+  if (argc < 2)
   {
     std::cerr << "Usage: ros2 run mbzirc_ros video_stream_publisher "
-              << "--ros-args [topic name] [camera frame ID]"
+              << "--ros-args <topic name> [camera frame ID]"
               << std::endl;
     exit(1);
   }
 
-  // first arg is bool variable that specifies whether to re-publish camera info
-  // in optical frame
+  // image topic to subscribe to
   std::string topic = argv[1];
+  // user-specified frame_id
+  // if this is empty, the original frame_id of the image will be used
   std::string frameId = argv[2];
 
   rclcpp::spin(std::make_shared<VideoStreamPublisher>(topic, frameId));
