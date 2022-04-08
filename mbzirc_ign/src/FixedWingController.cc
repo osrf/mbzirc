@@ -123,8 +123,7 @@ class mbzirc::FixedWingControllerPrivate
 
   /// \brief Setup the ros node
   /// \param[in] _name Ros node name
-  /// \param[in] _topic Topic to listen on
-  public: void SetupROS(std::string _name, std::string _topic)
+  public: void SetupSubscribers(std::string _name)
   {
     node.Subscribe(_name+"/cmd/target_attitude",
       &FixedWingControllerPrivate::OnAttitudeTarget, this);
@@ -171,9 +170,6 @@ class mbzirc::FixedWingControllerPrivate
     this->takeOffAltitude = takeoff_params.data(1);
     this->mode = Mode::TAKE_OFF;
     _result.set_data(true);
-
-    //std::unique_lock lk(takeOffMutex);
-    //takeOffCv.wait(lk, [this]{return takeOffFlag;});
     return true;
   }
 
@@ -273,8 +269,8 @@ void FixedWingControllerPlugin::Configure(
   }
 
   /// Uncomment for logging
-  igndbg << "initiallized log file" << std::endl;
-  this->dataPtr->logFile.open("zephyr_take_off_controller.csv");
+  //igndbg << "initiallized log file" << std::endl;
+  //this->dataPtr->logFile.open("zephyr_take_off_controller.csv");
 
   /// Setup Roll PID
   if (_sdf->HasElement("roll_p"))
@@ -327,9 +323,7 @@ void FixedWingControllerPlugin::Configure(
   }
 
   /// Start listening to attitude target messages
-  this->dataPtr->SetupROS(
-    _sdf->Get<std::string>("model_name"),
-    _sdf->Get<std::string>("cmd_topic"));
+  this->dataPtr->SetupSubscribers(_sdf->Get<std::string>("model_name"));
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -375,11 +369,6 @@ void FixedWingControllerPlugin::PreUpdate(
       if (pose->Data().Z() >= this->dataPtr->takeOffAltitude) {
         this->dataPtr->mode = FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL;
         this->dataPtr->targetPitch = 0;
-        //{
-        //  std::lock_guard<std::mutex> lock(this->dataPtr->takeOffMutex);
-        //  this->dataPtr->takeOffFlag = true;
-        //  this->dataPtr->takeOffCv.notify_one();
-        //}
       }
     }
     else
@@ -405,8 +394,8 @@ void FixedWingControllerPlugin::PreUpdate(
   }
 
 
-  this->dataPtr->logFile << currPitch << "," << linVel << ", " << cmd << "\n";
-  this->dataPtr->logFile.flush();
+  //this->dataPtr->logFile << currPitch << "," << linVel << ", " << cmd << "\n";
+  //this->dataPtr->logFile.flush();
 
 }
 

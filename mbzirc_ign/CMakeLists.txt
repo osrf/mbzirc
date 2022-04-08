@@ -21,7 +21,6 @@ find_package(ignition-rendering6 REQUIRED)
 set(IGN_RENDERING_VER ${ignition-rendering6_VERSION_MAJOR})
 find_package(sdformat12 REQUIRED)
 
-find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
 #============================================================================
@@ -117,7 +116,7 @@ if(BUILD_TESTING)
     )
     target_include_directories(${TEST_TARGET}
       PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto)
-    target_link_libraries(${TEST_TARGET} ignition-gazebo${IGN_GAZEBO_VER}::ignition-gazebo${IGN_GAZEBO_VER} rclcpp::rclcpp)
+    target_link_libraries(${TEST_TARGET} ignition-gazebo${IGN_GAZEBO_VER}::ignition-gazebo${IGN_GAZEBO_VER})
     set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
   endforeach()
 
