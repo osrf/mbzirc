@@ -154,20 +154,22 @@ class mbzirc::FixedWingControllerPrivate
   }
 
   /// \brief Take off service
-  /// \param[in] 
+  /// \param[in] takeOffParams - Take off parameters. A float array of 2 
+  /// elements. First being pitch, second being target altitude.
+  /// \param[out] _result - Result of the service call.
   public: bool TakeOffService(
-    const msgs::Float_V& takeoff_params,
+    const msgs::Float_V& _takeoffParams,
     msgs::Boolean &_result)
   {
     std::lock_guard<std::mutex> lock(this->mutex);
-    if (takeoff_params.data_size() != 2)
+    if (_takeoffParams.data_size() != 2)
     {
       ignerr << "Malformed takeoff parameters" << std::endl;
       _result.set_data(false);
       return false;
     }
-    this->takeOffMinPitch = takeoff_params.data(0);
-    this->takeOffAltitude = takeoff_params.data(1);
+    this->takeOffMinPitch = _takeoffParams.data(0);
+    this->takeOffAltitude = _takeoffParams.data(1);
     this->mode = Mode::TAKE_OFF;
     _result.set_data(true);
     return true;
