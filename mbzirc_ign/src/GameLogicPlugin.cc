@@ -1406,7 +1406,7 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
     std::lock_guard<std::mutex> lock(this->streamMutex);
     this->targetStreamTopic = vehicleTopic;
 
-    ignwarn << "Target stream start request: success" << std::endl;
+    ignmsg << "Target stream start request: success" << std::endl;
     this->LogEvent("stream_start_request", "success");
   }
   else

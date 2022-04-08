@@ -30,7 +30,7 @@ using std::placeholders::_1;
 class VideoTargetRelay : public rclcpp::Node
 {
   /// \brief Constructor
-  public: VideoTargetRelay(const std::string &_robotName);
+  public: VideoTargetRelay();
 
   /// \brief Destructor
   public: ~VideoTargetRelay();
@@ -57,25 +57,25 @@ class VideoTargetRelay : public rclcpp::Node
 };
 
 //////////////////////////////////////////////////
-VideoTargetRelay::VideoTargetRelay(const std::string &_robotName)
+VideoTargetRelay::VideoTargetRelay()
   : Node("video_target_relay")
 {
-  this->robotName = _robotName;
+  this->declare_parameter<std::string>("model_name", "vehicle");
+  this->get_parameter("model_name", this->robotName);
 
   this->targetSub =
      this->create_subscription<ros_ign_interfaces::msg::StringVec>(
-     "/mbzirc/target/report", 1,
+     "/mbzirc/target/stream/report", 1,
      std::bind(&VideoTargetRelay::OnTarget, this, _1));
 
   this->videoSub =
      this->create_subscription<sensor_msgs::msg::Image>(
-     "/mbzirc/target/stream", 1,
+     "/mbzirc/target/stream/start", 1,
      std::bind(&VideoTargetRelay::OnVideo, this, _1));
 
   std::string brokerTopic = "/broker/msgs";
-  this->brokerPub = this->node.Advertise<ignition::msgs::Dataframe>(brokerTopic);
-
-  std::cerr << "video target relay started for " << _robotName << std::endl;
+  this->brokerPub = this->node.Advertise<ignition::msgs::Dataframe>(
+      brokerTopic);
 }
 
 //////////////////////////////////////////////////
@@ -132,9 +132,7 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  std::string robotName = argv[1];
-
-  rclcpp::spin(std::make_shared<VideoTargetRelay>(robotName));
+  rclcpp::spin(std::make_shared<VideoTargetRelay>());
   rclcpp::shutdown();
   return 0;
 }

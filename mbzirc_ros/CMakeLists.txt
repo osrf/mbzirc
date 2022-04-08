@@ -41,11 +41,18 @@ ament_target_dependencies(video_target_relay
   ignition-transport${IGN_TRANSPORT_VER}
 )
 
+add_executable(video_stream_publisher examples/video_stream_publisher.cc)
+ament_target_dependencies(video_stream_publisher
+  rclcpp
+  sensor_msgs
+)
+
 # Resources
 install(TARGETS
   optical_frame_publisher
   pose_tf_broadcaster
   video_target_relay
+  video_stream_publisher
   DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY
   launch

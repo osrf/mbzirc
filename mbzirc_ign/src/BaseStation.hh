@@ -57,7 +57,7 @@ namespace mbzirc
     /// \brief Current simulation time.
     public: std::chrono::steady_clock::duration simTime;
     public: std::chrono::steady_clock::duration prevVideoSimTime;
-    public: std::chrono::steady_clock::duration simTimeSum;
+    public: double simTimeSum = 0.0;
     public: std::list<std::chrono::steady_clock::duration> simTimes;
 
     public: const unsigned int kVideoStreamWindowSize = 10u;

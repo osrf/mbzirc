@@ -75,6 +75,7 @@ end
 <?xml version="1.0"?>
 <sdf version='1.9'>
   <model name="<%= $model_name%>">
+    <static>true</static>
 
     <!-- Platform base model-->
     <include merge="true">
@@ -362,6 +363,13 @@ end
       <power_load>6.6</power_load>
       <start_on_motion>true</start_on_motion>
       <fix_issue_225>true</fix_issue_225>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-comms-endpoint-system"
+      name="ignition::gazebo::systems::CommsEndpoint">
+      <address><%= $model_name%></address>
+      <topic><%= $model_name%>/rx</topic>
     </plugin>
  </model>
 </sdf>

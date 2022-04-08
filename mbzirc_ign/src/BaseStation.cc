@@ -55,12 +55,6 @@ void BaseStation::Configure(const Entity &_entity,
     targetTopic,
     &BaseStation::OnTarget,
     this);
-
-  //// for testing
-  // std::string topic = "/broker/msgs";
-  // this->pub = this->node.Advertise<ignition::msgs::Dataframe>(topic);
-
-    std::cerr << "base station init " << std::endl;
 }
 
 //////////////////////////////////////////////////
@@ -68,62 +62,10 @@ void BaseStation::PostUpdate(
   const ignition::gazebo::UpdateInfo &_info,
   const ignition::gazebo::EntityComponentManager &_ecm)
 {
-
-  {
-    std::lock_guard<std::mutex> lock(this->mutex);
-    this->simTime = _info.simTime;
-  }
-
-
-  {
-//    msgs::Dataframe msg;
-//    msg.set_src_address("base_station");
-//    msg.set_dst_address("base_station");
-//
-//    ignition::msgs::StringMsg_V videoMsg;
-//    videoMsg.add_data("vehicle_name");
-//    videoMsg.add_data("vehicle_sensor");
-//    std::string data;
-//    videoMsg.SerializeToString(&data);
-//    msg.set_data(data);
-//    this->pub.Publish(msg);
-
-//    CommsData data;
-//    data.sensor_slot = 3;
-//    data.x = 640;
-//    data.y = 480;
-//    data.image_width = 1280;
-//    data.image_height = 960;
-
-//    std::string d = std::string(reinterpret_cast<const char *>(&data));
-//    msg.set_data(d);
-    // this->pub.Publish(msg);
-
-
-//    const CommsData *rmsg = reinterpret_cast<const CommsData *>(msg.data().c_str());
-//    std::cerr << "target recevied: " << std::endl;
-//    std::cerr << "  " << rmsg->sensor_slot << std::endl;
-//    std::cerr << "  " << rmsg->x << std::endl;
-//    std::cerr << "  " << rmsg->y << std::endl;
-//    std::cerr << "  " << rmsg->image_width << std::endl;
-//    std::cerr << "  " << rmsg->image_height << std::endl;
-  }
-
+  std::lock_guard<std::mutex> lock(this->mutex);
+  this->simTime = _info.simTime;
 }
 
-//////////////////////////////////////////////////
-// void BaseStation::OnVideoStart(const ignition::msgs::Dataframe &_msg)
-// {
-//   auto data = _msg.data();
-//   ignition::msgs::StringMsg_V msg;
-//   msg.ParseFromString(data);
-//   std::cerr << "received video start request " << std::endl;
-//   std::cerr << "  vehicle: " << msg.data(0);
-//   std::cerr << "  sensor: " << msg.data(1);
-//   bool result = this->node.Request("/mbzirc/target/stream/start", msg);
-//   std::cerr << "result " << result << std::endl;
-//   this->newStream = true;
-// }
 
 //////////////////////////////////////////////////
 void BaseStation::OnVideo(const ignition::msgs::Dataframe &_msg)
@@ -141,32 +83,44 @@ void BaseStation::OnVideo(const ignition::msgs::Dataframe &_msg)
 
     std::cerr << "received video, sensor frame " << msg.data() << std::endl;
 
-    ignition::msgs::StringMsg_V msg;
-    msg.add_data(this->sensorFrame);
-    bool result = this->node.Request("/mbzirc/target/stream/start", msg);
-    std::cerr << "starting stream " << result << std::endl;
+    std::function<void(const ignition::msgs::Boolean &, const bool)> cb =
+        [](const ignition::msgs::Boolean &/*_rep*/, const bool _result)
+    {
+      if (!_result)
+        ignerr << "Error sending stream start request" << std::endl;
+    };
+
+    ignition::msgs::StringMsg_V req;
+    req.add_data(this->sensorFrame);
+    bool result = this->node.Request("/mbzirc/target/stream/start", req, cb);
     return;
   }
 
   auto t = this->simTime - this->prevVideoSimTime;
+  double sec = std::chrono::duration_cast<std::chrono::milliseconds>(t).count()
+      * 1e-3;
+  if (math::equal(sec, 0.0))
+    return;
+
+  this->prevVideoSimTime = this->simTime;
   this->simTimes.push_back(t);
-  this->simTimeSum += t;
+  this->simTimeSum += sec;
 
   if (this->simTimes.size() >= this->kVideoStreamWindowSize)
   {
-    int64_t s, ns;
-    std::tie(s, ns) = ignition::math::durationToSecNsec(this->simTimeSum);
-    double t = s + static_cast<double>(ns) / 1e9;
-    t = t / this->kVideoStreamWindowSize;
-    std::cerr << " t " << t << std::endl;
-    if (1 / t < this->kminStreamRate)
+    double avgT = this->simTimeSum / this->kVideoStreamWindowSize;
+    // std::cerr << " avgT " << avgT << std::endl;
+    if ((1 / avgT) < this->kminStreamRate)
     {
-      std::cerr << "video stream is lower than " << std::to_string(this->kminStreamRate)
+      std::cerr << "video stream is lower than "
+                << std::to_string(this->kminStreamRate)
                 << " Hz" << std::endl;
     }
 
     auto front = this->simTimes.front();
-    this->simTimeSum - front;
+    double fsec = std::chrono::duration_cast<std::chrono::milliseconds>(
+        front).count() * 1e-3;
+    this->simTimeSum -= fsec;
     this->simTimes.pop_front();
   }
 }
@@ -174,16 +128,17 @@ void BaseStation::OnVideo(const ignition::msgs::Dataframe &_msg)
 //////////////////////////////////////////////////
 void BaseStation::OnTarget(const ignition::msgs::Dataframe &_msg)
 {
-  auto data = _msg.data();
-  ignition::msgs::StringMsg_V msg;
-  msg.ParseFromString(data);
-  std::cerr << "received target report " << std::endl;
-  std::cerr << "  type: " << msg.data(0);
-  std::cerr << "  x: " << msg.data(1);
-  std::cerr << "  y: " << msg.data(2);
+  std::function<void(const ignition::msgs::Boolean &, const bool)> cb =
+      [](const ignition::msgs::Boolean &/*_rep*/, const bool _result)
+  {
+    if (!_result)
+      ignerr << "Error sending target report" << std::endl;
+  };
 
-  bool result = this->node.Request("/mbzirc/target/stream/report", msg);
-  std::cerr << "result " << result << std::endl;
+  auto data = _msg.data();
+  ignition::msgs::StringMsg_V req;
+  req.ParseFromString(data);
+  bool result = this->node.Request("/mbzirc/target/stream/report", req, cb);
 }
 
 IGNITION_ADD_PLUGIN(mbzirc::BaseStation,

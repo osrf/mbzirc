@@ -115,7 +115,7 @@ def spawn(context, model_type, world_name, model_name, position):
         package='mbzirc_ros',
         executable='video_target_relay',
         output='screen',
-        arguments=[model_name]
+        parameters=[{'model_name': model_name}]
     ))
 
     group_action = GroupAction([
