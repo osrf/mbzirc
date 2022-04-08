@@ -116,7 +116,7 @@ class mbzirc::FixedWingControllerPrivate
   public: bool takeOffFlag{false};
 
   /// Uncomment to enable logging for PID tuning
-  public: std::ofstream logFile;
+  ///public: std::ofstream logFile;
 
   /// \brief Mutex for setpoints
   public: std::mutex mutex;
