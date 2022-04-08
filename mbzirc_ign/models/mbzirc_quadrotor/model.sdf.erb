@@ -369,7 +369,7 @@ end
       filename="ignition-gazebo-comms-endpoint-system"
       name="ignition::gazebo::systems::CommsEndpoint">
       <address><%= $model_name%></address>
-      <topic><%= $model_name%>/rx</topic>
+      <topic>model/<%= $model_name%>/rx</topic>
     </plugin>
  </model>
 </sdf>
