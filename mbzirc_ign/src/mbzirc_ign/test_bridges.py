@@ -82,6 +82,16 @@ class TestBridges(unittest.TestCase):
                          f'{self.model_name}/right/thruster/joint/cmd_pos'
                          '@std_msgs/msg/Float64]ignition.msgs.Double')
 
+    def test_comms(self):
+        bridge = bridges.comms_tx(self.model_name)
+        self.assertEqual(bridge.argument(),
+                         '/broker/msgs'
+                         '@ros_ign_interfaces/msg/Dataframe]ignition.msgs.Dataframe')
+        bridge = bridges.comms_rx(self.model_name)
+        self.assertEqual(bridge.argument(),
+                         f'/model/{self.model_name}/rx'
+                         '@ros_ign_interfaces/msg/Dataframe[ignition.msgs.Dataframe')
+
 
 class TestPayloadBridges(unittest.TestCase):
     world_name = 'foo'

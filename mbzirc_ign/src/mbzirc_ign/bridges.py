@@ -103,6 +103,7 @@ def thrust_joint_pos(model_name, side):
         ros_type='std_msgs/msg/Float64',
         direction=BridgeDirection.ROS_TO_IGN)
 
+
 def comms_tx(model_name):
     return Bridge(
         ign_topic='/broker/msgs',
@@ -110,6 +111,7 @@ def comms_tx(model_name):
         ign_type='ignition.msgs.Dataframe',
         ros_type='ros_ign_interfaces/msg/Dataframe',
         direction=BridgeDirection.ROS_TO_IGN)
+
 
 def comms_rx(model_name):
     return Bridge(
