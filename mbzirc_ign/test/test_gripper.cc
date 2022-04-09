@@ -30,8 +30,6 @@
 #include <chrono>
 #include <thread>
 
-#include <rclcpp/rclcpp.hpp>
-
 #include "helper/TestFixture.hh"
 
 class GripperTestFixture: public MBZIRCTestFixture
