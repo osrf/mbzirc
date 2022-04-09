@@ -55,7 +55,7 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
   LoadWorld("empty_platform.sdf");
 
   std::atomic<bool> keepRunning {true};
-  auto rosThread = std::thread([&](){
+  auto cmdThread = std::thread([&](){
       while(keepRunning)
       {
         ignition::msgs::Float_V msg;
@@ -168,8 +168,8 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
   StopLaunchFile(launchHandle);
 
   keepRunning = false;
-  if (rosThread.joinable())
-    rosThread.join();
+  if (cmdThread.joinable())
+    cmdThread.join();
 
 
   ASSERT_TRUE(spawnedSuccessfully) << "Fixed Wing not spawned";

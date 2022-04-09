@@ -50,8 +50,10 @@ class mbzirc::FixedWingControllerPrivate
   public: enum class Mode
   {
     /// \brief Take off mode
-    TAKE_OFF,
-    /// \brief Auto mode
+    TAKE_OFF_START,
+    /// \brief Enter into a climb
+    TAKE_OFF_CLIMB,
+    /// \brief Just use to maintain attitude
     ATTITUDE_CONTROL
   };
 
@@ -116,15 +118,14 @@ class mbzirc::FixedWingControllerPrivate
   public: bool takeOffFlag{false};
 
   /// Uncomment to enable logging for PID tuning
-  public: std::ofstream logFile;
+  ///public: std::ofstream logFile;
 
   /// \brief Mutex for setpoints
   public: std::mutex mutex;
 
   /// \brief Setup the ros node
   /// \param[in] _name Ros node name
-  /// \param[in] _topic Topic to listen on
-  public: void SetupROS(std::string _name, std::string _topic)
+  public: void SetupSubscribers(std::string _name)
   {
     node.Subscribe(_name+"/cmd/target_attitude",
       &FixedWingControllerPrivate::OnAttitudeTarget, this);
@@ -132,6 +133,8 @@ class mbzirc::FixedWingControllerPrivate
     node.Advertise(_name+"/cmd/takeoff",
       &FixedWingControllerPrivate::TakeOffService, this);
   }
+
+
 
   /// \brief Callback for attitude target messages
   /// \param[in] _msg Attitude target message
@@ -152,28 +155,33 @@ class mbzirc::FixedWingControllerPrivate
     targetRoll = euler.X();
     targetPitch = euler.Y();
     targetVelocity = _msg.data(4);
+
+    this->pitchControl.Reset();
+    this->rollControl.Reset();
   }
 
   /// \brief Take off service
-  /// \param[in] 
+  /// \param[in] takeOffParams - Take off parameters. A float array of 2 
+  /// elements. First being pitch, second being target altitude.
+  /// \param[out] _result - Result of the service call.
   public: bool TakeOffService(
-    const msgs::Float_V& takeoff_params,
+    const msgs::Float_V& _takeoffParams,
     msgs::Boolean &_result)
   {
     std::lock_guard<std::mutex> lock(this->mutex);
-    if (takeoff_params.data_size() != 2)
+    if (_takeoffParams.data_size() != 2)
     {
       ignerr << "Malformed takeoff parameters" << std::endl;
       _result.set_data(false);
       return false;
     }
-    this->takeOffMinPitch = takeoff_params.data(0);
-    this->takeOffAltitude = takeoff_params.data(1);
-    this->mode = Mode::TAKE_OFF;
+    this->takeOffMinPitch = _takeoffParams.data(0);
+    this->takeOffAltitude = _takeoffParams.data(1);
+    this->mode = Mode::TAKE_OFF_START;
     _result.set_data(true);
 
-    //std::unique_lock lk(takeOffMutex);
-    //takeOffCv.wait(lk, [this]{return takeOffFlag;});
+    this->pitchControl.Reset();
+    this->rollControl.Reset();
     return true;
   }
 
@@ -273,8 +281,8 @@ void FixedWingControllerPlugin::Configure(
   }
 
   /// Uncomment for logging
-  igndbg << "initiallized log file" << std::endl;
-  this->dataPtr->logFile.open("zephyr_take_off_controller.csv");
+  //igndbg << "initiallized log file" << std::endl;
+  //this->dataPtr->logFile.open("zephyr_take_off_controller.csv");
 
   /// Setup Roll PID
   if (_sdf->HasElement("roll_p"))
@@ -327,9 +335,7 @@ void FixedWingControllerPlugin::Configure(
   }
 
   /// Start listening to attitude target messages
-  this->dataPtr->SetupROS(
-    _sdf->Get<std::string>("model_name"),
-    _sdf->Get<std::string>("cmd_topic"));
+  this->dataPtr->SetupSubscribers(_sdf->Get<std::string>("model_name"));
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -357,7 +363,8 @@ void FixedWingControllerPlugin::PreUpdate(
 
   auto cmd = 0.0;
 
-  if (this->dataPtr->mode == FixedWingControllerPrivate::Mode::TAKE_OFF) {
+  /// State machine for flight controller
+  if (this->dataPtr->mode == FixedWingControllerPrivate::Mode::TAKE_OFF_START) {
     /// Goal of takeoff controller is to increase altitude as much as possible.
     /// Once a basic airspeed is achieved we adjust the angle of attack.
     /// Fix Thruster power-
@@ -365,48 +372,54 @@ void FixedWingControllerPlugin::PreUpdate(
     thrusterPower.set_data(this->dataPtr->takeOffPower);
     this->dataPtr->thruster.Publish(thrusterPower);
 
+    /// Keep the Aircraft on the runway till ready to take off
+    auto pitchError = rotation.Dot(this->dataPtr->pitchAxis);
+    auto offset = this->dataPtr->pitchControl.Update(pitchError, _info.dt);
+
+    /// Control aerelions
+    msgs::Double leftFlap;
+    leftFlap.set_data(offset);
+    this->dataPtr->leftFlap.Publish(leftFlap);
+
+    msgs::Double rightFlap;
+    rightFlap.set_data(offset);
+    this->dataPtr->rightFlap.Publish(rightFlap);
+    cmd = offset;
+
     /// Detect if sufficient lift is achieved
     if (linVel > this->dataPtr->takeOffSpeed) {
+      /// Transition into climb
+      this->dataPtr->mode = FixedWingControllerPrivate::Mode::TAKE_OFF_CLIMB;
       this->dataPtr->targetVelocity = this->dataPtr->takeOffPower;
       this->dataPtr->targetPitch = std::max(0.1, this->dataPtr->takeOffMinPitch);
-      this->dataPtr->ExecuteAttitudeControlLoop(rotation, _info);
-
-      /// Once target altitude is reached level out.
-      if (pose->Data().Z() >= this->dataPtr->takeOffAltitude) {
-        this->dataPtr->mode = FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL;
-        this->dataPtr->targetPitch = 0;
-        //{
-        //  std::lock_guard<std::mutex> lock(this->dataPtr->takeOffMutex);
-        //  this->dataPtr->takeOffFlag = true;
-        //  this->dataPtr->takeOffCv.notify_one();
-        //}
-      }
-    }
-    else
-    {
-      /// Keep the Aircraft on the runway till ready to take off
-      auto pitchError = rotation.Dot(this->dataPtr->pitchAxis);
-      auto offset = this->dataPtr->pitchControl.Update(pitchError, _info.dt);
-
-      /// Control aerelions
-      msgs::Double leftFlap;
-      leftFlap.set_data(offset);
-      this->dataPtr->leftFlap.Publish(leftFlap);
-
-      msgs::Double rightFlap;
-      rightFlap.set_data(offset);
-      this->dataPtr->rightFlap.Publish(rightFlap);
-      cmd = offset;
-
+      this->dataPtr->rollControl.Reset();
+      this->dataPtr->pitchControl.Reset();
     }
   }
-  else if (this->dataPtr->mode == FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL){
+  else if (
+    this->dataPtr->mode == FixedWingControllerPrivate::Mode::TAKE_OFF_CLIMB)
+  {
+    /// Maintain a fixed climb rate
+    this->dataPtr->targetVelocity = this->dataPtr->takeOffPower;
+    this->dataPtr->targetPitch = std::max(0.1, this->dataPtr->takeOffMinPitch);
+    this->dataPtr->ExecuteAttitudeControlLoop(rotation, _info);
+    /// Once target altitude is reached level out.
+    if (pose->Data().Z() >= this->dataPtr->takeOffAltitude) {
+      this->dataPtr->mode = FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL;
+      this->dataPtr->targetPitch = 0;
+      this->dataPtr->rollControl.Reset();
+      this->dataPtr->pitchControl.Reset();
+    }
+  }
+  else if (
+    this->dataPtr->mode == FixedWingControllerPrivate::Mode::ATTITUDE_CONTROL)
+  {
     this->dataPtr->ExecuteAttitudeControlLoop(rotation, _info);
   }
 
 
-  this->dataPtr->logFile << currPitch << "," << linVel << ", " << cmd << "\n";
-  this->dataPtr->logFile.flush();
+  //this->dataPtr->logFile << currPitch << "," << linVel << ", " << cmd << "\n";
+  //this->dataPtr->logFile.flush();
 
 }
 
