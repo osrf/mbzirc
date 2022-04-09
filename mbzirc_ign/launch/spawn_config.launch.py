@@ -56,7 +56,7 @@ def spawn(context, config_file, world_name):
             package='mbzirc_ros',
             executable='fixed_wing_bridge',
             output='screen',
-            parameters=[{'model_name': model_name}],
+            parameters=[{'model_name': model.model_name}],
         ))
 
     nodes.append(Node(
