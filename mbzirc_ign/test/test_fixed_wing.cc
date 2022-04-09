@@ -27,38 +27,15 @@
 #include <ignition/gazebo/components.hh>
 #include <ignition/transport/Node.hh>
 
-#include <rclcpp/rclcpp.hpp>
-
-#include <mavros_msgs/msg/attitude_target.hpp>
-
 #include "helper/TestFixture.hh"
 
 using namespace std::chrono_literals;
 
 TEST_F(MBZIRCTestFixture, FixedWingController)
 {
-  // Create a ROS Node to commandeer the fixed wing
-  char const** argv = NULL;
-  if (!rclcpp::ok())
-    rclcpp::init(0, argv);
-  auto rosNode = std::make_shared<rclcpp::Node>("TestFixedWing");
-  auto publisher =
-    rosNode->create_publisher<mavros_msgs::msg::AttitudeTarget>("/zephyr/cmd/attitude", 10);
-  auto timer_ = rosNode->create_wall_timer(100ms, [&]() {
-    mavros_msgs::msg::AttitudeTarget msg;
-    msg.type_mask = mavros_msgs::msg::AttitudeTarget::IGNORE_ROLL_RATE
-      | mavros_msgs::msg::AttitudeTarget::IGNORE_PITCH_RATE
-      | mavros_msgs::msg::AttitudeTarget::IGNORE_ROLL_RATE;
-    msg.orientation.x = 0;
-    msg.orientation.y = 0;
-    msg.orientation.z = 0;
-    msg.orientation.w = 1;
-    msg.thrust = 1000;
-    publisher->publish(msg);
-
-    igndbg << "Publishing attitude target" << std::endl;
-  });
-
+  ignition::transport::Node node;
+  auto pub =
+    node.Advertise<ignition::msgs::Float_V>("/zephyr/cmd/target_attitude");
 
   std::vector<std::pair<std::string,std::string>> params{
     {"name", "zephyr"},
@@ -77,12 +54,18 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
    // Create a Gazebo world
   LoadWorld("empty_platform.sdf");
 
-  std::atomic<bool> keepRosRunning {true};
-  auto rosThread = std::thread([&](){
-      while(keepRosRunning && rclcpp::ok())
+  std::atomic<bool> keepRunning {true};
+  auto cmdThread = std::thread([&](){
+      while(keepRunning)
       {
-        rclcpp::spin_some(rosNode);
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        ignition::msgs::Float_V msg;
+        msg.add_data(1);
+        msg.add_data(0);
+        msg.add_data(0);
+        msg.add_data(0);
+        msg.add_data(1000);
+        pub.Publish(msg);
+        std::this_thread::sleep_for(100ms);
       }
   });
 
@@ -184,9 +167,9 @@ TEST_F(MBZIRCTestFixture, FixedWingController)
 
   StopLaunchFile(launchHandle);
 
-  keepRosRunning = false;
-  if (rosThread.joinable())
-    rosThread.join();
+  keepRunning = false;
+  if (cmdThread.joinable())
+    cmdThread.join();
 
 
   ASSERT_TRUE(spawnedSuccessfully) << "Fixed Wing not spawned";
