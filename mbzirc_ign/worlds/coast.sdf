@@ -347,6 +347,31 @@
       <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Dock</uri>
     </include>
 
+    <model name="fixed_wing_chock">
+      <static>true</static>
+      <pose>-1497.55 0 4.133 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.1 50 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.1 50 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0.05 0.05 0.05 1.0</diffuse>
+          </material>
+          <cast_shadows>0</cast_shadows>
+        </visual>
+      </link>
+    </model>
+
     <include>
       <name>Beach</name>
       <pose>-1500 0 0 0 0 -1.570796</pose>
