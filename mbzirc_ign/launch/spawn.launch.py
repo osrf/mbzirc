@@ -97,7 +97,7 @@ def spawn(context, model_type, world_name, model_name, position):
         output='screen',
         arguments=[bridge.argument() for bridge in bridges],
         remappings=[bridge.remapping() for bridge in bridges],
-        parameters=[{'lazy':True}],
+        parameters=[{'lazy': True}],
     ))
 
     # tf broadcaster
