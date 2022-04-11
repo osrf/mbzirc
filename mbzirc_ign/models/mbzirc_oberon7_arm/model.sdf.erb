@@ -1,0 +1,494 @@
+<%
+if !defined?(topic_prefix) || topic_prefix == nil || topic_prefix.empty?
+  $topic_prefix = ''
+else
+  $topic_prefix = topic_prefix
+end
+
+if !defined?(gripper) || gripper== nil || gripper.empty?
+  $gripper_model = 'mbzirc_oberon7_gripper'
+else
+  $gripper_model = gripper
+end
+%>
+
+<?xml version="1.0" ?>
+<sdf version='1.9'>
+  <model name="oberon7_arm">
+    <link name='base'>
+      <inertial>
+        <pose>-0.101581 -0.001371 -0.009781 0 0 0</pose>
+        <mass>9.674677170178402</mass>
+        <inertia>
+          <ixx>0.051173167814727402</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.083677172414381995</iyy>
+          <iyz>0</iyz>
+          <izz>0.095803297815163668</izz>
+        </inertia>
+      </inertial>
+      <!--
+      <collision name='base_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/serial_arm/collision/Base.stl</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+        <max_contacts>1</max_contacts>
+      </collision>
+      -->
+      <collision name="Base02">
+        <pose>-0.145315 -0.031051 0.0 1.5708 0.0 0.0</pose>
+        <geometry>
+          <box>
+            <size>0.214431 0.13 0.113131</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="Base01">
+        <pose>-0.0203551 0.00103727 0.0 0.0 0.0 0.0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.13</length>
+            <radius>0.0485029</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name="Base04">
+        <pose>-0.0619724 0.0560192 0.0 1.5708 0.0 3.14159</pose>
+        <geometry>
+          <box>
+            <size>0.0471749 0.13 0.113131</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="Base03">
+        <pose>-0.149891 0.0172752 0.0 1.5708 0.0 1.80709</pose>
+        <geometry>
+          <box>
+            <size>0.0471749 0.13 0.148202</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='base_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/serial_arm/visual/Base.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>false</self_collide>
+    </link>
+    <joint name='azimuth' type='revolute'>
+      <pose relative_to='base'>0 0 0 0 0 0</pose>
+      <parent>base</parent>
+      <child>shoulder_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1.04719758</lower>
+          <upper>1.04719758</upper>
+          <effort>200</effort>
+          <velocity>0.17000000000000001</velocity>
+        </limit>
+        <dynamics>
+          <damping>100</damping>
+          <friction>150</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='shoulder_link'>
+      <pose relative_to='azimuth'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.03967 0.005441 0.017383 0 0 0</pose>
+        <mass>6.7222524690068299</mass>
+        <inertia>
+          <ixx>0.042583973829431812</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.05132575485641739</iyy>
+          <iyz>0</iyz>
+          <izz>0.02957654137768093</izz>
+        </inertia>
+      </inertial>
+      <collision name='shoulder_link_collision'>
+        <pose>0.03967 0.005441 0.017383 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.23962700000000001</length>
+            <radius>0.068183999999999995</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+        <max_contacts>1</max_contacts>
+      </collision>
+      <visual name='shoulder_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/serial_arm/visual/ShoulderLink.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>false</self_collide>
+    </link>
+    <joint name='shoulder' type='revolute'>
+      <pose relative_to='shoulder_link'>0.06955 0.00015 0.01536 1.570796326794896 0 0</pose>
+      <parent>shoulder_link</parent>
+      <child>upper_arm</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1.5707963700000001</lower>
+          <upper>1.5707963700000001</upper>
+          <effort>5000</effort>
+          <velocity>0.17000000000000001</velocity>
+        </limit>
+        <dynamics>
+          <damping>50</damping>
+          <friction>150</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='upper_arm'>
+      <pose relative_to='shoulder'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.312501 0.017478 -2e-06 0 0 0</pose>
+        <mass>12.444399907248719</mass>
+        <inertia>
+          <ixx>0.037823448324644487</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.41148818050402602</iyy>
+          <iyz>0</iyz>
+          <izz>0.41542085464478012</izz>
+        </inertia>
+      </inertial>
+      <collision name='upper_arm_collision'>
+        <pose>0.312501 0.017478 -2e-06 0 1.570796326794897 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.61680900000000005</length>
+            <radius>0.070944499999999994</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='upper_arm_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/serial_arm/visual/UpperArm.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='elbow' type='revolute'>
+      <pose relative_to='upper_arm'>0.55616 -0.01229 0 0 0 0</pose>
+      <parent>upper_arm</parent>
+      <child>elbow_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1.5707963700000001</lower>
+          <upper>1.04719758</upper>
+          <effort>300</effort>
+          <velocity>0.14999999999999999</velocity>
+        </limit>
+        <dynamics>
+          <damping>50</damping>
+          <friction>150</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='elbow_link'>
+      <pose relative_to='elbow'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.125269 -0.07467500000000001 0 0 0 0</pose>
+        <mass>10.314508867497031</mass>
+        <inertia>
+          <ixx>0.071719787373323296</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.072409083443788227</iyy>
+          <iyz>0</iyz>
+          <izz>0.10276175033951809</izz>
+        </inertia>
+      </inertial>
+      <collision name='elbow_link_collision'>
+        <pose>0.125269 -0.07467500000000001 0 0 1.570796326794897 1.570796326794896</pose>
+        <geometry>
+          <cylinder>
+            <length>0.245312</length>
+            <radius>0.077562000000000006</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+        <max_contacts>1</max_contacts>
+      </collision>
+      <visual name='elbow_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/serial_arm/visual/ElbowLink.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>false</self_collide>
+    </link>
+    <joint name='roll' type='revolute'>
+      <pose relative_to='elbow_link'>0.1349014 -0.1936267 0 1.570796326794896 0 0</pose>
+      <parent>elbow_link</parent>
+      <child>forearm</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.3561945550000001</lower>
+          <upper>2.3561945550000001</upper>
+          <effort>1000</effort>
+          <velocity>0.25</velocity>
+        </limit>
+        <dynamics>
+          <damping>300</damping>
+          <friction>150</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='forearm'>
+      <pose relative_to='roll'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0.1579788031491171 0 0 0</pose>
+        <mass>8.546261755853898</mass>
+        <inertia>
+          <ixx>0.096179442077331159</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.096190230308377811</iyy>
+          <iyz>0</iyz>
+          <izz>0.03268402566917647</izz>
+        </inertia>
+      </inertial>
+      <collision name='forearm_collision'>
+        <pose>0 0 0.1579788031491171 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.33482699999999999</length>
+            <radius>0.075727500000000003</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+        <max_contacts>1</max_contacts>
+      </collision>
+      <visual name='forearm_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/serial_arm/visual/Forearm.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>false</self_collide>
+    </link>
+    <joint name='pitch' type='revolute'>
+      <pose relative_to='forearm'>0 0 0.3159576062982343 -1.570796326794896 -1.570796326794897 0</pose>
+      <parent>forearm</parent>
+      <child>wrist_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1.5707963700000001</lower>
+          <upper>1.5707963700000001</upper>
+          <effort>50</effort>
+          <velocity>0.29999999999999999</velocity>
+        </limit>
+        <dynamics>
+          <damping>10</damping>
+          <friction>10</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='wrist_link'>
+      <pose relative_to='pitch'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.104016 0.003308 -2.7e-05 0 0 0</pose>
+        <mass>3.9024235776962009</mass>
+        <inertia>
+          <ixx>0.01042822093788996</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.021153663661370579</iyy>
+          <iyz>0</iyz>
+          <izz>0.020526721978954301</izz>
+        </inertia>
+      </inertial>
+      <collision name='wrist_link_collision'>
+        <pose>0.104016 0.003308 -2.7e-05 0 1.570796326794897 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.21920400000000001</length>
+            <radius>0.065186999999999995</radius>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+        <max_contacts>1</max_contacts>
+      </collision>
+      <visual name='wrist_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>meshes/serial_arm/visual/Wrist.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>false</self_collide>
+    </link>
+
+    <frame name="gripper_mount_point">
+      <pose relative_to='wrist_link'>0.19304 0 0 -1.570796326794896 0 0</pose>
+    </frame>
+
+    <include>
+      <name>gripper</name>
+      <uri>model://<%= $gripper_model%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="gripper_mount_point">0 0 0 0 0 0</pose>
+    </include>
+
+    <joint name='wrist' type='revolute'>
+      <parent>wrist_link</parent>
+      <child>gripper::mount_point</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-6.2831853071795862</lower>
+          <upper>6.2831853071795862</upper>
+          <effort>10</effort>
+          <velocity>0.14999999999999999</velocity>
+        </limit>
+        <dynamics>
+          <damping>10</damping>
+          <friction>5</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <!-- Controller -->
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>azimuth</joint_name>
+      <topic><%= $topic_prefix %>/arm/azimuth</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>shoulder</joint_name>
+      <topic><%= $topic_prefix %>/arm/shoulder</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+      <initial_position>0.5</initial_position>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>elbow</joint_name>
+      <topic><%= $topic_prefix %>/arm/elbow</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>roll</joint_name>
+      <topic><%= $topic_prefix %>/arm/roll</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>pitch</joint_name>
+      <topic><%= $topic_prefix %>/arm/pitch</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>wrist</joint_name>
+      <topic><%= $topic_prefix %>/arm/wrist</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <!-- Joint state publisher -->
+    <plugin filename="libignition-gazebo-joint-state-publisher-system.so" name="ignition::gazebo::systems::JointStatePublisher">
+        <joint_name>azimuth</joint_name>
+        <joint_name>shoulder</joint_name>
+        <joint_name>elbow</joint_name>
+        <joint_name>roll</joint_name>
+        <joint_name>pitch</joint_name>
+        <joint_name>wrist</joint_name>
+    </plugin>
+
+    <frame name="arm_mount_point"/>
+  </model>
+</sdf>

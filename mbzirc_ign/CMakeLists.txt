@@ -21,9 +21,7 @@ find_package(ignition-rendering6 REQUIRED)
 set(IGN_RENDERING_VER ${ignition-rendering6_VERSION_MAJOR})
 find_package(sdformat12 REQUIRED)
 
-find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(mavros_msgs REQUIRED)
 
 #============================================================================
 # Hooks
@@ -68,8 +66,6 @@ foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
   )
 endforeach()
 
-ament_target_dependencies(FixedWingController PUBLIC rclcpp mavros_msgs)
-
 install(
   TARGETS ${MBZIRC_IGN_PLUGINS}
   DESTINATION lib)
@@ -113,14 +109,15 @@ if(BUILD_TESTING)
     test_spawn_usv_maxspeed
     test_fixed_wing
     test_gripper
+    test_spawn_usv_arm
     )
     ament_add_gtest(
       ${TEST_TARGET}
       test/${TEST_TARGET}.cc
     )
     target_include_directories(${TEST_TARGET}
-      PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto mavros_msgs)
-    target_link_libraries(${TEST_TARGET} ignition-gazebo${IGN_GAZEBO_VER}::ignition-gazebo${IGN_GAZEBO_VER} rclcpp::rclcpp ${mavros_msgs_LIBRARIES})
+      PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto)
+    target_link_libraries(${TEST_TARGET} ignition-gazebo${IGN_GAZEBO_VER}::ignition-gazebo${IGN_GAZEBO_VER})
     set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
   endforeach()
 

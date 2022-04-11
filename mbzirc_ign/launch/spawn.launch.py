@@ -69,7 +69,12 @@ def spawn(context, model_type, world_name, model_name, position):
 
         model.set_flight_time(flight_time)
     elif model.isUSV():
+        arm = LaunchConfiguration('arm').perform(context)
+        gripper = LaunchConfiguration('gripper').perform(context)
+
         model.set_wavefield(world_name)
+        model.set_arm(arm)
+        model.set_gripper(gripper)
 
     model.set_payload(payloads)
 
@@ -87,12 +92,21 @@ def spawn(context, model_type, world_name, model_name, position):
     bridges.extend(payload_bridges)
     nodes.extend(payload_nodes)
 
+    if model.isFixedWingUAV():
+        nodes.append(Node(
+            package='mbzirc_ros',
+            executable='fixed_wing_bridge',
+            output='screen',
+            parameters=[{'model_name': model_name}],
+        ))
+
     nodes.append(Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
         output='screen',
         arguments=[bridge.argument() for bridge in bridges],
         remappings=[bridge.remapping() for bridge in bridges],
+        parameters=[{'lazy': True}],
     ))
 
     # tf broadcaster
@@ -178,6 +192,14 @@ def generate_launch_description():
             'flightTime',
             default_value='10',
             description='Battery flight time in minutes (only for UAVs)'),
+        DeclareLaunchArgument(
+            'arm',
+            default_value='',
+            description="arm model to attach to usv"),
+        DeclareLaunchArgument(
+            'gripper',
+            default_value='mbzirc_oberon7_gripper',
+            description="gripper model to attach to arm"),
         DeclareLaunchArgument(
             'slot0',
             default_value='',

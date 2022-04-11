@@ -82,6 +82,27 @@ class TestBridges(unittest.TestCase):
                          f'{self.model_name}/right/thruster/joint/cmd_pos'
                          '@std_msgs/msg/Float64]ignition.msgs.Double')
 
+    def test_arm(self):
+        bridge = bridges.arm_joint_states(self.world_name, self.model_name)
+        self.assertEqual(bridge.argument(),
+                         f'/world/{self.world_name}/model/{self.model_name}/model/arm/joint_state'
+                         '@sensor_msgs/msg/JointState[ignition.msgs.Model')
+        bridge = bridges.arm_joint_pos(self.model_name, 'elbow')
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/elbow'
+                         '@std_msgs/msg/Float64]ignition.msgs.Double')
+
+    def test_gripper(self):
+        bridge = bridges.gripper_joint_states(self.world_name, self.model_name)
+        self.assertEqual(bridge.argument(),
+                         f'/world/{self.world_name}/model/{self.model_name}/'
+                         'model/arm/model/gripper/joint_state'
+                         '@sensor_msgs/msg/JointState[ignition.msgs.Model')
+        bridge = bridges.gripper_joint_pos(self.model_name, 'finger_left')
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/gripper/finger_left'
+                         '@std_msgs/msg/Float64]ignition.msgs.Double')
+
     def test_comms(self):
         bridge = bridges.comms_tx(self.model_name)
         self.assertEqual(bridge.argument(),
