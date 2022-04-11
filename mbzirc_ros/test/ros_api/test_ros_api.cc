@@ -239,11 +239,17 @@ TEST(RosApiTest, UAVTopics)
 TEST(RosApiTest, ArmTopics)
 {
   // joint states
-  MyTestClass<sensor_msgs::msg::JointState> jointStates(
-      "/joint_states");
+  MyTestClass<sensor_msgs::msg::JointState> armJointStates(
+      "/usv/arm/joint_states");
   waitUntilBoolVarAndSpin(
-    node, jointStates.callbackExecuted, 10ms, 500);
-  EXPECT_TRUE(jointStates.callbackExecuted);
+    node, armJointStates.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(armJointStates.callbackExecuted);
+
+  MyTestClass<sensor_msgs::msg::JointState> gripperJointStates(
+      "/usv/arm/gripper/joint_states");
+  waitUntilBoolVarAndSpin(
+    node, gripperJointStates.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(gripperJointStates.callbackExecuted);
 }
 
 /////////////////////////////////////////////////
