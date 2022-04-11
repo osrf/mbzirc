@@ -257,6 +257,7 @@ class mbzirc::GameLogicPluginPrivate
   /// testing and development.
   /// \param[in] _req String msg - phase to skip to.
   /// \param[out] _res The response message.
+  /// \return True to indicate the service call is processed.
   public: bool OnSkipToPhase(const ignition::msgs::StringMsg &_req,
                ignition::msgs::Boolean &_res);
 
@@ -285,6 +286,7 @@ class mbzirc::GameLogicPluginPrivate
   public: void ValidateTargetObjectRetrieval();
 
   /// \brief Disable objects that are dropped in the ocean
+  /// \param[in] _ecm Mutable reference to Entity Component Manager
   public: void DisableDroppedObjects(EntityComponentManager &_ecm);
 
   /// \brief Check task completion. Make sure all target objects have been
@@ -487,17 +489,21 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Map of vessel to number of times small object is incorrectly
   /// identified
-  public: std::unordered_map<std::string, unsigned int> smallObjectIdPenaltyCount;
+  public: std::unordered_map<std::string, unsigned int>
+      smallObjectIdPenaltyCount;
 
   /// \brief Map of vessel to number times large object is incorrectly
   /// identified
-  public: std::unordered_map<std::string, unsigned int> largeObjectIdPenaltyCount;
+  public: std::unordered_map<std::string, unsigned int>
+      largeObjectIdPenaltyCount;
 
   /// \brief Map of vessel to number of times small object retrieval failed
-  public: std::unordered_map<std::string, unsigned int> smallObjectRetrievePenaltyCount;
+  public: std::unordered_map<std::string, unsigned int>
+      smallObjectRetrievePenaltyCount;
 
-  /// \brief Map of vessel to number of times small object retrieval failed
-  public: std::unordered_map<std::string, unsigned int> largeObjectRetrievePenaltyCount;
+  /// \brief Map of vessel to number of times large object retrieval failed
+  public: std::unordered_map<std::string, unsigned int>
+      largeObjectRetrievePenaltyCount;
 
   /// \brief Total time penalty in seconds;
   public: int timePenalty = 0;
@@ -823,9 +829,6 @@ void GameLogicPlugin::PostUpdate(
     const ignition::gazebo::UpdateInfo &_info,
     const ignition::gazebo::EntityComponentManager &_ecm)
 {
-//  if (_info.paused)
-//    return;
-
   // Store sim time
   int64_t s, ns;
   std::tie(s, ns) = ignition::math::durationToSecNsec(_info.simTime);
