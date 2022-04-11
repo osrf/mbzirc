@@ -10,6 +10,8 @@ if !defined?(gripper) || gripper== nil || gripper.empty?
 else
   $gripper_model = gripper
 end
+
+$camera_sensor_local_pose = "0.19 0.075 0.0 -1.570796326794896 0 0"
 %>
 
 <?xml version="1.0" ?>
@@ -397,7 +399,7 @@ end
       </visual>
 
       <visual name="camera_visual">
-        <pose>0.19 0.075 0.0 -1.570796326794896 0 0</pose>
+        <pose><%= $camera_sensor_local_pose %></pose>
         <geometry>
           <box>
             <size>0.03 0.03 0.03</size>
@@ -408,7 +410,7 @@ end
         </material>
       </visual>
       <sensor name="camera" type="camera">
-        <pose>0.19 0.075 0.0 -1.570796326794896 0 0</pose>
+        <pose><%= $camera_sensor_local_pose %></pose>
         <always_on>1</always_on>
         <update_rate>30</update_rate>
         <camera name="camera">
