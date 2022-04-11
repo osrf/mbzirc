@@ -51,6 +51,14 @@ def spawn(context, config_file, world_name):
         bridges.extend(payload_bridges)
         nodes.extend(payload_nodes)
 
+    if model.isFixedWingUAV():
+        nodes.append(Node(
+            package='mbzirc_ros',
+            executable='fixed_wing_bridge',
+            output='screen',
+            parameters=[{'model_name': model.model_name}],
+        ))
+
     nodes.append(Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',

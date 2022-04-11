@@ -108,7 +108,7 @@ def arm_joint_states(world_name, model_name):
     arm_prefix = f'/world/{world_name}/model/{model_name}/model/arm'
     return Bridge(
         ign_topic=f'{arm_prefix}/joint_state',
-        ros_topic='/joint_states',
+        ros_topic='arm/joint_states',
         ign_type='ignition.msgs.Model',
         ros_type='sensor_msgs/msg/JointState',
         direction=BridgeDirection.IGN_TO_ROS)
@@ -118,7 +118,7 @@ def gripper_joint_states(world_name, model_name):
     gripper_prefix = f'/world/{world_name}/model/{model_name}/model/arm/model/gripper'
     return Bridge(
         ign_topic=f'{gripper_prefix}/joint_state',
-        ros_topic='/joint_states',
+        ros_topic='arm/gripper/joint_states',
         ign_type='ignition.msgs.Model',
         ros_type='sensor_msgs/msg/JointState',
         direction=BridgeDirection.IGN_TO_ROS)

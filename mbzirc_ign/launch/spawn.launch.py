@@ -92,12 +92,21 @@ def spawn(context, model_type, world_name, model_name, position):
     bridges.extend(payload_bridges)
     nodes.extend(payload_nodes)
 
+    if model.isFixedWingUAV():
+        nodes.append(Node(
+            package='mbzirc_ros',
+            executable='fixed_wing_bridge',
+            output='screen',
+            parameters=[{'model_name': model_name}],
+        ))
+
     nodes.append(Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
         output='screen',
         arguments=[bridge.argument() for bridge in bridges],
         remappings=[bridge.remapping() for bridge in bridges],
+        parameters=[{'lazy': True}],
     ))
 
     # tf broadcaster
