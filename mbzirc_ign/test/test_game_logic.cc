@@ -1076,7 +1076,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
     ignition::msgs::Boolean rep;
     ignition::msgs::StringMsg_V req;
     req.add_data("small");
-    req.add_data("640");
+    req.add_data("280");
     req.add_data("280");
     bool result = false;
     const unsigned int timeout = 5000;
