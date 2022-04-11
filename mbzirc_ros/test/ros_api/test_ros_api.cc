@@ -19,6 +19,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <rosgraph_msgs/msg/clock.hpp>
+#include <geometry_msgs/msg/wrench.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/fluid_pressure.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -250,6 +251,47 @@ TEST(RosApiTest, ArmTopics)
   waitUntilBoolVarAndSpin(
     node, gripperJointStates.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(gripperJointStates.callbackExecuted);
+
+  // image_raw
+  MyTestClass<sensor_msgs::msg::Image> image(
+      "/usv/arm/wrist_link/image_raw");
+  waitUntilBoolVarAndSpin(
+    node, image.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(image.callbackExecuted);
+
+  // camera_info
+  MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfo(
+      "/usv/arm/wrist_link/camera_info");
+  waitUntilBoolVarAndSpin(
+    node, cameraInfo.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(cameraInfo.callbackExecuted);
+
+  // optical image
+  MyTestClass<sensor_msgs::msg::Image> imageOptical(
+      "/usv/arm/wrist_link/optical/image_raw");
+  waitUntilBoolVarAndSpin(
+    node, imageOptical.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(imageOptical.callbackExecuted);
+
+  // optical camera_info
+  MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfoOptical(
+      "/usv/arm/wrist_link/optical/camera_info");
+  waitUntilBoolVarAndSpin(
+    node, cameraInfoOptical.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(cameraInfoOptical.callbackExecuted);
+
+  // gripper wrench
+  MyTestClass<geometry_msgs::msg::Wrench> gripperLeftWrench(
+      "/usv/arm/gripper/joint/finger_left/wrench");
+  waitUntilBoolVarAndSpin(
+    node, gripperLeftWrench.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(gripperLeftWrench.callbackExecuted);
+
+  MyTestClass<geometry_msgs::msg::Wrench> gripperRightWrench(
+      "/usv/arm/gripper/joint/finger_right/wrench");
+  waitUntilBoolVarAndSpin(
+    node, gripperRightWrench.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(gripperRightWrench.callbackExecuted);
 }
 
 /////////////////////////////////////////////////
