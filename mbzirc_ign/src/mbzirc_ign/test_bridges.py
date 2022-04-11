@@ -92,6 +92,18 @@ class TestBridges(unittest.TestCase):
                          f'/{self.model_name}/arm/elbow'
                          '@std_msgs/msg/Float64]ignition.msgs.Double')
 
+        camera_link = 'wrist_link'
+        prefix = (f'/world/{self.world_name}/model/{self.model_name}/'
+                  f'model/arm/link/{camera_link}/sensor')
+        bridge = bridges.arm_image(self.world_name, self.model_name, camera_link)
+        self.assertEqual(bridge.argument(),
+                         f'{prefix}/camera/image'
+                         '@sensor_msgs/msg/Image[ignition.msgs.Image')
+        bridge = bridges.arm_camera_info(self.world_name, self.model_name, 'wrist_link')
+        self.assertEqual(bridge.argument(),
+                         f'{prefix}/camera/camera_info'
+                         '@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo')
+
     def test_gripper(self):
         bridge = bridges.gripper_joint_states(self.world_name, self.model_name)
         self.assertEqual(bridge.argument(),
@@ -102,6 +114,16 @@ class TestBridges(unittest.TestCase):
         self.assertEqual(bridge.argument(),
                          f'/{self.model_name}/arm/gripper/finger_left'
                          '@std_msgs/msg/Float64]ignition.msgs.Double')
+        gripper_joint_name = 'finger_left'
+        bridge = bridges.gripper_joint_force_torque(self.model_name, gripper_joint_name)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/gripper/{gripper_joint_name}/forcetorque'
+                         '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
+        gripper_joint_name = 'finger_right'
+        bridge = bridges.gripper_joint_force_torque(self.model_name, gripper_joint_name)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/gripper/{gripper_joint_name}/forcetorque'
+                         '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
 
     def test_comms(self):
         bridge = bridges.comms_tx(self.model_name)

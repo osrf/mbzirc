@@ -50,6 +50,7 @@ install(
 list(APPEND MBZIRC_IGN_PLUGINS
   FixedWingController
   GameLogicPlugin
+  EntityDetector
   SimpleHydrodynamics
   SuctionGripper
   Surface

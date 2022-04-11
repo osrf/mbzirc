@@ -78,6 +78,7 @@ class Model:
         return self.gripper in GRIPPERS
 
     def bridges(self, world_name):
+        nodes = []
         bridges = [
             # IMU
             mbzirc_ign.bridges.imu(world_name, self.model_name),
@@ -97,16 +98,7 @@ class Model:
                 # Air Pressure
                 mbzirc_ign.bridges.air_pressure(world_name, self.model_name),
             ])
-            if self.isFixedWingUAV():
-                bridges.extend([
-                    # Left Flap
-                    mbzirc_ign.bridges.fixed_wing_flap(self.model_name, 'left'),
-                    # Right Flap
-                    mbzirc_ign.bridges.fixed_wing_flap(self.model_name, 'right'),
-                    # Propeller
-                    mbzirc_ign.bridges.fixed_wing_prop(self.model_name),
-                ])
-            else:
+            if not self.isFixedWingUAV():
                 bridges.extend([
                     # twist
                     mbzirc_ign.bridges.cmd_vel(self.model_name)
@@ -133,6 +125,26 @@ class Model:
                         bridges.append(
                             mbzirc_ign.bridges.arm_joint_pos(self.model_name, joint)
                         )
+
+                    camera_link = 'wrist_link'
+                    bridges.append(
+                        mbzirc_ign.bridges.arm_image(world_name, self.model_name, camera_link)
+                    )
+                    bridges.append(
+                        mbzirc_ign.bridges.arm_camera_info(
+                            world_name, self.model_name, camera_link
+                        )
+                    )
+                    nodes.append(Node(
+                        package='mbzirc_ros',
+                        executable='optical_frame_publisher',
+                        arguments=['1'],
+                        remappings=[('input/image', f'arm/{camera_link}/image_raw'),
+                                    ('output/image', f'arm/{camera_link}/optical/image_raw'),
+                                    ('input/camera_info', f'arm/{camera_link}/camera_info'),
+                                    ('output/camera_info',
+                                        f'arm/{camera_link}/optical/camera_info')]))
+
                     # default to oberon7 gripper if not specified.
                     if not self.gripper:
                         self.gripper = 'mbzirc_oberon7_gripper'
@@ -150,7 +162,12 @@ class Model:
                             bridges.append(
                                 mbzirc_ign.bridges.gripper_joint_pos(self.model_name, joint)
                             )
-        return bridges
+                            bridges.append(
+                                mbzirc_ign.bridges.gripper_joint_force_torque(
+                                    self.model_name, joint)
+                            )
+
+        return [bridges, nodes]
 
     def payload_bridges(self, world_name, payloads=None):
         bridges = []
