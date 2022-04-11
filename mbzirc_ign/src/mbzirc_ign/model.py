@@ -77,16 +77,7 @@ class Model:
                 # Air Pressure
                 mbzirc_ign.bridges.air_pressure(world_name, self.model_name),
             ])
-            if self.isFixedWingUAV():
-                bridges.extend([
-                    # Left Flap
-                    mbzirc_ign.bridges.fixed_wing_flap(self.model_name, 'left'),
-                    # Right Flap
-                    mbzirc_ign.bridges.fixed_wing_flap(self.model_name, 'right'),
-                    # Propeller
-                    mbzirc_ign.bridges.fixed_wing_prop(self.model_name),
-                ])
-            else:
+            if not self.isFixedWingUAV():
                 bridges.extend([
                     # twist
                     mbzirc_ign.bridges.cmd_vel(self.model_name)
