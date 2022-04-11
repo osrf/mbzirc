@@ -5,6 +5,17 @@ else
   $model_name = name
 end
 
+$arm_name = nil
+if defined?(arm)
+  $arm_name = arm
+end
+
+if !defined?(gripper) || gripper== nil || gripper.empty?
+  $gripper_name = 'mbzirc_oberon7_gripper'
+else
+  $model_name = gripper
+end
+
 if !defined?(wavefieldSize) || wavefieldSize == nil || wavefieldSize.empty?
   $wavefield_size = 1000.0
 else
@@ -60,10 +71,26 @@ end
 
 <sdf version='1.9'>
 <model name="<%= $model_name%>">
+  <static>false</static>
+  <self_collide>true</self_collide>
+
   <!-- Platform base model-->
   <include merge="true">
     <uri>model://mbzirc_usv_base</uri>
   </include>
+
+  <% if $arm_name != nil%>
+  <include>
+    <name>arm</name>
+    <uri>model://<%= $arm_name%></uri>
+    <placement_frame>arm_mount_point</placement_frame>
+    <pose relative_to="arm_slot_0">0 0 0 0 0 0</pose>
+  </include>
+  <joint name="arm_slot_0_joint" type="fixed">
+    <parent>arm_slot_0</parent>
+    <child>arm::arm_mount_point</child>
+  </joint>
+  <% end %>
 
   <% if $slot0_payload != nil%>
   <!-- Payload slot0 -->

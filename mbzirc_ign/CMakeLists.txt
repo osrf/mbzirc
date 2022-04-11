@@ -109,6 +109,7 @@ if(BUILD_TESTING)
     test_spawn_usv_maxspeed
     test_fixed_wing
     test_gripper
+    test_spawn_usv_arm
     )
     ament_add_gtest(
       ${TEST_TARGET}

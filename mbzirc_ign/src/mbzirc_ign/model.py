@@ -39,6 +39,14 @@ USVS = [
     'usv',
 ]
 
+ARMS = [
+    'mbzirc_oberon7_arm',
+]
+
+GRIPPERS = [
+    'mbzirc_oberon7_gripper',
+]
+
 WAVEFIELD_SIZE = {'simple_demo': 1000, 'coast': 6000}
 
 
@@ -51,6 +59,8 @@ class Model:
         self.battery_capacity = 0
         self.wavefield_size = 0
         self.payload = {}
+        self.arm = ''
+        self.gripper = ''
 
     def isUAV(self):
         return self.model_type in UAVS
@@ -60,6 +70,12 @@ class Model:
 
     def isUSV(self):
         return self.model_type in USVS
+
+    def hasValidArm(self):
+        return self.arm in ARMS
+
+    def hasValidGripper(self):
+        return self.gripper in GRIPPERS
 
     def bridges(self, world_name):
         bridges = [
@@ -100,6 +116,36 @@ class Model:
                 mbzirc_ign.bridges.thrust_joint_pos(self.model_name, 'left'),
                 mbzirc_ign.bridges.thrust_joint_pos(self.model_name, 'right'),
             ])
+            if self.hasValidArm():
+                # arm joint states
+                bridges.append(
+                    mbzirc_ign.bridges.arm_joint_states(world_name, self.model_name)
+                )
+
+                if self.arm == 'mbzirc_oberon7_arm':
+                    # arm joint pos cmd
+                    arm_joints = ['azimuth', 'shoulder', 'elbow', 'roll', 'pitch', 'wrist']
+                    for joint in arm_joints:
+                        bridges.append(
+                            mbzirc_ign.bridges.arm_joint_pos(self.model_name, joint)
+                        )
+                    # default to oberon7 gripper if not specified.
+                    if not self.gripper:
+                        self.gripper = 'mbzirc_oberon7_gripper'
+
+                if self.hasValidGripper():
+                    # gripper_joint states
+                    bridges.append(
+                        mbzirc_ign.bridges.gripper_joint_states(world_name, self.model_name)
+                    )
+
+                    # gripper joint pos cmd
+                    if self.gripper == 'mbzirc_oberon7_gripper':
+                        gripper_joints = ['finger_left', 'finger_right']
+                        for joint in gripper_joints:
+                            bridges.append(
+                                mbzirc_ign.bridges.gripper_joint_pos(self.model_name, joint)
+                            )
         return bridges
 
     def payload_bridges(self, world_name, payloads=None):
@@ -160,6 +206,12 @@ class Model:
         else:
             self.wavefield_size = WAVEFIELD_SIZE[world_name]
 
+    def set_arm(self, arm):
+        self.arm = arm
+
+    def set_gripper(self, gripper):
+        self.gripper = gripper
+
     def generate(self):
         # Generate SDF by executing ERB and populating templates
         template_file = os.path.join(
@@ -186,6 +238,44 @@ class Model:
 
         if self.model_type in USVS:
             command.append(f'wavefieldSize={self.wavefield_size}')
+
+            # run erb for arm to attach the user specified gripper
+            # and also for arm and gripper to generate unique topic names
+            if self.hasValidArm():
+                command.append(f'arm={self.arm}')
+                arm_model_file = os.path.join(
+                    get_package_share_directory('mbzirc_ign'), 'models',
+                    self.arm, 'model.sdf.erb')
+                arm_model_output_file = os.path.join(
+                    get_package_share_directory('mbzirc_ign'), 'models',
+                    self.arm, 'model.sdf')
+                arm_command = ['erb']
+                if self.gripper:
+                    command.append(f'gripper={self.gripper}')
+                arm_command.append(f'topic_prefix={self.model_name}')
+                arm_command.append(arm_model_file)
+                process = subprocess.Popen(arm_command, stdout=subprocess.PIPE)
+                stdout = process.communicate()[0]
+                str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
+                f = open(arm_model_output_file, 'w')
+                f.write(str_output)
+                # print(arm_command, str_output)
+
+                gripper_model_file = os.path.join(
+                    get_package_share_directory('mbzirc_ign'), 'models',
+                    self.gripper, 'model.sdf.erb')
+                gripper_model_output_file = os.path.join(
+                    get_package_share_directory('mbzirc_ign'), 'models',
+                    self.gripper, 'model.sdf')
+                gripper_command = ['erb']
+                gripper_command.append(f'topic_prefix={self.model_name}/arm')
+                gripper_command.append(gripper_model_file)
+                process = subprocess.Popen(gripper_command, stdout=subprocess.PIPE)
+                stdout = process.communicate()[0]
+                str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
+                f = open(gripper_model_output_file, 'w')
+                f.write(str_output)
+                # print(gripper_command, str_output)
 
         command.append(template_file)
         process = subprocess.Popen(command,
@@ -263,5 +353,11 @@ class Model:
 
         if 'payload' in config:
             model.set_payload(config['payload'])
+
+        if 'arm' in config:
+            model.set_arm(config['arm'])
+
+        if 'gripper' in config:
+            model.set_gripper(config['gripper'])
 
         return model
