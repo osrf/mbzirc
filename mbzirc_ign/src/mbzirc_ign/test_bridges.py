@@ -125,6 +125,16 @@ class TestBridges(unittest.TestCase):
                          f'/{self.model_name}/arm/gripper/{gripper_joint_name}/forcetorque'
                          '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
 
+        bridge = bridges.gripper_suction_contacts(self.model_name)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/gripper/contact_sensor'
+                         '@ros_ign_interfaces/msg/Contacts]ignition.msgs.Contacts')
+
+        bridge = bridges.gripper_suction_control(self.model_name)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/gripper/suction_on'
+                         '@std_msgs/msg/Bool]ignition.msgs.Boolean')
+
 
 class TestPayloadBridges(unittest.TestCase):
     world_name = 'foo'
