@@ -80,7 +80,6 @@ install(DIRECTORY
   worlds
   models
   launch
-  ${CMAKE_CURRENT_BINARY_DIR}/hooks
   DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
