@@ -81,8 +81,6 @@ void BaseStation::OnVideo(const ignition::msgs::Dataframe &_msg)
     this->simTimes.clear();
     this->sensorFrame = msg.data();
 
-    std::cerr << "received video, sensor frame " << msg.data() << std::endl;
-
     std::function<void(const ignition::msgs::Boolean &, const bool)> cb =
         [](const ignition::msgs::Boolean &/*_rep*/, const bool _result)
     {
@@ -109,7 +107,6 @@ void BaseStation::OnVideo(const ignition::msgs::Dataframe &_msg)
   if (this->simTimes.size() >= this->kVideoStreamWindowSize)
   {
     double avgT = this->simTimeSum / this->kVideoStreamWindowSize;
-    // std::cerr << " avgT " << avgT << std::endl;
     if ((1 / avgT) < this->kminStreamRate)
     {
       std::cerr << "video stream is lower than "

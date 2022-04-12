@@ -27,6 +27,8 @@
 
 using std::placeholders::_1;
 
+/// \brief A relay node for forward target and video streams to the
+/// base station over inter-robot comms
 class VideoTargetRelay : public rclcpp::Node
 {
   /// \brief Constructor
@@ -35,9 +37,14 @@ class VideoTargetRelay : public rclcpp::Node
   /// \brief Destructor
   public: ~VideoTargetRelay();
 
+  /// \brief Callabck when a target is reported
+  /// \param[in] _msg String vector message with the following data:
+  /// [<target_type>, <image_x_pos>, <image_y_pos>]
   public: void OnTarget(
       const std::shared_ptr<ros_ign_interfaces::msg::StringVec> _msg);
 
+  /// \brief Callback when a video stream is received
+  /// \param[in] _msg Image message
   public: void OnVideo(
       const std::shared_ptr<sensor_msgs::msg::Image> _msg);
 
@@ -52,7 +59,10 @@ class VideoTargetRelay : public rclcpp::Node
   private: rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr
       videoSub;
 
+  /// \brief Publisher to publish target and video msgs to the comms broker
   public: ignition::transport::Node::Publisher brokerPub;
+
+  /// \brief Name of robot that this relay node is for
   public: std::string robotName;
 };
 
@@ -92,8 +102,6 @@ void VideoTargetRelay::OnVideo(
   strMsg.set_data(frameId);
   std::string data;
   strMsg.SerializeToString(&data);
-
-  // todo(anyone) make sure _msg contains valid image
 
   // pack the dataframe msg and send it to broker
   ignition::msgs::Dataframe msg;
