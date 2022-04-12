@@ -273,9 +273,9 @@ class Model:
                 arm_command.append(arm_model_file)
                 process = subprocess.Popen(arm_command, stdout=subprocess.PIPE)
                 stdout = process.communicate()[0]
-                str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
-                f = open(arm_model_output_file, 'w')
-                f.write(str_output)
+                str_output = codecs.getdecoder('unicode_escape')(stdout)[0]
+                with open(arm_model_output_file, 'w') as f:
+                    f.write(str_output)
                 # print(arm_command, str_output)
 
                 gripper_model_file = os.path.join(
@@ -289,9 +289,9 @@ class Model:
                 gripper_command.append(gripper_model_file)
                 process = subprocess.Popen(gripper_command, stdout=subprocess.PIPE)
                 stdout = process.communicate()[0]
-                str_output = codecs.getdecoder("unicode_escape")(stdout)[0]
-                f = open(gripper_model_output_file, 'w')
-                f.write(str_output)
+                str_output = codecs.getdecoder('unicode_escape')(stdout)[0]
+                with open(gripper_model_output_file, 'w') as f:
+                    f.write(str_output)
                 # print(gripper_command, str_output)
 
         command.append(template_file)
