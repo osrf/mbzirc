@@ -278,6 +278,11 @@ class mbzirc::GameLogicPluginPrivate
                                      Entity _entity,
                                      const math::AxisAlignedBox &_boundary);
 
+
+  /// \brief Pause trajectory following for the specified vessel
+  /// \param[in] _vessel Name of vessel
+  public: void PauseVesselTrajectory(const std::string &_vessel);
+
   /// \brief Valid target reports, add time penalties, and update score
   public: void ValidateTargetReports();
 
@@ -1537,6 +1542,18 @@ bool GameLogicPluginPrivate::OnSkipToPhase(
 }
 
 /////////////////////////////////////////////////
+void GameLogicPluginPrivate::PauseVesselTrajectory(const std::string &_vessel)
+{
+  std::string topic = "/model/" + _vessel + "/trajectory_follower/pause";
+  topic = transport::TopicUtils::AsValidTopic(topic);
+  transport::Node::Publisher pub =
+      this->node.Advertise<ignition::msgs::Boolean>(topic);
+  ignition::msgs::Boolean msg;
+  msg.set_data(true);
+  pub.Publish(msg);
+}
+
+/////////////////////////////////////////////////
 void GameLogicPluginPrivate::ValidateTargetReports()
 {
   std::lock_guard<std::mutex> lock(this->reportMutex);
@@ -1570,6 +1587,11 @@ void GameLogicPluginPrivate::ValidateTargetReports()
         this->LogEvent("target_reported", "vessel_id_success");
         this->currentTargetVessel = vessel;
         this->SetPhase("vessel_id_success");
+
+        ignmsg << "Target vessel identified: " << vessel << ". "
+               << "Pausing trajectory following. " << std::endl;
+        this->PauseVesselTrajectory(vessel);
+
         continue;
       }
       // target has already been reported
