@@ -110,7 +110,7 @@ RUN mkdir -p mbzirc_ws/src
 
 # clone ros_ign bridge
 RUN cd /home/$USERNAME/mbzirc_ws/src \
- && git clone https://github.com/osrf/ros_ign.git -b ros2
+ && git clone https://github.com/osrf/ros_ign.git -b galactic
 
 WORKDIR /home/$USERNAME/mbzirc_ws
 
