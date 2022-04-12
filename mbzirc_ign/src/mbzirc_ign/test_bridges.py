@@ -130,6 +130,10 @@ class TestBridges(unittest.TestCase):
         self.assertEqual(bridge.argument(),
                          '/mbzirc/score'
                          '@std_msgs/msg/Float32[ignition.msgs.Float')
+        bridge = bridges.clock()
+        self.assertEqual(bridge.argument(),
+                         '/clock'
+                         '@rosgraph_msgs/msg/Clock[ignition.msgs.Clock')
         bridge = bridges.run_clock()
         self.assertEqual(bridge.argument(),
                          '/mbzirc/run_clock'

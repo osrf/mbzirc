@@ -40,6 +40,7 @@ def launch(context, *args, **kwargs):
 
     bridges = [
       mbzirc_ign.bridges.score(),
+      mbzirc_ign.bridges.clock(),
       mbzirc_ign.bridges.run_clock(),
       mbzirc_ign.bridges.phase(),
       mbzirc_ign.bridges.stream_status(),

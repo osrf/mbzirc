@@ -141,6 +141,7 @@ def gripper_joint_pos(model_name, joint_name):
         ros_type='std_msgs/msg/Float64',
         direction=BridgeDirection.ROS_TO_IGN)
 
+
 def gripper_joint_force_torque(model_name, joint_name):
     return Bridge(
         ign_topic=f'/{model_name}/arm/gripper/{joint_name}/forcetorque',
@@ -148,6 +149,7 @@ def gripper_joint_force_torque(model_name, joint_name):
         ign_type='ignition.msgs.Wrench',
         ros_type='geometry_msgs/msg/Wrench',
         direction=BridgeDirection.IGN_TO_ROS)
+
 
 def arm_image(world_name, model_name, link_name):
     prefix = f'/world/{world_name}/model/{model_name}/model/arm/link/{link_name}/sensor'
@@ -158,6 +160,7 @@ def arm_image(world_name, model_name, link_name):
         ros_type='sensor_msgs/msg/Image',
         direction=BridgeDirection.IGN_TO_ROS)
 
+
 def arm_camera_info(world_name, model_name, link_name):
     prefix = f'/world/{world_name}/model/{model_name}/model/arm/link/{link_name}/sensor'
     return Bridge(
@@ -167,12 +170,22 @@ def arm_camera_info(world_name, model_name, link_name):
         ros_type='sensor_msgs/msg/CameraInfo',
         direction=BridgeDirection.IGN_TO_ROS)
 
+
 def score():
     return Bridge(
         ign_topic='/mbzirc/score',
         ros_topic='/mbzirc/score',
         ign_type='ignition.msgs.Float',
         ros_type='std_msgs/msg/Float32',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
+def clock():
+    return Bridge(
+        ign_topic='/clock',
+        ros_topic='/clock',
+        ign_type='ignition.msgs.Clock',
+        ros_type='rosgraph_msgs/msg/Clock',
         direction=BridgeDirection.IGN_TO_ROS)
 
 
