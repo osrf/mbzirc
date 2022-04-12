@@ -1225,7 +1225,7 @@ TEST_F(MBZIRCTestFixture, GameLogicTargetReport)
     logged = eventsBuffer.str().find("data: large_object_id_failure_1")
                != std::string::npos &&
              eventsBuffer.str().find("data: large_object_id_failure_2")
-               == std::string::npos;
+               == std::string::npos &&
              eventsBuffer.str().find("data: large_object_id_success")
                == std::string::npos;
   }
