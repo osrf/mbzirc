@@ -25,11 +25,8 @@ find_package(std_msgs REQUIRED)
 
 #============================================================================
 # Hooks
-configure_file(
-  "hooks/hook.dsv.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/hooks/hook.dsv" @ONLY
-)
-
+ament_environment_hooks("hooks/resource_paths.dsv.in")
+ament_environment_hooks("hooks/resource_paths.sh")
 
 #============================================================================
 
