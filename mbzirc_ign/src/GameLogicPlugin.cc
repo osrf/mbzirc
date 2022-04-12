@@ -341,6 +341,11 @@ class mbzirc::GameLogicPluginPrivate
   public: rendering::VisualPtr VisualAt(
       unsigned int _x, unsigned int _y, const std::string &_type) const;
 
+
+  /// \brief Publish status message about stream requests / target reports
+  /// \param[in] _status Status string to publish
+  public: void PublishStreamStatus(const std::string &_status);
+
   /// \brief Set the competition phase
   /// \param[in] _phase Competition phase string
   public: void SetPhase(const std::string &_phase);
@@ -965,10 +970,13 @@ void GameLogicPlugin::PostUpdate(
 
   std::string phaseStr = this->dataPtr->Phase();
 
-  // validate target object retrieval - intervention task
+  // validate target reports - inspection task
   if (phaseStr == "started" ||
       phaseStr == "vessel_id_success" ||
-      phaseStr == "small_object_id_success")
+      phaseStr == "small_object_id_success" ||
+      // if there are more than 1 target vessels, we will starting validating
+      // target reports again.
+      phaseStr == "large_object_retrieve_success")
   {
     // validate target reports
     this->dataPtr->ValidateTargetReports();
@@ -1423,10 +1431,7 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
 
     ignmsg << "Target stream start request: success" << std::endl;
     this->LogEvent("stream_start_request", "success");
-
-    ignition::msgs::StringMsg statusMsg;
-    statusMsg.set_data("stream_started");
-    this->targetStreamStatusPub.Publish(statusMsg);
+    this->PublishStreamStatus("stream_started");
   }
   else
   {
@@ -1435,10 +1440,7 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
             << std::endl;
     _res.set_data(false);
     this->LogEvent("stream_start_request", "no_image_topic_found");
-
-    ignition::msgs::StringMsg statusMsg;
-    statusMsg.set_data("stream_start_request_failed");
-    this->targetStreamStatusPub.Publish(statusMsg);
+    this->PublishStreamStatus("stream_start_failed");
 
     std::lock_guard<std::mutex> lock(this->streamMutex);
     this->targetStreamTopic.clear();
@@ -1459,9 +1461,7 @@ bool GameLogicPluginPrivate::OnTargetStreamStop(
 
   ignmsg << "Target stream stop request: success" << std::endl;
   this->LogEvent("stream_stopped", this->targetStreamTopic);
-  ignition::msgs::StringMsg statusMsg;
-  statusMsg.set_data("stream_stopped");
-  this->targetStreamStatusPub.Publish(statusMsg);
+  this->PublishStreamStatus("stream_stopped");
 
   return true;
 }
@@ -1477,9 +1477,7 @@ bool GameLogicPluginPrivate::OnTargetStreamReport(
             << std::endl;
     this->LogEvent("target_reported_in_stream", "run_not_active");
     _res.set_data(false);
-    ignition::msgs::StringMsg statusMsg;
-    statusMsg.set_data("target_reported_run_not_active");
-    this->targetStreamStatusPub.Publish(statusMsg);
+    this->PublishStreamStatus("target_reported_run_not_active");
     return true;
   }
 
@@ -1510,10 +1508,6 @@ bool GameLogicPluginPrivate::OnTargetStreamReport(
   ignmsg << "Target report in stream: " << type << " " << x << " " << y
          << std::endl;
   this->LogEvent("target_reported_in_stream", eventData);
-
-  ignition::msgs::StringMsg statusMsg;
-  statusMsg.set_data("target_reported");
-  this->targetStreamStatusPub.Publish(statusMsg);
 
   _res.set_data(true);
   return true;
@@ -1587,6 +1581,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
         this->LogEvent("target_reported", "vessel_id_success");
         this->currentTargetVessel = vessel;
         this->SetPhase("vessel_id_success");
+        this->PublishStreamStatus("vessel_id_success");
 
         ignmsg << "Target vessel identified: " << vessel << ". "
                << "Pausing trajectory following. " << std::endl;
@@ -1613,6 +1608,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               this->targets[vessel] = target;
               this->LogEvent("target_reported", "small_object_id_success");
               this->SetPhase("small_object_id_success");
+              this->PublishStreamStatus("small_object_id_success");
               continue;
             }
             else
@@ -1624,6 +1620,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
           {
             // add penalty for incorrectly identifying small object
             std::string logData = "small_object_id_failure";
+            this->PublishStreamStatus(logData);
             unsigned int count = 0u;
             auto it = this->smallObjectIdPenaltyCount.find(vessel);
             if (it != this->smallObjectIdPenaltyCount.end())
@@ -1675,6 +1672,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
                 this->targets[vessel] = target;
                 this->LogEvent("target_reported", "large_object_id_success");
                 this->SetPhase("large_object_id_success");
+                this->PublishStreamStatus("large_object_id_success");
                 continue;
               }
               else
@@ -1686,6 +1684,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             {
               // add penalty for incorrectly identifying large object
               std::string logData = "large_object_id_failure";
+              this->PublishStreamStatus(logData);
               unsigned int count = 0u;
               auto it = this->largeObjectIdPenaltyCount.find(vessel);
               if (it != this->largeObjectIdPenaltyCount.end())
@@ -1728,6 +1727,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
     {
       // add penalty for incorrectly identifying vessel
       std::string logData = "vessel_id_failure";
+      this->PublishStreamStatus(logData);
       this->vesselPenaltyCount++;
       if (this->vesselPenaltyCount == 1u)
       {
@@ -2394,6 +2394,14 @@ rendering::VisualPtr GameLogicPluginPrivate::VisualAt(
     return target;
   }
   return nullptr;
+}
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::PublishStreamStatus(const std::string &_status)
+{
+  ignition::msgs::StringMsg statusMsg;
+  statusMsg.set_data(_status);
+  this->targetStreamStatusPub.Publish(statusMsg);
 }
 
 /////////////////////////////////////////////////

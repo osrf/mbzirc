@@ -75,12 +75,12 @@ VideoTargetRelay::VideoTargetRelay()
 
   this->targetSub =
      this->create_subscription<ros_ign_interfaces::msg::StringVec>(
-     "/mbzirc/target/stream/report", 1,
+     "mbzirc/target/stream/report", 1,
      std::bind(&VideoTargetRelay::OnTarget, this, _1));
 
   this->videoSub =
      this->create_subscription<sensor_msgs::msg::Image>(
-     "/mbzirc/target/stream/start", 1,
+     "mbzirc/target/stream/start", 1,
      std::bind(&VideoTargetRelay::OnVideo, this, _1));
 
   std::string brokerTopic = "/broker/msgs";
