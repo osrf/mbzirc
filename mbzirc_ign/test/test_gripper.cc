@@ -95,6 +95,12 @@ TEST_F(GripperTestFixture, GripperController)
 
   // Run the simulation synchronously.
   StartSim(false);
+  // Enable suction
+  {
+    ignition::msgs::Boolean suction;
+    suction.set_data(true);
+    suction_pub.Publish(suction);
+  }
   // Move arm to pick up object
   ignition::msgs::Double gripperMsg;
   gripperMsg.set_data(1.57);
@@ -126,9 +132,11 @@ TEST_F(GripperTestFixture, GripperController)
 
   igndbg << "Detaching gripper\n";
   // Detach gripper and swing the arm
-  ignition::msgs::Boolean suction;
-  suction.set_data(false);
-  suction_pub.Publish(suction);
+  {
+    ignition::msgs::Boolean suction;
+    suction.set_data(false);
+    suction_pub.Publish(suction);
+  }
   //std::this_thread::sleep_for(1000ms);
   gripperMsg.set_data(-1.57);
   gripper_pub.Publish(gripperMsg);

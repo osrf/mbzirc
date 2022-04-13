@@ -202,11 +202,11 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'arm',
             default_value='',
-            description="arm model to attach to usv"),
+            description='arm model to attach to usv'),
         DeclareLaunchArgument(
             'gripper',
             default_value='mbzirc_oberon7_gripper',
-            description="gripper model to attach to arm"),
+            description='gripper model to attach to arm'),
         DeclareLaunchArgument(
             'slot0',
             default_value='',

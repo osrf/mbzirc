@@ -193,7 +193,7 @@ class MBZIRCTestFixture : public ::testing::Test
   /// \brief Kill the launch file and associated processes.
   public: void StopLaunchFile(pid_t _launchfileHandle)
   {
-    killpg(_launchfileHandle, SIGTERM);
+    killpg(_launchfileHandle, SIGINT);
   }
 
   /// \brief Set Max iterations to wait when StartSim is called.

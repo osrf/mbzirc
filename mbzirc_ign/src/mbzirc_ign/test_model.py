@@ -86,7 +86,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(args), 18)
 
         [bridges, nodes] = model.bridges('test_world_name')
-        self.assertEqual(len(bridges), 21)
+        self.assertEqual(len(bridges), 22)
         self.assertEqual(len(nodes), 1)
 
     def test_multiple_config(self):

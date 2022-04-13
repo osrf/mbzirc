@@ -103,6 +103,10 @@ class TestBridges(unittest.TestCase):
         self.assertEqual(bridge.argument(),
                          f'{prefix}/camera/camera_info'
                          '@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo')
+        bridge = bridges.wrist_joint_force_torque(self.model_name)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/wrist/forcetorque'
+                         '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
 
     def test_gripper(self):
         bridge = bridges.gripper_joint_states(self.world_name, self.model_name)
@@ -124,6 +128,16 @@ class TestBridges(unittest.TestCase):
         self.assertEqual(bridge.argument(),
                          f'/{self.model_name}/arm/gripper/{gripper_joint_name}/forcetorque'
                          '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
+
+        bridge = bridges.gripper_suction_contacts(self.model_name)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/gripper/contact'
+                         '@ros_ign_interfaces/msg/Contacts[ignition.msgs.Contacts')
+
+        bridge = bridges.gripper_suction_control(self.model_name)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/gripper/suction_on'
+                         '@std_msgs/msg/Bool]ignition.msgs.Boolean')
 
     def test_competition(self):
         bridge = bridges.score()

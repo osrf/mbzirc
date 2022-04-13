@@ -283,6 +283,10 @@ class mbzirc::GameLogicPluginPrivate
   /// \param[in] _vessel Name of vessel
   public: void PauseVesselTrajectory(const std::string &_vessel);
 
+  /// \brief Detach target objects on the specified vessel
+  /// \param[in] _vessel Name of vessel
+  public: void DetachTargetObjects(const std::string &_vessel);
+
   /// \brief Valid target reports, add time penalties, and update score
   public: void ValidateTargetReports();
 
@@ -1548,6 +1552,17 @@ void GameLogicPluginPrivate::PauseVesselTrajectory(const std::string &_vessel)
 }
 
 /////////////////////////////////////////////////
+void GameLogicPluginPrivate::DetachTargetObjects(const std::string &_vessel)
+{
+  std::string topic = "/" + _vessel + "/detach";
+  topic = transport::TopicUtils::AsValidTopic(topic);
+  transport::Node::Publisher pub =
+      this->node.Advertise<ignition::msgs::Empty>(topic);
+  ignition::msgs::Empty msg;
+  pub.Publish(msg);
+}
+
+/////////////////////////////////////////////////
 void GameLogicPluginPrivate::ValidateTargetReports()
 {
   std::lock_guard<std::mutex> lock(this->reportMutex);
@@ -1584,8 +1599,10 @@ void GameLogicPluginPrivate::ValidateTargetReports()
         this->PublishStreamStatus("vessel_id_success");
 
         ignmsg << "Target vessel identified: " << vessel << ". "
-               << "Pausing trajectory following. " << std::endl;
+               << "Pausing trajectory following and detaching target objects. "
+               << std::endl;
         this->PauseVesselTrajectory(vessel);
+        this->DetachTargetObjects(vessel);
 
         continue;
       }

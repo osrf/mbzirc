@@ -51,6 +51,10 @@
       name="ignition::gazebo::systems::SceneBroadcaster">
     </plugin>
     <plugin
+      filename="ignition-gazebo-contact-system"
+      name="ignition::gazebo::systems::Contact">
+    </plugin>
+    <plugin
       filename="ignition-gazebo-rf-comms-system"
       name="ignition::gazebo::systems::RFComms">
       <range_config>
