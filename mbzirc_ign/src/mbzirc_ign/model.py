@@ -165,9 +165,6 @@ class Model:
                     bridges.append(
                         mbzirc_ign.bridges.gripper_suction_control(self.model_name)
                     )
-                    bridges.append(
-                        mbzirc_ign.bridges.gripper_suction_contacts(self.model_name)
-                    )
 
         return [bridges, nodes]
 
