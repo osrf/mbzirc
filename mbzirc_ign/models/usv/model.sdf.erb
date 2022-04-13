@@ -285,12 +285,6 @@ end
         <size>4 3.3 0.25</size>
       </box>
     </geometry>
-  <!-- Comms endpoint-->
-  <plugin
-    filename="ignition-gazebo-comms-endpoint-system"
-    name="ignition::gazebo::systems::CommsEndpoint">
-    <address><%= $model_name%></address>
-    <topic>model/<%= $model_name%>/rx</topic>
   </plugin>
   <plugin filename="libEntityDetector.so"
           name="mbzirc::EntityDetector">
@@ -321,6 +315,13 @@ end
         <size>5.8 0.58 0.25</size>
       </box>
     </geometry>
+  </plugin>
+  <!-- Comms endpoint-->
+  <plugin
+    filename="ignition-gazebo-comms-endpoint-system"
+    name="ignition::gazebo::systems::CommsEndpoint">
+    <address><%= $model_name%></address>
+    <topic>model/<%= $model_name%>/rx</topic>
   </plugin>
 
   <!-- uncomment the following to visualize valid region for placement

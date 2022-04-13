@@ -50,6 +50,10 @@
       name="ignition::gazebo::systems::SceneBroadcaster">
     </plugin>
     <plugin
+      filename="ignition-gazebo-contact-system"
+      name="ignition::gazebo::systems::Contact">
+    </plugin>
+    <plugin
       filename="ignition-gazebo-rf-comms-system"
       name="ignition::gazebo::systems::RFComms">
       <range_config>
@@ -256,143 +260,55 @@
       </plugin>
     </include>
 
-    <!-- uncomment when small blue box switches to simple colliders
     <include>
-      <name>small_blue_box</name>
-      <pose relative_to="Vessel A">-0.14 0.04 0.2 0 0 1.2</pose>
+      <name>small_blue_box_a</name>
+      <pose relative_to="Vessel A">-0.14 0.04 0.05 0 0 1.2</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
     </include>
 
     <include>
-      <name>small_blue_box_a</name>
-      <pose relative_to="Vessel A">-1.28 0.23 0.2 0 0 1</pose>
+      <name>small_blue_box_a_duplicate</name>
+      <pose relative_to="Vessel A">-1.28 0.23 0.05 0 0 1</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_a</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
     </include>
-    -->
 
     <include>
       <name>large_dry_box_a</name>
-      <pose relative_to="Vessel A">0.08 -0.59 0.2 0 0 -0.3</pose>
+      <pose relative_to="Vessel A">0.08 -0.57 0.05 0 0 -0.3</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_a_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
     </include>
 
     <include>
       <name>large_dry_box_a_duplicate</name>
-      <pose relative_to="Vessel A">0.7 0.23 0.2 0 0 0.2</pose>
+      <pose relative_to="Vessel A">0.7 0.23 0.05 0 0 0.2</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_dry_box_a</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
     </include>
-
-    <model name="small_box_a">
-      <pose relative_to="Vessel A">-0.14 0.04 0.2 0 0 1.2</pose>
-      <link name="link">
-        <inertial>
-          <mass>1</mass>
-          <inertia>
-          <ixx>0.0066667</ixx>
-          <ixy>0.0</ixy>
-          <ixz>0.0</ixz>
-          <iyy>0.0066667</iyy>
-          <iyz>0.0</iyz>
-          <izz>0.0066667</izz>
-          </inertia>
-        </inertial>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.2 0.2 0.2</size>
-            </box>
-          </geometry>
-          <material>
-            <diffuse>0 0 1</diffuse>
-          </material>
-        </visual>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.2 0.2 0.2</size>
-            </box>
-          </geometry>
-        </collision>
-      </link>
-    </model>
-
-    <model name="small_box_a_duplicate">
-      <pose relative_to="Vessel A">-1.28 0.23 0.2 0 0 1</pose>
-      <link name="link">
-        <inertial>
-          <mass>1</mass>
-          <inertia>
-          <ixx>0.0066667</ixx>
-          <ixy>0.0</ixy>
-          <ixz>0.0</ixz>
-          <iyy>0.0066667</iyy>
-          <iyz>0.0</iyz>
-          <izz>0.0066667</izz>
-          </inertia>
-        </inertial>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.2 0.2 0.2</size>
-            </box>
-          </geometry>
-          <material>
-            <diffuse>0 0 1</diffuse>
-          </material>
-        </visual>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.2 0.2 0.2</size>
-            </box>
-          </geometry>
-        </collision>
-      </link>
-    </model>
-
-<!--
-    <model name="large_box_a">
-      <pose>24.9 24.85 0.65 0 0 0</pose>
-      <link name="link">
-        <inertial>
-          <mass>10</mass>
-          <inertia>
-          <ixx>0.26667</ixx>
-          <ixy>0.0</ixy>
-          <ixz>0.0</ixz>
-          <iyy>0.26667</iyy>
-          <iyz>0.0</iyz>
-          <izz>0.26667</izz>
-          </inertia>
-        </inertial>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 0.4 0.4</size>
-            </box>
-          </geometry>
-          <material>
-            <diffuse>0 1 0</diffuse>
-          </material>
-        </visual>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 0.4 0.4</size>
-            </box>
-          </geometry>
-        </collision>
-      </link>
-    </model>
--->
 
     <wind>
       <linear_velocity>0.3 0 0</linear_velocity>
@@ -455,8 +371,8 @@
       </geofence>
       <target>
         <vessel>Vessel A</vessel>
-        <small_object>small_box_a</small_object>
-        <small_object>small_box_a_duplicate</small_object>
+        <small_object>small_blue_box_a</small_object>
+        <small_object>small_blue_box_a_duplicate</small_object>
         <large_object>large_dry_box_a</large_object>
         <large_object>large_dry_box_a_duplicate</large_object>
       </target>
