@@ -95,6 +95,10 @@ TEST_F(GripperTestFixture, GripperController)
 
   // Run the simulation synchronously.
   StartSim(false);
+  // Enable suction
+  ignition::msgs::Boolean suction;
+  suction.set_data(true);
+  suction_pub.Publish(suction);
   // Move arm to pick up object
   ignition::msgs::Double gripperMsg;
   gripperMsg.set_data(1.57);
