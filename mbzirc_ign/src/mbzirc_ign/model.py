@@ -132,6 +132,9 @@ class Model:
                             world_name, self.model_name, camera_link
                         )
                     )
+                    bridges.append(
+                        mbzirc_ign.bridges.wrist_joint_force_torque(self.model_name),
+                    )
                     nodes.append(Node(
                         package='mbzirc_ros',
                         executable='optical_frame_publisher',

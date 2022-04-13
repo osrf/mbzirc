@@ -103,6 +103,10 @@ class TestBridges(unittest.TestCase):
         self.assertEqual(bridge.argument(),
                          f'{prefix}/camera/camera_info'
                          '@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo')
+        bridge = bridges.wrist_joint_force_torque(self.model_name)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/arm/wrist/forcetorque'
+                         '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
 
     def test_gripper(self):
         bridge = bridges.gripper_joint_states(self.world_name, self.model_name)

@@ -141,6 +141,13 @@ def gripper_joint_pos(model_name, joint_name):
         ros_type='std_msgs/msg/Float64',
         direction=BridgeDirection.ROS_TO_IGN)
 
+def wrist_joint_force_torque(model_name):
+    return Bridge(
+        ign_topic=f'/{model_name}/arm/wrist/forcetorque',
+        ros_topic=f'arm/wrist/joint/wrench',
+        ign_type='ignition.msgs.Wrench',
+        ros_type='geometry_msgs/msg/Wrench',
+        direction=BridgeDirection.IGN_TO_ROS)
 
 def gripper_joint_force_torque(model_name, joint_name):
     return Bridge(
