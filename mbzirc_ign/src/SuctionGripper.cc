@@ -60,6 +60,7 @@ class mbzirc::SuctionGripperPrivate
       std::lock_guard<std::mutex> lock(this->mtx);
       this->childItem = contact.collision2().id();
       pendingJointCreation = true;
+      break;
     }
   }
 
@@ -163,7 +164,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
 
   if (!this->dataPtr->suctionOn && this->dataPtr->jointCreated)
   {
-    // If e have an item and were commanded to release it
+    // If we have an item and were commanded to release it
     _ecm.RequestRemoveEntity(this->dataPtr->joint);
     this->dataPtr->joint = kNullEntity;
     this->dataPtr->jointCreated = false;
