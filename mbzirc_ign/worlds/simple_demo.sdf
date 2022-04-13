@@ -242,7 +242,7 @@
 
     <include>
       <name>small_blue_box_a</name>
-      <pose relative_to="Vessel A">-0.14 0.04 0.2 0 0 1.2</pose>
+      <pose relative_to="Vessel A">-0.14 0.04 0.05 0 0 1.2</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
@@ -250,26 +250,44 @@
 
     <include>
       <name>small_blue_box_a_duplicate</name>
-      <pose relative_to="Vessel A">-1.28 0.23 0.2 0 0 1</pose>
+      <pose relative_to="Vessel A">-1.28 0.23 0.05 0 0 1</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_a</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
     </include>
 
     <include>
       <name>large_dry_box_a</name>
-      <pose relative_to="Vessel A">0.08 -0.58 0.2 0 0 -0.3</pose>
+      <pose relative_to="Vessel A">0.08 -0.57 0.05 0 0 -0.3</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_a_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
     </include>
 
     <include>
       <name>large_dry_box_a_duplicate</name>
-      <pose relative_to="Vessel A">0.7 0.23 0.2 0 0 0.2</pose>
+      <pose relative_to="Vessel A">0.7 0.23 0.05 0 0 0.2</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_dry_box_a</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
     </include>
 
     <wind>
