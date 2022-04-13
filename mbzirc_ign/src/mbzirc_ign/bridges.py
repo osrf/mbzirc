@@ -170,6 +170,7 @@ def arm_camera_info(world_name, model_name, link_name):
         ros_type='sensor_msgs/msg/CameraInfo',
         direction=BridgeDirection.IGN_TO_ROS)
 
+
 def gripper_suction_contacts(model_name):
     return Bridge(
         ign_topic=f'/{model_name}/arm/gripper/contact',
@@ -179,6 +180,7 @@ def gripper_suction_contacts(model_name):
         direction=BridgeDirection.IGN_TO_ROS
     )
 
+
 def gripper_suction_control(model_name):
     return Bridge(
         ign_topic=f'/{model_name}/arm/gripper/suction_on',
@@ -187,4 +189,3 @@ def gripper_suction_control(model_name):
         ros_type='std_msgs/msg/Bool',
         direction=BridgeDirection.ROS_TO_IGN
     )
-
