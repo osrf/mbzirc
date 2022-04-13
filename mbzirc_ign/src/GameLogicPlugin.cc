@@ -1511,9 +1511,8 @@ void GameLogicPluginPrivate::DetachTargetObjects(const std::string &_vessel)
   std::string topic = "/" + _vessel + "/detach";
   topic = transport::TopicUtils::AsValidTopic(topic);
   transport::Node::Publisher pub =
-      this->node.Advertise<ignition::msgs::Boolean>(topic);
-  ignition::msgs::Boolean msg;
-  msg.set_data(true);
+      this->node.Advertise<ignition::msgs::Empty>(topic);
+  ignition::msgs::Empty msg;
   pub.Publish(msg);
 }
 
