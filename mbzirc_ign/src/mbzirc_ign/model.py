@@ -45,6 +45,7 @@ ARMS = [
 
 GRIPPERS = [
     'mbzirc_oberon7_gripper',
+    'mbzirc_suction_gripper'
 ]
 
 WAVEFIELD_SIZE = {'simple_demo': 1000, 'coast': 6000}
@@ -131,6 +132,9 @@ class Model:
                             world_name, self.model_name, camera_link
                         )
                     )
+                    bridges.append(
+                        mbzirc_ign.bridges.wrist_joint_force_torque(self.model_name),
+                    )
                     nodes.append(Node(
                         package='mbzirc_ros',
                         executable='optical_frame_publisher',
@@ -145,23 +149,25 @@ class Model:
                     if not self.gripper:
                         self.gripper = 'mbzirc_oberon7_gripper'
 
-                if self.hasValidGripper():
+                # gripper joint pos cmd
+                if self.gripper == 'mbzirc_oberon7_gripper':
                     # gripper_joint states
                     bridges.append(
                         mbzirc_ign.bridges.gripper_joint_states(world_name, self.model_name)
                     )
-
-                    # gripper joint pos cmd
-                    if self.gripper == 'mbzirc_oberon7_gripper':
-                        gripper_joints = ['finger_left', 'finger_right']
-                        for joint in gripper_joints:
-                            bridges.append(
-                                mbzirc_ign.bridges.gripper_joint_pos(self.model_name, joint)
-                            )
-                            bridges.append(
-                                mbzirc_ign.bridges.gripper_joint_force_torque(
-                                    self.model_name, joint)
-                            )
+                    gripper_joints = ['finger_left', 'finger_right']
+                    for joint in gripper_joints:
+                        bridges.append(
+                            mbzirc_ign.bridges.gripper_joint_pos(self.model_name, joint)
+                        )
+                        bridges.append(
+                            mbzirc_ign.bridges.gripper_joint_force_torque(
+                                self.model_name, joint)
+                        )
+                elif self.gripper == 'mbzirc_suction_gripper':
+                    bridges.append(
+                        mbzirc_ign.bridges.gripper_suction_control(self.model_name)
+                    )
 
         return [bridges, nodes]
 
@@ -267,8 +273,9 @@ class Model:
                     get_package_share_directory('mbzirc_ign'), 'models',
                     self.arm, 'model.sdf')
                 arm_command = ['erb']
+
                 if self.gripper:
-                    command.append(f'gripper={self.gripper}')
+                    arm_command.append(f'gripper={self.gripper}')
                 arm_command.append(f'topic_prefix={self.model_name}')
                 arm_command.append(arm_model_file)
                 process = subprocess.Popen(arm_command, stdout=subprocess.PIPE)
