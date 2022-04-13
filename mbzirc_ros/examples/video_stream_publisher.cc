@@ -29,9 +29,11 @@ using std::placeholders::_1;
 class VideoStreamPublisher : public rclcpp::Node
 {
   /// \brief Constructor
+  /// \param[in] _robot Name of robot sending the image stream
   /// \param[in] _topic Image topic to subscribe to
   /// \param[in] _frameId Frame ID of the camera which the image comes from
-  public: VideoStreamPublisher(const std::string &_topic,
+  public: VideoStreamPublisher(const std::string &_robot,
+      const std::string &_topic,
       const std::string &_frameId)
       : Node("video_stream_publisher")
   {
@@ -45,7 +47,7 @@ class VideoStreamPublisher : public rclcpp::Node
 
     // publish image to base station
     this->pub = this->create_publisher<sensor_msgs::msg::Image>(
-        "/mbzirc/target/stream/start", 10);
+        "/" + _robot + "/mbzirc/target/stream/start", 10);
   }
 
   /// \brief Subscriber callback which updates the frame id of the image
@@ -74,21 +76,23 @@ class VideoStreamPublisher : public rclcpp::Node
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  if (argc < 2)
+  if (argc < 3)
   {
     std::cerr << "Usage: ros2 run mbzirc_ros video_stream_publisher "
-              << "--ros-args <topic name> [camera frame ID]"
+              << "<robot_name> <topic name> [camera frame ID]"
               << std::endl;
     exit(1);
   }
 
+  // Name of robot sending the image data to base station
+  std::string robot = argv[1];
   // image topic to subscribe to
-  std::string topic = argv[1];
+  std::string topic = argv[2];
   // user-specified frame_id
   // if this is empty, the original frame_id of the image will be used
-  std::string frameId = argv[2];
+  std::string frameId = argv[3];
 
-  rclcpp::spin(std::make_shared<VideoStreamPublisher>(topic, frameId));
+  rclcpp::spin(std::make_shared<VideoStreamPublisher>(robot, topic, frameId));
   rclcpp::shutdown();
   return 0;
 }
