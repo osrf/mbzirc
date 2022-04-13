@@ -255,28 +255,28 @@ TEST(RosApiTest, ArmTopics)
 
   // image_raw
   MyTestClass<sensor_msgs::msg::Image> image(
-      "/usv/arm/wrist_link/image_raw");
+      "/usv/arm/wrist/image_raw");
   waitUntilBoolVarAndSpin(
     node, image.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(image.callbackExecuted);
 
   // camera_info
   MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfo(
-      "/usv/arm/wrist_link/camera_info");
+      "/usv/arm/wrist/camera_info");
   waitUntilBoolVarAndSpin(
     node, cameraInfo.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(cameraInfo.callbackExecuted);
 
   // optical image
   MyTestClass<sensor_msgs::msg::Image> imageOptical(
-      "/usv/arm/wrist_link/optical/image_raw");
+      "/usv/arm/wrist/optical/image_raw");
   waitUntilBoolVarAndSpin(
     node, imageOptical.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(imageOptical.callbackExecuted);
 
   // optical camera_info
   MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfoOptical(
-      "/usv/arm/wrist_link/optical/camera_info");
+      "/usv/arm/wrist/optical/camera_info");
   waitUntilBoolVarAndSpin(
     node, cameraInfoOptical.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(cameraInfoOptical.callbackExecuted);
