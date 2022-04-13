@@ -453,14 +453,6 @@
         <bearing_tolerance>5</bearing_tolerance>
         <zero_vel_on_bearing_reached>true</zero_vel_on_bearing_reached>
       </plugin>
-
-      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
-       <parent_link>link</parent_link>
-       <child_model>small_blue_box_a</child_model>
-       <child_link>link</child_link>
-       <topic>/Vessel_A/detach</topic>
-      </plugin>
-
     </include>
 
     <include>
