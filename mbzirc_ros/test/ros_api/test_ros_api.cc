@@ -299,7 +299,7 @@ TEST(RosApiTest, ArmTopics)
 TEST(RosApiTest, TargetStreamTopics)
 {
   auto streamStartPub = node->create_publisher<sensor_msgs::msg::Image>(
-      "/mbzirc/target/stream/start", 10);
+      "/quadrotor/mbzirc/target/stream/start", 10);
 
   // callback to republish image to base station
   std::function<void(const std::shared_ptr<sensor_msgs::msg::Image>)> imgCb =
@@ -332,7 +332,7 @@ TEST(RosApiTest, TargetStreamTopics)
 
   auto streamReportPub = node->create_publisher<
       ros_ign_interfaces::msg::StringVec>(
-      "/mbzirc/target/stream/report", 10);
+      "/quadrotor/mbzirc/target/stream/report", 10);
 
   ros_ign_interfaces::msg::StringVec msg;
   msg.data.push_back("vessel");
