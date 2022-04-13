@@ -39,9 +39,40 @@ end
           </cylinder>
         </geometry>
       </visual>
+    </link>
+    <link name='suction'>
+      <inertial>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>8.33e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.33e-06</iyy>
+          <iyz>0</iyz>
+          <izz>8.33e-06</izz>
+         </inertia>
+      </inertial>
+      <collision name='suction_collision'>
+        <pose>0.0505 0 0 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.04</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='suction_visual'>
+        <pose>0.0505 0 0 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.04</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+      </visual>
       <sensor name='sensor_contact' type='contact'>
         <contact>
-          <collision>end_effector_collision</collision>
+          <collision>suction_collision</collision>
           <topic><%= $topic_prefix %>/gripper/contact</topic>
         </contact>
         <always_on>1</always_on>
@@ -49,11 +80,16 @@ end
       </sensor>
     </link>
 
+    <joint name='suction_joint' type='fixed'>
+      <parent>end_effector</parent>
+      <child>suction</child>
+    </joint>
+
     <!-- Controller -->
     <plugin
       filename="libSuctionGripper.so"
       name="mbzirc::SuctionGripperPlugin">
-      <parent_link>end_effector</parent_link>
+      <parent_link>suction</parent_link>
       <contact_sensor_topic><%= $topic_prefix %>/gripper/contact</contact_sensor_topic>
       <command_topic><%= $topic_prefix %>/gripper/suction_on</command_topic>
     </plugin>
