@@ -127,7 +127,7 @@ class TestBridges(unittest.TestCase):
 
         bridge = bridges.gripper_suction_contacts(self.model_name)
         self.assertEqual(bridge.argument(),
-                         f'/{self.model_name}/arm/gripper/contact_sensor'
+                         f'/{self.model_name}/arm/gripper/contact'
                          '@ros_ign_interfaces/msg/Contacts[ignition.msgs.Contacts')
 
         bridge = bridges.gripper_suction_control(self.model_name)

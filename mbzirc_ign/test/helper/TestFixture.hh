@@ -83,15 +83,8 @@ class MBZIRCTestFixture : public ::testing::Test
   /// \param[in] World file name.
   public: void LoadWorld(std::string _world)
   {
-    std::string foo;
-    ignition::common::env("IGN_GAZEBO_RESOURCE_PATH", foo);
-
-    std::cout << foo << std::endl;
-
     auto worldPath = ignition::common::joinPaths(
       std::string(PROJECT_SOURCE_PATH), "worlds", _world);
-
-    std::cout << worldPath << std::endl;
 
     // Setup fixture
     this->fixture = std::make_unique<ignition::gazebo::TestFixture>(worldPath);
