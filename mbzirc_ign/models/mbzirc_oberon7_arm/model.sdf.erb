@@ -463,6 +463,10 @@ $camera_sensor_local_pose = "0.19 0.075 0.0 -1.570796326794896 0 0"
           <spring_stiffness>0</spring_stiffness>
         </dynamics>
       </axis>
+      <sensor name="force_torque" type="force_torque">
+        <update_rate>10</update_rate>
+        <topic><%= $topic_prefix %>/arm/wrist/forcetorque</topic>
+      </sensor>
     </joint>
 
     <!-- Controller -->
