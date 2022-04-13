@@ -280,6 +280,7 @@ class Model:
                 str_output = codecs.getdecoder('unicode_escape')(stdout)[0]
                 with open(arm_model_output_file, 'w') as f:
                     f.write(str_output)
+                # print(arm_command, str_output)
 
                 gripper_model_file = os.path.join(
                     get_package_share_directory('mbzirc_ign'), 'models',
@@ -293,10 +294,9 @@ class Model:
                 process = subprocess.Popen(gripper_command, stdout=subprocess.PIPE)
                 stdout = process.communicate()[0]
                 str_output = codecs.getdecoder('unicode_escape')(stdout)[0]
-
-                print(f'Writing to {gripper_model_output_file}')
                 with open(gripper_model_output_file, 'w') as f:
                     f.write(str_output)
+                # print(gripper_command, str_output)
 
         command.append(template_file)
         process = subprocess.Popen(command,
