@@ -616,6 +616,7 @@
         </joint>
 
         <!-- uncomment to debug sensor slot frames -->
+        <!--
         <link name="debug_link">
           <visual name="sensor_slot0">
             <pose relative_to="slot_0">0 0 0 0 0 0</pose>
@@ -710,5 +711,6 @@
             <child>debug_link</child>
             <parent>base_link</parent>
         </joint>
+        -->
     </model>
 </sdf>
