@@ -362,5 +362,13 @@ end
     <static_update_frequency>1</static_update_frequency>
   </plugin>
 
+  <!-- Comms endpoint-->
+  <plugin
+    filename="ignition-gazebo-comms-endpoint-system"
+    name="ignition::gazebo::systems::CommsEndpoint">
+    <address><%= $model_name%></address>
+    <topic>model/<%= $model_name%>/rx</topic>
+  </plugin>
+
 </model>
 </sdf>

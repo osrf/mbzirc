@@ -87,6 +87,10 @@ class Model:
             mbzirc_ign.bridges.pose(self.model_name),
             # pose static
             mbzirc_ign.bridges.pose_static(self.model_name),
+            # comms tx
+            mbzirc_ign.bridges.comms_tx(self.model_name),
+            # comms rx
+            mbzirc_ign.bridges.comms_rx(self.model_name),
         ]
         if self.isUAV():
             bridges.extend([

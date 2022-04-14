@@ -202,6 +202,24 @@ def gripper_suction_control(model_name):
     )
 
 
+def comms_tx(model_name):
+    return Bridge(
+        ign_topic='/broker/msgs',
+        ros_topic=f'tx',
+        ign_type='ignition.msgs.Dataframe',
+        ros_type='ros_ign_interfaces/msg/Dataframe',
+        direction=BridgeDirection.ROS_TO_IGN)
+
+
+def comms_rx(model_name):
+    return Bridge(
+        ign_topic=f'/model/{model_name}/rx',
+        ros_topic=f'rx',
+        ign_type='ignition.msgs.Dataframe',
+        ros_type='ros_ign_interfaces/msg/Dataframe',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
 def score():
     return Bridge(
         ign_topic='/mbzirc/score',
