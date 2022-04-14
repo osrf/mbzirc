@@ -170,6 +170,11 @@
       </sensor>
     </link>
 
+    <!-- gripper mount point -->
+    <frame name="gripper_mount_point">
+      <pose>0.0 0 -0.04 0 1.57 0</pose>
+    </frame>
+
     <!-- Front payload slot -->
     <frame name="slot_0">
       <pose>0.1 0 0.0 0 0 0</pose>
@@ -187,7 +192,7 @@
 
     <!-- Bottom payload slot -->
     <frame name="slot_3">
-      <pose>0.0 0 -0.044 0 1.57 0</pose>
+      <pose>0.06 0 -0.05 0 1.57 0</pose>
     </frame>
 
     <!-- Left payload slot -->
@@ -202,12 +207,12 @@
 
     <!-- Bottom left payload slot -->
     <frame name="slot_6">
-      <pose>0.0 0.05 -0.044 0 1.57 0</pose>
+      <pose>0.06 0.05 -0.05 0 1.57 0</pose>
     </frame>
 
     <!-- Bottom right payload slot -->
     <frame name="slot_7">
-      <pose>0.0 -0.05 -0.044 0 1.57 0</pose>
+      <pose>0.06 -0.05 -0.05 0 1.57 0</pose>
     </frame>
 
     <link name='rotor_0'>
@@ -572,5 +577,6 @@
         <parent>base_link</parent>
     </joint>
     -->
+
   </model>
 </sdf>

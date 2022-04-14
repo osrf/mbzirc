@@ -153,25 +153,29 @@ class Model:
                     if not self.gripper:
                         self.gripper = 'mbzirc_oberon7_gripper'
 
-                # gripper joint pos cmd
-                if self.gripper == 'mbzirc_oberon7_gripper':
-                    # gripper_joint states
+
+        if self.hasValidGripper():
+            isAttachedToArm = self.isUSV();
+            # gripper joint pos cmd
+            if self.gripper == 'mbzirc_oberon7_gripper':
+                # gripper_joint states
+                bridges.append(
+                    mbzirc_ign.bridges.gripper_joint_states(world_name, self.model_name,
+                    isAttachedToArm)
+                )
+                gripper_joints = ['finger_left', 'finger_right']
+                for joint in gripper_joints:
                     bridges.append(
-                        mbzirc_ign.bridges.gripper_joint_states(world_name, self.model_name)
+                        mbzirc_ign.bridges.gripper_joint_pos(self.model_name, joint, isAttachedToArm)
                     )
-                    gripper_joints = ['finger_left', 'finger_right']
-                    for joint in gripper_joints:
-                        bridges.append(
-                            mbzirc_ign.bridges.gripper_joint_pos(self.model_name, joint)
-                        )
-                        bridges.append(
-                            mbzirc_ign.bridges.gripper_joint_force_torque(
-                                self.model_name, joint)
-                        )
-                elif self.gripper == 'mbzirc_suction_gripper':
                     bridges.append(
-                        mbzirc_ign.bridges.gripper_suction_control(self.model_name)
+                        mbzirc_ign.bridges.gripper_joint_force_torque(
+                            self.model_name, joint, isAttachedToArm)
                     )
+            elif self.gripper == 'mbzirc_suction_gripper':
+                bridges.append(
+                    mbzirc_ign.bridges.gripper_suction_control(self.model_name, isAttachedToArm)
+                )
 
         return [bridges, nodes]
 
@@ -262,6 +266,8 @@ class Model:
             if self.battery_capacity == 0:
                 raise RuntimeError('Battery Capacity is zero, was flight_time set?')
             command.append(f'capacity={self.battery_capacity}')
+            if self.hasValidGripper():
+                command.append(f'gripper={self.gripper}')
 
         if self.model_type in USVS:
             command.append(f'wavefieldSize={self.wavefield_size}')
@@ -289,21 +295,25 @@ class Model:
                     f.write(str_output)
                 # print(arm_command, str_output)
 
-                gripper_model_file = os.path.join(
-                    get_package_share_directory('mbzirc_ign'), 'models',
-                    self.gripper, 'model.sdf.erb')
-                gripper_model_output_file = os.path.join(
-                    get_package_share_directory('mbzirc_ign'), 'models',
-                    self.gripper, 'model.sdf')
-                gripper_command = ['erb']
-                gripper_command.append(f'topic_prefix={self.model_name}/arm')
-                gripper_command.append(gripper_model_file)
-                process = subprocess.Popen(gripper_command, stdout=subprocess.PIPE)
-                stdout = process.communicate()[0]
-                str_output = codecs.getdecoder('unicode_escape')(stdout)[0]
-                with open(gripper_model_output_file, 'w') as f:
-                    f.write(str_output)
-                # print(gripper_command, str_output)
+        if self.hasValidGripper():
+            gripper_model_file = os.path.join(
+                get_package_share_directory('mbzirc_ign'), 'models',
+                self.gripper, 'model.sdf.erb')
+            gripper_model_output_file = os.path.join(
+                get_package_share_directory('mbzirc_ign'), 'models',
+                self.gripper, 'model.sdf')
+            gripper_command = ['erb']
+            topic_prefix = f'{self.model_name}'
+            if (self.isUSV()):
+              topic_prefix += '/arm'
+            gripper_command.append(f'topic_prefix={topic_prefix}')
+            gripper_command.append(gripper_model_file)
+            process = subprocess.Popen(gripper_command, stdout=subprocess.PIPE)
+            stdout = process.communicate()[0]
+            str_output = codecs.getdecoder('unicode_escape')(stdout)[0]
+            with open(gripper_model_output_file, 'w') as f:
+                f.write(str_output)
+            # print(gripper_command, str_output)
 
         command.append(template_file)
         process = subprocess.Popen(command,
@@ -321,6 +331,7 @@ class Model:
         stdout = process.communicate()[0]
         model_sdf = codecs.getdecoder('unicode_escape')(stdout)[0]
         print(command)
+        print(model_sdf)
 
         return command, model_sdf
 

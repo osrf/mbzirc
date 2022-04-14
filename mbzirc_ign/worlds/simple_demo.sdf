@@ -208,6 +208,7 @@
     </include>
 
     <include>
+      <static>false</static>
       <name>Vessel A</name>
       <pose>25 25 0.3 0 0.0 -1.0</pose>
       <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel A</uri>

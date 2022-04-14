@@ -5,6 +5,10 @@ else
   $model_name = name
 end
 
+if defined?(gripper)
+  $gripper_model = gripper
+end
+
 $slot0_payload = nil
 $slot0_rpy = '0 0 0'
 
@@ -87,6 +91,20 @@ end
     <include merge="true">
       <uri>model://mbzirc_hexrotor_base</uri>
     </include>
+
+    <% if $gripper_model != nil%>
+    <include>
+      <name>gripper</name>
+      <uri>model://<%= $gripper_model%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="gripper_mount_point">0 0 0 0 0 0</pose>
+    </include>
+    <joint name="gripper_joint" type="fixed">
+      <parent>gripper_mount_point</parent>
+      <child>gripper::mount_point</child>
+    </joint>
+    <% end %>
+
     <% if $slot0_payload != nil%>
     <!-- Payload slot0 -->
     <include>

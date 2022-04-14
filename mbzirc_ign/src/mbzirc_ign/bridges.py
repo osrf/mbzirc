@@ -114,11 +114,16 @@ def arm_joint_states(world_name, model_name):
         direction=BridgeDirection.IGN_TO_ROS)
 
 
-def gripper_joint_states(world_name, model_name):
-    gripper_prefix = f'/world/{world_name}/model/{model_name}/model/arm/model/gripper'
+def gripper_joint_states(world_name, model_name, isAttachedToArm):
+    prefix = 'gripper'
+    if isAttachedToArm:
+        gripper_prefix = f'/world/{world_name}/model/{model_name}/model/arm/model/gripper'
+        prefix = 'arm/gripper'
+    else:
+        gripper_prefix = f'/world/{world_name}/model/{model_name}/model/gripper'
     return Bridge(
         ign_topic=f'{gripper_prefix}/joint_state',
-        ros_topic='arm/gripper/joint_states',
+        ros_topic=f'{prefix}/joint_states',
         ign_type='ignition.msgs.Model',
         ros_type='sensor_msgs/msg/JointState',
         direction=BridgeDirection.IGN_TO_ROS)
@@ -133,10 +138,13 @@ def arm_joint_pos(model_name, joint_name):
         direction=BridgeDirection.ROS_TO_IGN)
 
 
-def gripper_joint_pos(model_name, joint_name):
+def gripper_joint_pos(model_name, joint_name, isAttachedToArm):
+    prefix = 'gripper'
+    if isAttachedToArm:
+        prefix = 'arm/gripper'
     return Bridge(
-        ign_topic=f'/{model_name}/arm/gripper/{joint_name}',
-        ros_topic=f'arm/gripper/joint/{joint_name}/cmd_pos',
+        ign_topic=f'/{model_name}/{prefix}/{joint_name}',
+        ros_topic=f'{prefix}/joint/{joint_name}/cmd_pos',
         ign_type='ignition.msgs.Double',
         ros_type='std_msgs/msg/Float64',
         direction=BridgeDirection.ROS_TO_IGN)
@@ -151,10 +159,13 @@ def wrist_joint_force_torque(model_name):
         direction=BridgeDirection.IGN_TO_ROS)
 
 
-def gripper_joint_force_torque(model_name, joint_name):
+def gripper_joint_force_torque(model_name, joint_name, isAttachedToArm):
+    prefix = 'gripper'
+    if isAttachedToArm:
+        prefix = 'arm/gripper'
     return Bridge(
-        ign_topic=f'/{model_name}/arm/gripper/{joint_name}/forcetorque',
-        ros_topic=f'arm/gripper/joint/{joint_name}/wrench',
+        ign_topic=f'/{model_name}/{prefix}/{joint_name}/forcetorque',
+        ros_topic=f'{prefix}/joint/{joint_name}/wrench',
         ign_type='ignition.msgs.Wrench',
         ros_type='geometry_msgs/msg/Wrench',
         direction=BridgeDirection.IGN_TO_ROS)
@@ -182,20 +193,26 @@ def arm_camera_info(world_name, model_name, link_name):
         direction=BridgeDirection.IGN_TO_ROS)
 
 
-def gripper_suction_contacts(model_name):
+def gripper_suction_contacts(model_name, isAttachedToArm):
+    prefix = 'gripper'
+    if isAttachedToArm:
+        prefix = 'arm/gripper'
     return Bridge(
-        ign_topic=f'/{model_name}/arm/gripper/contact',
-        ros_topic='arm/gripper/contact',
+        ign_topic=f'/{model_name}/{prefix}/contact',
+        ros_topic='{prefix}/contact',
         ign_type='ignition.msgs.Contacts',
         ros_type='ros_ign_interfaces/msg/Contacts',
         direction=BridgeDirection.IGN_TO_ROS
     )
 
 
-def gripper_suction_control(model_name):
+def gripper_suction_control(model_name, isAttachedToArm):
+    prefix = 'gripper'
+    if isAttachedToArm:
+        prefix = 'arm/gripper'
     return Bridge(
-        ign_topic=f'/{model_name}/arm/gripper/suction_on',
-        ros_topic=f'arm/gripper/suction_on',
+        ign_topic=f'/{model_name}/{prefix}/suction_on',
+        ros_topic=f'{prefix}/suction_on',
         ign_type='ignition.msgs.Boolean',
         ros_type='std_msgs/msg/Bool',
         direction=BridgeDirection.ROS_TO_IGN
