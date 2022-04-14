@@ -141,6 +141,7 @@ def gripper_joint_pos(model_name, joint_name):
         ros_type='std_msgs/msg/Float64',
         direction=BridgeDirection.ROS_TO_IGN)
 
+
 def wrist_joint_force_torque(model_name):
     return Bridge(
         ign_topic=f'/{model_name}/arm/wrist/forcetorque',
@@ -148,6 +149,7 @@ def wrist_joint_force_torque(model_name):
         ign_type='ignition.msgs.Wrench',
         ros_type='geometry_msgs/msg/Wrench',
         direction=BridgeDirection.IGN_TO_ROS)
+
 
 def gripper_joint_force_torque(model_name, joint_name):
     return Bridge(
@@ -196,3 +198,21 @@ def gripper_suction_control(model_name):
         ros_type='std_msgs/msg/Bool',
         direction=BridgeDirection.ROS_TO_IGN
     )
+
+
+def comms_tx(model_name):
+    return Bridge(
+        ign_topic='/broker/msgs',
+        ros_topic=f'tx',
+        ign_type='ignition.msgs.Dataframe',
+        ros_type='ros_ign_interfaces/msg/Dataframe',
+        direction=BridgeDirection.ROS_TO_IGN)
+
+
+def comms_rx(model_name):
+    return Bridge(
+        ign_topic=f'/model/{model_name}/rx',
+        ros_topic=f'rx',
+        ign_type='ignition.msgs.Dataframe',
+        ros_type='ros_ign_interfaces/msg/Dataframe',
+        direction=BridgeDirection.IGN_TO_ROS)

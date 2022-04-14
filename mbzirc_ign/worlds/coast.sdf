@@ -312,6 +312,22 @@
       filename="ignition-gazebo-contact-system"
       name="ignition::gazebo::systems::Contact">
     </plugin>
+    <plugin
+      filename="ignition-gazebo-rf-comms-system"
+      name="ignition::gazebo::systems::RFComms">
+      <range_config>
+        <max_range>500000.0</max_range>
+        <fading_exponent>2.6</fading_exponent>
+        <l0>40</l0>
+        <sigma>10.0</sigma>
+      </range_config>
+      <radio_config>
+        <capacity>1000000</capacity>
+        <tx_power>20</tx_power>
+        <noise_floor>-90</noise_floor>
+        <modulation>QPSK</modulation>
+      </radio_config>
+    </plugin>
 
     <scene>
       <sky></sky>

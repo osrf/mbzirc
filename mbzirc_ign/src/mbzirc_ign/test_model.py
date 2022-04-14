@@ -21,7 +21,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(args), 18)
 
         [bridges, nodes] = model.bridges('test_world_name')
-        self.assertEqual(len(bridges), 6)
+        self.assertEqual(len(bridges), 8)
         self.assertEqual(len(nodes), 0)
 
         [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
@@ -42,7 +42,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(args), 18)
 
         [bridges, nodes] = model.bridges('test_world_name')
-        self.assertEqual(len(bridges), 5)
+        self.assertEqual(len(bridges), 7)
         self.assertEqual(len(nodes), 0)
 
         [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
@@ -64,7 +64,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(args), 18)
 
         [bridges, nodes] = model.bridges('test_world_name')
-        self.assertEqual(len(bridges), 7)
+        self.assertEqual(len(bridges), 9)
         self.assertEqual(len(nodes), 0)
 
         [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
@@ -86,7 +86,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(args), 18)
 
         [bridges, nodes] = model.bridges('test_world_name')
-        self.assertEqual(len(bridges), 21)
+        self.assertEqual(len(bridges), 24)
         self.assertEqual(len(nodes), 1)
 
     def test_multiple_config(self):
