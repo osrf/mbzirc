@@ -15,6 +15,7 @@ find_package(ignition-math6 REQUIRED)
 set(IGN_MATH_VER ${ignition-math6_VERSION_MAJOR})
 find_package(ignition-msgs8 REQUIRED)
 find_package(ignition-transport11 REQUIRED)
+set(IGN_TRANSPORT_VER ${ignition-transport11_VERSION_MAJOR})
 find_package(ignition-plugin1 REQUIRED COMPONENTS loader register)
 set(IGN_PLUGIN_VER ${ignition-plugin1_VERSION_MAJOR})
 find_package(ignition-rendering6 REQUIRED)
@@ -65,8 +66,22 @@ foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
   )
 endforeach()
 
+# copy of multicoptor control from ign-gazebo with custom modifications
+add_library(MulticopterControl SHARED
+    src/multicopter_control/MulticopterVelocityControl.cc
+    src/multicopter_control/LeeVelocityController.cc
+    src/multicopter_control/Common.cc
+)
+target_link_libraries(MulticopterControl PUBLIC
+  ignition-gazebo${IGN_GAZEBO_VER}::core
+  ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
+  ignition-transport${IGN_TRANSPORT_VER}::ignition-transport${IGN_TRANSPORT_VER}
+  ignition-math${IGN_MATH_VER}::ignition-math${IGN_MATH_VER}
+)
+
+
 install(
-  TARGETS ${MBZIRC_IGN_PLUGINS}
+  TARGETS ${MBZIRC_IGN_PLUGINS} MulticopterControl
   DESTINATION lib)
 
 ament_python_install_package(

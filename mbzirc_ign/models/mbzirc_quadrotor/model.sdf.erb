@@ -317,7 +317,7 @@ end
     </plugin>
     <!--Multicopter velocity controller-->
     <plugin
-      filename="libignition-gazebo-multicopter-control-system.so"
+      filename="libMulticopterControl.so"
       name="ignition::gazebo::systems::MulticopterVelocityControl">
       <robotNamespace>model/<%= $model_name%></robotNamespace>
       <commandSubTopic>cmd_vel</commandSubTopic>
