@@ -82,15 +82,20 @@ void BaseStation::OnVideo(const ignition::msgs::Dataframe &_msg)
     this->sensorFrame = msg.data();
 
     std::function<void(const ignition::msgs::Boolean &, const bool)> cb =
-        [](const ignition::msgs::Boolean &/*_rep*/, const bool _result)
+        [&](const ignition::msgs::Boolean &/*_rep*/, const bool _result)
     {
       if (!_result)
+      {
         ignerr << "Error sending stream start request" << std::endl;
+        this->sensorFrame.clear();
+       }
     };
 
     ignition::msgs::StringMsg_V req;
     req.add_data(this->sensorFrame);
     bool result = this->node.Request("/mbzirc/target/stream/start", req, cb);
+    if (!result)
+      this->sensorFrame.clear();
     return;
   }
 
