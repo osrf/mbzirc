@@ -29,6 +29,22 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(payload_bridges), 8)
         self.assertEqual(len(payload_nodes), 4)
 
+    def test_single_uav_with_gripper_config(self):
+        config = os.path.join(get_package_share_directory('mbzirc_ign'),
+                              'config', 'single_uav_with_gripper_config.yaml')
+        with open(config, 'r') as stream:
+            model = Model.FromConfig(stream)
+        self.assertTrue(model.isUAV())
+
+        model.generate()
+
+        args = model.spawn_args()
+        self.assertEqual(len(args), 18)
+
+        [bridges, nodes] = model.bridges('test_world_name')
+        self.assertEqual(len(bridges), 13)
+        self.assertEqual(len(nodes), 0)
+
     def test_single_fw_uav_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
                               'config', 'single_fw_uav_config.yaml')

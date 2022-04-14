@@ -128,6 +128,7 @@ class Model:
                         )
 
                     camera_link = 'wrist_link'
+                    camera_link_no_suffix = camera_link.rstrip('_link')
                     bridges.append(
                         mbzirc_ign.bridges.arm_image(world_name, self.model_name, camera_link)
                     )
@@ -143,30 +144,30 @@ class Model:
                         package='mbzirc_ros',
                         executable='optical_frame_publisher',
                         arguments=['1'],
-                        remappings=[('input/image', f'arm/{camera_link}/image_raw'),
-                                    ('output/image', f'arm/{camera_link}/optical/image_raw'),
-                                    ('input/camera_info', f'arm/{camera_link}/camera_info'),
+                        remappings=[('input/image', f'arm/{camera_link_no_suffix}/image_raw'),
+                                    ('output/image', f'arm/{camera_link_no_suffix}/optical/image_raw'),
+                                    ('input/camera_info', f'arm/{camera_link_no_suffix}/camera_info'),
                                     ('output/camera_info',
-                                        f'arm/{camera_link}/optical/camera_info')]))
+                                        f'arm/{camera_link_no_suffix}/optical/camera_info')]))
 
                     # default to oberon7 gripper if not specified.
                     if not self.gripper:
                         self.gripper = 'mbzirc_oberon7_gripper'
 
-
         if self.hasValidGripper():
-            isAttachedToArm = self.isUSV();
+            isAttachedToArm = self.isUSV()
             # gripper joint pos cmd
             if self.gripper == 'mbzirc_oberon7_gripper':
                 # gripper_joint states
                 bridges.append(
                     mbzirc_ign.bridges.gripper_joint_states(world_name, self.model_name,
-                    isAttachedToArm)
+                                                            isAttachedToArm)
                 )
                 gripper_joints = ['finger_left', 'finger_right']
                 for joint in gripper_joints:
                     bridges.append(
-                        mbzirc_ign.bridges.gripper_joint_pos(self.model_name, joint, isAttachedToArm)
+                        mbzirc_ign.bridges.gripper_joint_pos(self.model_name, joint,
+                                                             isAttachedToArm)
                     )
                     bridges.append(
                         mbzirc_ign.bridges.gripper_joint_force_torque(
@@ -305,7 +306,7 @@ class Model:
             gripper_command = ['erb']
             topic_prefix = f'{self.model_name}'
             if (self.isUSV()):
-              topic_prefix += '/arm'
+                topic_prefix += '/arm'
             gripper_command.append(f'topic_prefix={topic_prefix}')
             gripper_command.append(gripper_model_file)
             process = subprocess.Popen(gripper_command, stdout=subprocess.PIPE)
@@ -331,7 +332,7 @@ class Model:
         stdout = process.communicate()[0]
         model_sdf = codecs.getdecoder('unicode_escape')(stdout)[0]
         print(command)
-        print(model_sdf)
+        # print(model_sdf)
 
         return command, model_sdf
 
