@@ -345,6 +345,11 @@ class mbzirc::GameLogicPluginPrivate
   public: rendering::VisualPtr VisualAt(
       unsigned int _x, unsigned int _y, const std::string &_type) const;
 
+
+  /// \brief Publish status message about stream requests / target reports
+  /// \param[in] _status Status string to publish
+  public: void PublishStreamStatus(const std::string &_status);
+
   /// \brief Set the competition phase
   /// \param[in] _phase Competition phase string
   public: void SetPhase(const std::string &_phase);
@@ -419,6 +424,9 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Ignition transport competition phase publisher.
   public: transport::Node::Publisher competitionPhasePub;
+
+  /// \brief Ignition transport target stream status publisher.
+  public: transport::Node::Publisher targetStreamStatusPub;
 
   /// \brief Logpath.
   public: std::string logPath{"/dev/null"};
@@ -764,6 +772,10 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
   this->dataPtr->competitionPhasePub =
     this->dataPtr->node.Advertise<ignition::msgs::StringMsg>("/mbzirc/phase");
 
+  this->dataPtr->targetStreamStatusPub =
+      this->dataPtr->node.Advertise<ignition::msgs::StringMsg>(
+      "/mbzirc/target/stream/status");
+
   this->dataPtr->node.Advertise("/mbzirc/target/stream/start",
       &GameLogicPluginPrivate::OnTargetStreamStart, this->dataPtr.get());
 
@@ -962,10 +974,13 @@ void GameLogicPlugin::PostUpdate(
 
   std::string phaseStr = this->dataPtr->Phase();
 
-  // validate target object retrieval - intervention task
+  // validate target reports - inspection task
   if (phaseStr == "started" ||
       phaseStr == "vessel_id_success" ||
-      phaseStr == "small_object_id_success")
+      phaseStr == "small_object_id_success" ||
+      // if there are more than 1 target vessels, we will starting validating
+      // target reports again.
+      phaseStr == "large_object_retrieve_success")
   {
     // validate target reports
     this->dataPtr->ValidateTargetReports();
@@ -1344,15 +1359,40 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
     const ignition::msgs::StringMsg_V &_req,
     ignition::msgs::Boolean &_res)
 {
-  if (_req.data_size() < 2)
+  if (_req.data_size() < 1)
   {
     ignwarn << "Target stream start request: Missing arguments " << std::endl;
     this->LogEvent("stream_start_request", "missing_arg");
     _res.set_data(false);
     return true;
   }
-  std::string vehicleName = _req.data(0);
-  std::string vehicleSensor = _req.data(1);
+
+  std::string vehicleName;
+  std::string vehicleSensor;
+
+  if (_req.data_size() == 1)
+  {
+    std::string sensorFrame = _req.data(0);
+    if (sensorFrame.empty())
+    {
+      ignwarn << "Target stream start request: Empty sensor frame"
+              << std::endl;
+      this->LogEvent("stream_start_request", "empty_sensor_frame");
+      _res.set_data(false);
+      return true;
+    }
+    std::vector<std::string> tokens = common::split(sensorFrame, "/");
+    if (tokens.size() >= 2)
+    {
+      vehicleName =  tokens[0];
+      vehicleSensor = tokens[1];
+    }
+  }
+  else
+  {
+    vehicleName = _req.data(0);
+    vehicleSensor = _req.data(1);
+  }
 
   if (vehicleName.empty() || vehicleSensor.empty())
   {
@@ -1393,8 +1433,9 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
     std::lock_guard<std::mutex> lock(this->streamMutex);
     this->targetStreamTopic = vehicleTopic;
 
-    ignwarn << "Target stream start request: success" << std::endl;
+    ignmsg << "Target stream start request: success" << std::endl;
     this->LogEvent("stream_start_request", "success");
+    this->PublishStreamStatus("stream_started");
   }
   else
   {
@@ -1403,6 +1444,8 @@ bool GameLogicPluginPrivate::OnTargetStreamStart(
             << std::endl;
     _res.set_data(false);
     this->LogEvent("stream_start_request", "no_image_topic_found");
+    this->PublishStreamStatus("stream_start_failed");
+
     std::lock_guard<std::mutex> lock(this->streamMutex);
     this->targetStreamTopic.clear();
   }
@@ -1422,6 +1465,8 @@ bool GameLogicPluginPrivate::OnTargetStreamStop(
 
   ignmsg << "Target stream stop request: success" << std::endl;
   this->LogEvent("stream_stopped", this->targetStreamTopic);
+  this->PublishStreamStatus("stream_stopped");
+
   return true;
 }
 
@@ -1436,6 +1481,7 @@ bool GameLogicPluginPrivate::OnTargetStreamReport(
             << std::endl;
     this->LogEvent("target_reported_in_stream", "run_not_active");
     _res.set_data(false);
+    this->PublishStreamStatus("target_reported_run_not_active");
     return true;
   }
 
@@ -1550,6 +1596,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
         this->LogEvent("target_reported", "vessel_id_success");
         this->currentTargetVessel = vessel;
         this->SetPhase("vessel_id_success");
+        this->PublishStreamStatus("vessel_id_success");
 
         ignmsg << "Target vessel identified: " << vessel << ". "
                << "Pausing trajectory following and detaching target objects. "
@@ -1578,6 +1625,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               this->targets[vessel] = target;
               this->LogEvent("target_reported", "small_object_id_success");
               this->SetPhase("small_object_id_success");
+              this->PublishStreamStatus("small_object_id_success");
               continue;
             }
             else
@@ -1589,6 +1637,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
           {
             // add penalty for incorrectly identifying small object
             std::string logData = "small_object_id_failure";
+            this->PublishStreamStatus(logData);
             unsigned int count = 0u;
             auto it = this->smallObjectIdPenaltyCount.find(vessel);
             if (it != this->smallObjectIdPenaltyCount.end())
@@ -1640,6 +1689,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
                 this->targets[vessel] = target;
                 this->LogEvent("target_reported", "large_object_id_success");
                 this->SetPhase("large_object_id_success");
+                this->PublishStreamStatus("large_object_id_success");
                 continue;
               }
               else
@@ -1651,6 +1701,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             {
               // add penalty for incorrectly identifying large object
               std::string logData = "large_object_id_failure";
+              this->PublishStreamStatus(logData);
               unsigned int count = 0u;
               auto it = this->largeObjectIdPenaltyCount.find(vessel);
               if (it != this->largeObjectIdPenaltyCount.end())
@@ -1693,6 +1744,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
     {
       // add penalty for incorrectly identifying vessel
       std::string logData = "vessel_id_failure";
+      this->PublishStreamStatus(logData);
       this->vesselPenaltyCount++;
       if (this->vesselPenaltyCount == 1u)
       {
@@ -2359,6 +2411,14 @@ rendering::VisualPtr GameLogicPluginPrivate::VisualAt(
     return target;
   }
   return nullptr;
+}
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::PublishStreamStatus(const std::string &_status)
+{
+  ignition::msgs::StringMsg statusMsg;
+  statusMsg.set_data(_status);
+  this->targetStreamStatusPub.Publish(statusMsg);
 }
 
 /////////////////////////////////////////////////

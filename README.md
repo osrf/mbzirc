@@ -31,11 +31,11 @@ See Installation instructions for:
     git clone https://github.com/osrf/mbzirc.git
     ```
 
-1. Clone the `ros_ign` repo and check out the `ros2` branch
+1. Clone the `ros_ign` repo and check out the `galactic` branch
 
     ```
     cd ~/mbzirc_ws/src
-    git clone https://github.com/ignitionrobotics/ros_ign.git -b ros2
+    git clone https://github.com/ignitionrobotics/ros_ign.git -b galactic
     ```
 
 1. Install dependencies using [rosdep](https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Binary.html#installing-and-initializing-rosdep)
@@ -62,8 +62,10 @@ See Installation instructions for:
 
     ```
     cd ~/mbzirc_ws
-    colcon build --merge-install
+    IGNITION_VERSION=fortress colcon build --merge-install
     ```
+
+    Note: Make sure to set the `IGNITION_VERSION` to `fortress`. This is needed for building the `ros_ign` package.
 
 ### Docker setup
 

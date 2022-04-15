@@ -162,9 +162,10 @@ def gripper_joint_force_torque(model_name, joint_name):
 
 def arm_image(world_name, model_name, link_name):
     prefix = f'/world/{world_name}/model/{model_name}/model/arm/link/{link_name}/sensor'
+    link = link_name.rstrip('_link')
     return Bridge(
         ign_topic=f'{prefix}/camera/image',
-        ros_topic=f'arm/{link_name}/image_raw',
+        ros_topic=f'arm/{link}/image_raw',
         ign_type='ignition.msgs.Image',
         ros_type='sensor_msgs/msg/Image',
         direction=BridgeDirection.IGN_TO_ROS)
@@ -172,9 +173,10 @@ def arm_image(world_name, model_name, link_name):
 
 def arm_camera_info(world_name, model_name, link_name):
     prefix = f'/world/{world_name}/model/{model_name}/model/arm/link/{link_name}/sensor'
+    link = link_name.rstrip('_link')
     return Bridge(
         ign_topic=f'{prefix}/camera/camera_info',
-        ros_topic=f'arm/{link_name}/camera_info',
+        ros_topic=f'arm/{link}/camera_info',
         ign_type='ignition.msgs.CameraInfo',
         ros_type='sensor_msgs/msg/CameraInfo',
         direction=BridgeDirection.IGN_TO_ROS)
@@ -215,4 +217,49 @@ def comms_rx(model_name):
         ros_topic=f'rx',
         ign_type='ignition.msgs.Dataframe',
         ros_type='ros_ign_interfaces/msg/Dataframe',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
+def score():
+    return Bridge(
+        ign_topic='/mbzirc/score',
+        ros_topic='/mbzirc/score',
+        ign_type='ignition.msgs.Float',
+        ros_type='std_msgs/msg/Float32',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
+def clock():
+    return Bridge(
+        ign_topic='/clock',
+        ros_topic='/clock',
+        ign_type='ignition.msgs.Clock',
+        ros_type='rosgraph_msgs/msg/Clock',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
+def run_clock():
+    return Bridge(
+        ign_topic='/mbzirc/run_clock',
+        ros_topic='/mbzirc/run_clock',
+        ign_type='ignition.msgs.Clock',
+        ros_type='rosgraph_msgs/msg/Clock',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
+def phase():
+    return Bridge(
+        ign_topic='/mbzirc/phase',
+        ros_topic='/mbzirc/phase',
+        ign_type='ignition.msgs.StringMsg',
+        ros_type='std_msgs/msg/String',
+        direction=BridgeDirection.IGN_TO_ROS)
+
+
+def stream_status():
+    return Bridge(
+        ign_topic='/mbzirc/target/stream/status',
+        ros_topic='/mbzirc/target/stream/status',
+        ign_type='ignition.msgs.StringMsg',
+        ros_type='std_msgs/msg/String',
         direction=BridgeDirection.IGN_TO_ROS)

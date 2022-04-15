@@ -7,8 +7,10 @@ find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(ignition-msgs8 REQUIRED)
 find_package(ignition-transport11 REQUIRED)
+set(IGN_TRANSPORT_VER ${ignition-transport11_VERSION_MAJOR})
 find_package(mavros_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(ros_ign_interfaces REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -44,11 +46,27 @@ ament_target_dependencies(pose_tf_broadcaster
   tf2_msgs
 )
 
+add_executable(video_target_relay src/video_target_relay.cc)
+ament_target_dependencies(video_target_relay
+  rclcpp
+  ros_ign_interfaces
+  sensor_msgs
+  ignition-transport${IGN_TRANSPORT_VER}
+)
+
+add_executable(video_stream_publisher examples/video_stream_publisher.cc)
+ament_target_dependencies(video_stream_publisher
+  rclcpp
+  sensor_msgs
+)
+
 # Resources
 install(TARGETS
   fixed_wing_bridge
   optical_frame_publisher
   pose_tf_broadcaster
+  video_target_relay
+  video_stream_publisher
   DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY
   launch
@@ -68,6 +86,7 @@ if(BUILD_TESTING)
     geometry_msgs
     rclcpp
     rosgraph_msgs
+    ros_ign_interfaces
     sensor_msgs
     std_msgs
     tf2_msgs

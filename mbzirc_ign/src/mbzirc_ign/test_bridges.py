@@ -149,6 +149,28 @@ class TestBridges(unittest.TestCase):
                          f'/model/{self.model_name}/rx'
                          '@ros_ign_interfaces/msg/Dataframe[ignition.msgs.Dataframe')
 
+    def test_competition(self):
+        bridge = bridges.score()
+        self.assertEqual(bridge.argument(),
+                         '/mbzirc/score'
+                         '@std_msgs/msg/Float32[ignition.msgs.Float')
+        bridge = bridges.clock()
+        self.assertEqual(bridge.argument(),
+                         '/clock'
+                         '@rosgraph_msgs/msg/Clock[ignition.msgs.Clock')
+        bridge = bridges.run_clock()
+        self.assertEqual(bridge.argument(),
+                         '/mbzirc/run_clock'
+                         '@rosgraph_msgs/msg/Clock[ignition.msgs.Clock')
+        bridge = bridges.phase()
+        self.assertEqual(bridge.argument(),
+                         '/mbzirc/phase'
+                         '@std_msgs/msg/String[ignition.msgs.StringMsg')
+        bridge = bridges.stream_status()
+        self.assertEqual(bridge.argument(),
+                         '/mbzirc/target/stream/status'
+                         '@std_msgs/msg/String[ignition.msgs.StringMsg')
+
 
 class TestPayloadBridges(unittest.TestCase):
     world_name = 'foo'

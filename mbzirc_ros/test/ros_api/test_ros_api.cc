@@ -17,9 +17,10 @@
 
 #include <gtest/gtest.h>
 
+#include <geometry_msgs/msg/wrench.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rosgraph_msgs/msg/clock.hpp>
-#include <geometry_msgs/msg/wrench.hpp>
+#include <ros_ign_interfaces/msg/string_vec.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/fluid_pressure.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -254,28 +255,28 @@ TEST(RosApiTest, ArmTopics)
 
   // image_raw
   MyTestClass<sensor_msgs::msg::Image> image(
-      "/usv/arm/wrist_link/image_raw");
+      "/usv/arm/wrist/image_raw");
   waitUntilBoolVarAndSpin(
     node, image.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(image.callbackExecuted);
 
   // camera_info
   MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfo(
-      "/usv/arm/wrist_link/camera_info");
+      "/usv/arm/wrist/camera_info");
   waitUntilBoolVarAndSpin(
     node, cameraInfo.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(cameraInfo.callbackExecuted);
 
   // optical image
   MyTestClass<sensor_msgs::msg::Image> imageOptical(
-      "/usv/arm/wrist_link/optical/image_raw");
+      "/usv/arm/wrist/optical/image_raw");
   waitUntilBoolVarAndSpin(
     node, imageOptical.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(imageOptical.callbackExecuted);
 
   // optical camera_info
   MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfoOptical(
-      "/usv/arm/wrist_link/optical/camera_info");
+      "/usv/arm/wrist/optical/camera_info");
   waitUntilBoolVarAndSpin(
     node, cameraInfoOptical.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(cameraInfoOptical.callbackExecuted);
@@ -295,6 +296,60 @@ TEST(RosApiTest, ArmTopics)
 }
 
 /////////////////////////////////////////////////
+TEST(RosApiTest, TargetStreamTopics)
+{
+  auto streamStartPub = node->create_publisher<sensor_msgs::msg::Image>(
+      "/quadrotor/mbzirc/target/stream/start", 10);
+
+  // callback to republish image to base station
+  std::function<void(const std::shared_ptr<sensor_msgs::msg::Image>)> imgCb =
+      [&](const std::shared_ptr<sensor_msgs::msg::Image> _msg)
+  {
+    streamStartPub->publish(*_msg.get());
+  };
+
+  // subscribe to hexrotor image
+  auto imgSub = node->create_subscription<sensor_msgs::msg::Image>(
+      "/quadrotor/slot0/image_raw", 10, imgCb);
+
+  // check that image is successfully sent to base station
+  std::string status;
+  std::function<void(const std::shared_ptr<std_msgs::msg::String>)> statusCb =
+      [&](const std::shared_ptr<std_msgs::msg::String> _msg)
+  {
+    status = _msg->data;
+  };
+  auto statusSub = node->create_subscription<std_msgs::msg::String>(
+      "/mbzirc/target/stream/status", 10, statusCb);
+
+  int counter = 0;
+  while (status != "stream_started" && counter++ < 500)
+  {
+    std::this_thread::sleep_for(10ms);
+    rclcpp::spin_some(node);
+  }
+  EXPECT_EQ("stream_started", status);
+
+  auto streamReportPub = node->create_publisher<
+      ros_ign_interfaces::msg::StringVec>(
+      "/quadrotor/mbzirc/target/stream/report", 10);
+
+  ros_ign_interfaces::msg::StringVec msg;
+  msg.data.push_back("vessel");
+  msg.data.push_back("640");
+  msg.data.push_back("480");
+  streamReportPub->publish(msg);
+
+  counter = 0;
+  while (status != "target_reported_run_not_active" && counter++ < 500)
+  {
+    std::this_thread::sleep_for(10ms);
+    rclcpp::spin_some(node);
+  }
+  EXPECT_EQ("target_reported_run_not_active", status);
+}
+
+/////////////////////////////////////////////////
 int main(int argc, char ** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
@@ -303,4 +358,3 @@ int main(int argc, char ** argv)
 
   return RUN_ALL_TESTS();
 }
-

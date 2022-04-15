@@ -118,6 +118,14 @@ def spawn(context, model_type, world_name, model_name, position):
         ]
     ))
 
+    # video target relay
+    nodes.append(Node(
+        package='mbzirc_ros',
+        executable='video_target_relay',
+        output='screen',
+        parameters=[{'model_name': model_name}]
+    ))
+
     group_action = GroupAction([
         PushRosNamespace(model_name),
         *nodes

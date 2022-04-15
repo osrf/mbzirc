@@ -46,7 +46,7 @@ def generate_test_description():
         PythonLaunchDescriptionSource(
             os.path.join(
                 get_package_share_directory('mbzirc_ros'),
-                'launch/competition.launch.py')
+                'launch/competition_local.launch.py')
         ),
         launch_arguments=arguments.items())
 
