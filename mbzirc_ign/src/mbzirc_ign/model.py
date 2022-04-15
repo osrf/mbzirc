@@ -145,8 +145,10 @@ class Model:
                         executable='optical_frame_publisher',
                         arguments=['1'],
                         remappings=[('input/image', f'arm/{camera_link_no_suffix}/image_raw'),
-                                    ('output/image', f'arm/{camera_link_no_suffix}/optical/image_raw'),
-                                    ('input/camera_info', f'arm/{camera_link_no_suffix}/camera_info'),
+                                    ('output/image',
+                                    f'arm/{camera_link_no_suffix}/optical/image_raw'),
+                                    ('input/camera_info',
+                                    f'arm/{camera_link_no_suffix}/camera_info'),
                                     ('output/camera_info',
                                         f'arm/{camera_link_no_suffix}/optical/camera_info')]))
 
