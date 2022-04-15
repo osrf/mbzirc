@@ -131,7 +131,7 @@ if(BUILD_TESTING)
     target_include_directories(${TEST_TARGET}
       PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto)
     target_link_libraries(${TEST_TARGET} ignition-gazebo${IGN_GAZEBO_VER}::ignition-gazebo${IGN_GAZEBO_VER})
-    set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 120)
+    set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 300)
   endforeach()
 
   set (_pytest_tests
