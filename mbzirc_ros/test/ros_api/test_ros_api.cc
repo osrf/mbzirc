@@ -138,21 +138,21 @@ TEST(RosApiTest, UAVTopics)
   MyTestClass<sensor_msgs::msg::Imu> imu(
       "/quadrotor/imu/data");
   waitUntilBoolVarAndSpin(
-    node, imu.callbackExecuted, 10ms, 500);
+    node, imu.callbackExecuted, 10ms, 3000);
   EXPECT_TRUE(imu.callbackExecuted);
 
   // air_pressure
   MyTestClass<sensor_msgs::msg::FluidPressure> airPressure(
       "/quadrotor/air_pressure");
   waitUntilBoolVarAndSpin(
-    node, airPressure.callbackExecuted, 10ms, 500);
+    node, airPressure.callbackExecuted, 10ms, 3000);
   EXPECT_TRUE(airPressure.callbackExecuted);
 
   // magnetometer
   MyTestClass<sensor_msgs::msg::MagneticField> magnetometer(
       "/quadrotor/magnetic_field");
   waitUntilBoolVarAndSpin(
-    node, magnetometer.callbackExecuted, 10ms, 500);
+    node, magnetometer.callbackExecuted, 10ms, 3000);
   EXPECT_TRUE(magnetometer.callbackExecuted);
 
   // rendering tests are disabled as it causes a crash on CI

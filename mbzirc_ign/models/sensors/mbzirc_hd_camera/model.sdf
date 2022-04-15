@@ -5,12 +5,12 @@
             <inertial>
                 <mass>0.005</mass>
                 <inertia>
-                    <ixx>1e-03</ixx>
+                    <ixx>8.33e-06</ixx>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
-                    <iyy>1e-03</iyy>
+                    <iyy>8.33e-06</iyy>
                     <iyz>0</iyz>
-                    <izz>1e-03</izz>
+                    <izz>8.33e-06</izz>
                 </inertia>
             </inertial>
             <sensor name="camera" type="camera">
