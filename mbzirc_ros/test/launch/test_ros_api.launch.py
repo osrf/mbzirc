@@ -73,6 +73,7 @@ def generate_test_description():
     arguments={'name'  : 'hexrotor',
                'world' : 'empty_platform',
                'model' : 'mbzirc_hexrotor',
+               'gripper' : 'mbzirc_oberon7_gripper',
                'type'  : 'uav',
                'x'     : '2',
                'z'     : '0.08',}

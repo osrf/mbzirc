@@ -109,34 +109,64 @@ class TestBridges(unittest.TestCase):
                          '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
 
     def test_gripper(self):
-        bridge = bridges.gripper_joint_states(self.world_name, self.model_name)
+        bridge = bridges.gripper_joint_states(self.world_name, self.model_name, True)
         self.assertEqual(bridge.argument(),
                          f'/world/{self.world_name}/model/{self.model_name}/'
                          'model/arm/model/gripper/joint_state'
                          '@sensor_msgs/msg/JointState[ignition.msgs.Model')
-        bridge = bridges.gripper_joint_pos(self.model_name, 'finger_left')
+        bridge = bridges.gripper_joint_pos(self.model_name, 'finger_left', True)
         self.assertEqual(bridge.argument(),
                          f'/{self.model_name}/arm/gripper/finger_left'
                          '@std_msgs/msg/Float64]ignition.msgs.Double')
         gripper_joint_name = 'finger_left'
-        bridge = bridges.gripper_joint_force_torque(self.model_name, gripper_joint_name)
+        bridge = bridges.gripper_joint_force_torque(self.model_name, gripper_joint_name, True)
         self.assertEqual(bridge.argument(),
                          f'/{self.model_name}/arm/gripper/{gripper_joint_name}/forcetorque'
                          '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
         gripper_joint_name = 'finger_right'
-        bridge = bridges.gripper_joint_force_torque(self.model_name, gripper_joint_name)
+        bridge = bridges.gripper_joint_force_torque(self.model_name, gripper_joint_name, True)
         self.assertEqual(bridge.argument(),
                          f'/{self.model_name}/arm/gripper/{gripper_joint_name}/forcetorque'
                          '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
 
-        bridge = bridges.gripper_suction_contacts(self.model_name)
+        bridge = bridges.gripper_suction_contacts(self.model_name, True)
         self.assertEqual(bridge.argument(),
                          f'/{self.model_name}/arm/gripper/contact'
                          '@ros_ign_interfaces/msg/Contacts[ignition.msgs.Contacts')
 
-        bridge = bridges.gripper_suction_control(self.model_name)
+        bridge = bridges.gripper_suction_control(self.model_name, True)
         self.assertEqual(bridge.argument(),
                          f'/{self.model_name}/arm/gripper/suction_on'
+                         '@std_msgs/msg/Bool]ignition.msgs.Boolean')
+
+        bridge = bridges.gripper_joint_states(self.world_name, self.model_name, False)
+        self.assertEqual(bridge.argument(),
+                         f'/world/{self.world_name}/model/{self.model_name}/'
+                         'model/gripper/joint_state'
+                         '@sensor_msgs/msg/JointState[ignition.msgs.Model')
+        bridge = bridges.gripper_joint_pos(self.model_name, 'finger_left', False)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/gripper/finger_left'
+                         '@std_msgs/msg/Float64]ignition.msgs.Double')
+        gripper_joint_name = 'finger_left'
+        bridge = bridges.gripper_joint_force_torque(self.model_name, gripper_joint_name, False)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/gripper/{gripper_joint_name}/forcetorque'
+                         '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
+        gripper_joint_name = 'finger_right'
+        bridge = bridges.gripper_joint_force_torque(self.model_name, gripper_joint_name, False)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/gripper/{gripper_joint_name}/forcetorque'
+                         '@geometry_msgs/msg/Wrench[ignition.msgs.Wrench')
+
+        bridge = bridges.gripper_suction_contacts(self.model_name, False)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/gripper/contact'
+                         '@ros_ign_interfaces/msg/Contacts[ignition.msgs.Contacts')
+
+        bridge = bridges.gripper_suction_control(self.model_name, False)
+        self.assertEqual(bridge.argument(),
+                         f'/{self.model_name}/gripper/suction_on'
                          '@std_msgs/msg/Bool]ignition.msgs.Boolean')
 
     def test_comms(self):

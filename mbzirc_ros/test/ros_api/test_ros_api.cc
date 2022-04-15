@@ -234,6 +234,26 @@ TEST(RosApiTest, UAVTopics)
     node, rgbdOpticalDepth.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(rgbdOpticalDepth.callbackExecuted);
 
+  // gripper joint states
+  MyTestClass<sensor_msgs::msg::JointState> gripperJointStates(
+      "/hexrotor/gripper/joint_states");
+  waitUntilBoolVarAndSpin(
+    node, gripperJointStates.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(gripperJointStates.callbackExecuted);
+
+  // gripper wrench
+  MyTestClass<geometry_msgs::msg::Wrench> gripperLeftWrench(
+      "/hexrotor/gripper/joint/finger_left/wrench");
+  waitUntilBoolVarAndSpin(
+    node, gripperLeftWrench.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(gripperLeftWrench.callbackExecuted);
+
+  MyTestClass<geometry_msgs::msg::Wrench> gripperRightWrench(
+      "/hexrotor/gripper/joint/finger_right/wrench");
+  waitUntilBoolVarAndSpin(
+    node, gripperRightWrench.callbackExecuted, 10ms, 500);
+  EXPECT_TRUE(gripperRightWrench.callbackExecuted);
+
   // \todo check cmd_vel and points (lidar) topics
 }
 

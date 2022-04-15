@@ -46,6 +46,8 @@ def spawn(context, model_type, world_name, model_name, position):
         'slot3': {'sensor': slot3_payload, 'rpy': slot3_rpy},
     }
 
+    gripper = LaunchConfiguration('gripper').perform(context)
+
     if model.isUAV():
         # take flight time in minutes
         flight_time = LaunchConfiguration('flightTime').perform(context)
@@ -70,12 +72,11 @@ def spawn(context, model_type, world_name, model_name, position):
         model.set_flight_time(flight_time)
     elif model.isUSV():
         arm = LaunchConfiguration('arm').perform(context)
-        gripper = LaunchConfiguration('gripper').perform(context)
 
         model.set_wavefield(world_name)
         model.set_arm(arm)
-        model.set_gripper(gripper)
 
+    model.set_gripper(gripper)
     model.set_payload(payloads)
 
     ignition_spawn_entity = Node(
@@ -205,8 +206,8 @@ def generate_launch_description():
             description='arm model to attach to usv'),
         DeclareLaunchArgument(
             'gripper',
-            default_value='mbzirc_oberon7_gripper',
-            description='gripper model to attach to arm'),
+            default_value='',
+            description='gripper model to attach to arm or UAV'),
         DeclareLaunchArgument(
             'slot0',
             default_value='',
