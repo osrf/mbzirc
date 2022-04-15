@@ -1,0 +1,509 @@
+<?xml version="1.0" ?>
+
+<sdf version="1.9">
+  <world name="simple_demo">
+
+    <physics name="4ms" type="dart">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin
+      filename="ignition-gazebo-physics-system"
+      name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-user-commands-system"
+      name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-sensors-system"
+      name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-air-pressure-system"
+      name="ignition::gazebo::systems::AirPressure">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-altimeter-system"
+      name="ignition::gazebo::systems::Altimeter">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-imu-system"
+      name="ignition::gazebo::systems::Imu">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-magnetometer-system"
+      name="ignition::gazebo::systems::Magnetometer">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-forcetorque-system"
+      name="ignition::gazebo::systems::ForceTorque">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-particle-emitter2-system"
+      name="ignition::gazebo::systems::ParticleEmitter2">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-scene-broadcaster-system"
+      name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-contact-system"
+      name="ignition::gazebo::systems::Contact">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-rf-comms-system"
+      name="ignition::gazebo::systems::RFComms">
+      <range_config>
+        <max_range>500000.0</max_range>
+        <fading_exponent>2.6</fading_exponent>
+        <l0>40</l0>
+        <sigma>10.0</sigma>
+      </range_config>
+      <radio_config>
+        <capacity>1000000</capacity>
+        <tx_power>20</tx_power>
+        <noise_floor>-90</noise_floor>
+        <modulation>QPSK</modulation>
+      </radio_config>
+    </plugin>
+
+    <scene>
+      <sky></sky>
+      <grid>false</grid>
+      <ambient>1.0 1.0 1.0</ambient>
+      <background>0.8 0.8 0.8</background>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_platform">
+      <static>true</static>
+      <pose>0 0 -0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>20 20 3</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>20 20 3</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+              <pbr>
+                  <metal>
+                      <albedo_map>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Cave Straight Type A/tip/files/materials/textures/Gravel_Albedo.jpg</albedo_map>
+                      <normal_map>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Cave Straight Type A/tip/files/materials/textures/Gravel_Normal.jpg</normal_map>
+                      <roughness_map>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Cave Straight Type A/tip/files/materials/textures/Gravel_Roughness.jpg</roughness_map>
+                  </metal>
+              </pbr>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <include>
+      <pose>0 0 50 0 0 0</pose>
+      <uri>
+        dust_storm
+      </uri>
+    </include>
+
+    <include>
+      <pose>0 0 50 0 0 0</pose>
+      <uri>
+        fog
+      </uri>
+    </include>
+
+    <include>
+      <pose>0 0 5 0 0 0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Fortress heightmap
+      </uri>
+    </include>
+
+    <model name="heightmap_bounds">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 -25 0 0 0</pose>
+        <collision name="x">
+          <pose>75 0 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1 150 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="y">
+          <pose>0 75 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>150 1 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="-x">
+          <pose>-75 0 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1 150 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="-y">
+          <pose>0 -75 14 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>150 1 28</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="base">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>5000 5000 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="ceiling">
+          <pose>0 0 160 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>5000 5000 1</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <include>
+      <pose>0 0 0 0 0 0</pose>
+      <uri>
+        waves
+      </uri>
+    </include>
+
+    <include>
+      <name>Vessel A</name>
+      <pose>25 25 0.3 0 0.0 -1.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel A</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>6</vehicle_length>
+        <vehicle_width>3.3</vehicle_width>
+        <hull_radius>1.9</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>1000 1000</size>
+          <cell_count>50 50</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.1</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>51.3</xU>
+        <xUU>72.4</xUU>
+        <yV>40.0</yV>
+        <yVV>0.0</yVV>
+        <zW>500.0</zW>
+        <kP>50.0</kP>
+        <mQ>50.0</mQ>
+        <nR>400.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+    </include>
+
+    <include>
+      <name>small_blue_box_a</name>
+      <pose relative_to="Vessel A">-0.14 0.04 0.05 0 0 1.2</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+    </include>
+
+    <include>
+      <name>small_blue_box_a_duplicate</name>
+      <pose relative_to="Vessel A">-1.28 0.23 0.05 0 0 1</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_a</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
+    </include>
+
+    <include>
+      <name>large_dry_box_a</name>
+      <pose relative_to="Vessel A">0.08 -0.57 0.05 0 0 -0.3</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_a_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
+    </include>
+
+    <include>
+      <name>large_dry_box_a_duplicate</name>
+      <pose relative_to="Vessel A">0.7 0.23 0.05 0 0 0.2</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_dry_box_a</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
+    </include>
+
+    <model name="box1kg">
+      <pose>0 2.05 2.2 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.16666700</ixx>
+            <ixy>0.0</ixy>
+            <ixz>0.0</ixz>
+            <iyy>0.16666700</iyy>
+            <iyz>0.0</iyz>
+            <izz>0.16666700</izz>
+          </inertia>
+        </inertial>
+
+        <visual name="visual">
+          <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+        </visual>
+        <collision name="col">
+          <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="box">
+      <pose>0 2.4 1.16 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>1 1 1</size></box></geometry>
+        </visual>
+        <collision name="col">
+          <geometry><box><size>1 1 1</size></box></geometry>
+        </collision>
+      </link>
+    </model>
+    <include>
+      <name>small_blue_box_a_test</name>
+      <pose>0 1.93 1.71 -1.57079 0 0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+    </include>
+
+    <model name="base_station">
+      <static>true</static>
+      <pose>-5 0 1.1 0 0 0</pose>
+      <link name="box_link">
+        <collision name="box_collision">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="box_visual">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.7 0.2 0.1 1</ambient>
+            <diffuse>0.7 0.2 0.1 1</diffuse>
+            <specular>0.7 0.2 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+
+      <plugin
+        filename="ignition-gazebo-comms-endpoint-system"
+        name="ignition::gazebo::systems::CommsEndpoint">
+        <address>base_station/target</address>
+        <topic>base_station/target</topic>
+      </plugin>
+      <plugin
+        filename="ignition-gazebo-comms-endpoint-system"
+        name="ignition::gazebo::systems::CommsEndpoint">
+        <address>base_station/video</address>
+        <topic>base_station/video</topic>
+      </plugin>
+      <plugin filename="libBaseStation.so"
+              name="mbzirc::BaseStation">
+        <target_topic>base_station/target</target_topic>
+        <video_topic>base_station/video</video_topic>
+      </plugin>
+    </model>
+
+    <wind>
+      <linear_velocity>0.3 0 0</linear_velocity>
+    </wind>
+
+    <!-- Load the plugin for the wind -->
+    <plugin
+      filename="ignition-gazebo-wind-effects-system"
+      name="ignition::gazebo::systems::WindEffects">
+      <force_approximation_scaling_factor>0.002</force_approximation_scaling_factor>
+      <horizontal>
+        <magnitude>
+          <time_for_rise>10</time_for_rise>
+          <sin>
+            <amplitude_percent>0.05</amplitude_percent>
+            <period>60</period>
+          </sin>
+          <noise type="gaussian">
+           <mean>0</mean>
+           <stddev>0.0002</stddev>
+          </noise>
+        </magnitude>
+        <direction>
+          <time_for_rise>30</time_for_rise>
+          <sin>
+            <amplitude>5</amplitude>
+            <period>20</period>
+          </sin>
+          <noise type="gaussian">
+           <mean>0</mean>
+           <stddev>0.03</stddev>
+          </noise>
+        </direction>
+      </horizontal>
+      <vertical>
+        <noise type="gaussian">
+         <mean>0</mean>
+         <stddev>0.03</stddev>
+        </noise>
+      </vertical>
+    </plugin>
+
+    <!-- The MBZIRC competition logic plugin -->
+    <plugin filename="libGameLogicPlugin.so"
+            name="mbzirc::GameLogicPlugin">
+      <run_duration_seconds>3600</run_duration_seconds>
+      <setup_duration_seconds>600</setup_duration_seconds>
+      <logging>
+        <!-- Use the <path> element to control where to record the log file.
+             The HOME path is used by default -->
+        <path>/tmp/ign/mbzirc/logs</path>
+      </logging>
+      <!-- competition area -->
+      <!-- 140m x 140m
+           max flight height is 400 ft / 121.92m
+           allow 25m below water level -->
+      <geofence>
+        <center>0 0 48.46</center>
+        <size>140 140 146.92</size>
+      </geofence>
+      <target>
+        <vessel>Vessel A</vessel>
+        <small_object>small_blue_box_a</small_object>
+        <small_object>small_blue_box_a_duplicate</small_object>
+        <large_object>large_dry_box_a</large_object>
+        <large_object>large_dry_box_a_duplicate</large_object>
+      </target>
+    </plugin>
+
+    <!-- uncomment to see visualization of the competition area -->
+    <!--
+    <model name="competition_area">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 0 0 0 0</pose>
+        <visual name="visual">
+          <pose>0 0 48.46 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>140 140 146.92</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0 0.5</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    -->
+
+    <model name="ocean_entity_detector">
+      <static>true</static>
+      <!-- This plugin detects when target objects are dropped into the ocean
+           at the defined region. A message is published on the <topic> when
+           these events occur -->
+      <plugin filename="libEntityDetector.so"
+              name="mbzirc::EntityDetector">
+        <topic>/mbzirc/target_object_detector/dropped</topic>
+        <pose>0 0 -20 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>140 140 5</size>
+          </box>
+        </geometry>
+      </plugin>
+    </model>
+
+  </world>
+</sdf>
