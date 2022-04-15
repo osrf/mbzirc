@@ -18,13 +18,50 @@
                 </inertia>
             </inertial>
             <collision name="base_link_inertia_collision">
-                <pose frame="">0 0 0 0 -0 0</pose>
+                <pose frame="">0 0 0.025 0 -0 0</pose>
                 <geometry>
                     <box>
-                        <size>0.3 0.3 0.25</size>
+                        <size>0.3 0.3 0.12</size>
                     </box>
                 </geometry>
             </collision>
+            <collision name="leg_0">
+                <pose>0.102415 -0.064721 -0.046935 -0.453199 -0.358392 0.452524</pose>
+                <geometry>
+                    <cylinder>
+                        <length>0.173859</length>
+                        <radius>0.010630</radius>
+                    </cylinder>
+                </geometry>
+            </collision>
+             <collision name="leg_1">
+                <pose>0.102415 0.064721 -0.046935 0.453199 -0.358392 -0.452524</pose>
+                <geometry>
+                    <cylinder>
+                        <length>0.173859</length>
+                        <radius>0.010630</radius>
+                    </cylinder>
+                </geometry>
+            </collision>
+            <collision name="leg_2">
+                <pose>-0.110415 0.086683 -0.046935 2.8230806 -0.369254 -2.921386</pose>
+                <geometry>
+                    <cylinder>
+                        <length>0.173859</length>
+                        <radius>0.010630</radius>
+                    </cylinder>
+                </geometry>
+            </collision>
+             <collision name="leg_3">
+                <pose>-0.110415 -0.086683 -0.046935 -2.8230806 -0.369254 2.921386</pose>
+                <geometry>
+                    <cylinder>
+                        <length>0.173859</length>
+                        <radius>0.010630</radius>
+                    </cylinder>
+                </geometry>
+            </collision>
+
             <visual name="base_link_inertia_visual">
                 <pose frame="">0 0 0 0 -0 0</pose>
                 <geometry>
@@ -175,7 +212,7 @@
 
         <!-- gripper mount point -->
         <frame name="gripper_mount_point">
-          <pose>0.0 0 0.0 0 1.57 0</pose>
+          <pose>0.0 0 -0.01 0 1.57 0</pose>
         </frame>
 
         <!-- Front payload slot -->

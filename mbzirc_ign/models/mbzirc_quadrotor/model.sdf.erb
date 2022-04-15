@@ -9,6 +9,16 @@ if defined?(gripper)
   $gripper_model = gripper
 end
 
+$attitude_gain = '2 3 0.15'
+$motor_constant = '8.54858e-06'
+if $gripper_model == 'mbzirc_oberon7_gripper'
+  $attitude_gain = '10 10 0.15'
+  $motor_constant = '3.95e-05'
+elsif $gripper_model == 'mbzirc_suction_gripper'
+  $attitude_gain = '10 10 0.15'
+  $motor_constant = '2.52e-05'
+end
+
 $slot0_payload = nil
 $slot0_rpy = '0 0 0'
 $slot1_payload = nil
@@ -248,7 +258,7 @@ end
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
       <maxRotVelocity>800.0</maxRotVelocity>
-      <motorConstant>8.54858e-06</motorConstant>
+      <motorConstant><%= $motor_constant %></motorConstant>
       <momentConstant>0.016</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>0</motorNumber>
@@ -267,7 +277,7 @@ end
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
       <maxRotVelocity>800.0</maxRotVelocity>
-      <motorConstant>8.54858e-06</motorConstant>
+      <motorConstant><%= $motor_constant %></motorConstant>
       <momentConstant>0.016</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>1</motorNumber>
@@ -286,7 +296,7 @@ end
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
       <maxRotVelocity>800.0</maxRotVelocity>
-      <motorConstant>8.54858e-06</motorConstant>
+      <motorConstant><%= $motor_constant %></motorConstant>
       <momentConstant>0.016</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>2</motorNumber>
@@ -305,7 +315,7 @@ end
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
       <maxRotVelocity>800.0</maxRotVelocity>
-      <motorConstant>8.54858e-06</motorConstant>
+      <motorConstant><%= $motor_constant %></motorConstant>
       <momentConstant>0.016</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>3</motorNumber>
@@ -325,7 +335,7 @@ end
       <enableSubTopic>velocity_controller/enable</enableSubTopic>
       <comLinkName>base_link</comLinkName>
       <velocityGain>2.7 2.7 2.7</velocityGain>
-      <attitudeGain>2 3 0.15</attitudeGain>
+      <attitudeGain><%= $attitude_gain %></attitudeGain>
       <angularRateGain>0.4 0.52 0.18</angularRateGain>
       <maximumLinearAcceleration>1 1 2</maximumLinearAcceleration>
       <maximumLinearVelocity>5 5 5</maximumLinearVelocity>
@@ -342,25 +352,25 @@ end
       <rotorConfiguration>
         <rotor>
           <jointName>rotor_0_joint</jointName>
-          <forceConstant>8.54858e-06</forceConstant>
+          <forceConstant><%= $motor_constant %></forceConstant>
           <momentConstant>0.016</momentConstant>
           <direction>1</direction>
         </rotor>
         <rotor>
           <jointName>rotor_1_joint</jointName>
-          <forceConstant>8.54858e-06</forceConstant>
+          <forceConstant><%= $motor_constant %></forceConstant>
           <momentConstant>0.016</momentConstant>
           <direction>1</direction>
         </rotor>
         <rotor>
           <jointName>rotor_2_joint</jointName>
-          <forceConstant>8.54858e-06</forceConstant>
+          <forceConstant><%= $motor_constant %></forceConstant>
           <momentConstant>0.016</momentConstant>
           <direction>-1</direction>
         </rotor>
         <rotor>
           <jointName>rotor_3_joint</jointName>
-          <forceConstant>8.54858e-06</forceConstant>
+          <forceConstant><%= $motor_constant %></forceConstant>
           <momentConstant>0.016</momentConstant>
           <direction>-1</direction>
         </rotor>
