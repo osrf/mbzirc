@@ -32,7 +32,7 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
   /// This test checks that the USV is spawned correctly.
   std::vector<std::pair<std::string,std::string>> params{
     {"name", "usv"},
-    {"world", "faster_than_realtime"},
+    {"world", "usv_max_speed"},
     {"model", "usv"},
     {"x", "15"},
     {"y", "0"},
@@ -54,7 +54,7 @@ TEST_F(MBZIRCTestFixture, USVMaxSpeedTest)
 
   SetMaxIter(10000);
 
-  LoadWorld("faster_than_realtime.sdf");
+  LoadWorld("test/usv_max_speed.sdf");
 
   OnPreUpdate([&](const ignition::gazebo::UpdateInfo &_info,
     ignition::gazebo::EntityComponentManager &_ecm)
