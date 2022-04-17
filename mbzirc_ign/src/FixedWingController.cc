@@ -49,6 +49,8 @@ class mbzirc::FixedWingControllerPrivate
   /// \brief Modes
   public: enum class Mode
   {
+    /// \brief IDLE mode
+    IDLE,
     /// \brief Take off mode
     TAKE_OFF_START,
     /// \brief Enter into a climb
@@ -58,7 +60,7 @@ class mbzirc::FixedWingControllerPrivate
   };
 
   /// \brief Controller mode
-  public: Mode mode{Mode::ATTITUDE_CONTROL};
+  public: Mode mode{Mode::IDLE};
 
   /// \brief Roll control PID
   public: math::PID rollControl;
@@ -161,7 +163,7 @@ class mbzirc::FixedWingControllerPrivate
   }
 
   /// \brief Take off service
-  /// \param[in] takeOffParams - Take off parameters. A float array of 2 
+  /// \param[in] takeOffParams - Take off parameters. A float array of 2
   /// elements. First being pitch, second being target altitude.
   /// \param[out] _result - Result of the service call.
   public: bool TakeOffService(
@@ -348,23 +350,20 @@ void FixedWingControllerPlugin::PreUpdate(
 
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
+  /// State machine for flight controller
+  if (this->dataPtr->mode == FixedWingControllerPrivate::Mode::IDLE)
+  {
+    return;
+  }
+
   auto pose = _ecm.Component<components::WorldPose>(this->dataPtr->entity);
   auto rotation = pose->Data().Rot().Euler();
-
-  /// For Logging
-  auto linVelocityComp =
-    _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
-  auto linVel = linVelocityComp->Data().Length();
-
-  auto angVelocityComp =
-    _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
-
-  auto currPitch = rotation.Dot(this->dataPtr->pitchAxis);
 
   auto cmd = 0.0;
 
   /// State machine for flight controller
-  if (this->dataPtr->mode == FixedWingControllerPrivate::Mode::TAKE_OFF_START) {
+  if (this->dataPtr->mode == FixedWingControllerPrivate::Mode::TAKE_OFF_START)
+  {
     /// Goal of takeoff controller is to increase altitude as much as possible.
     /// Once a basic airspeed is achieved we adjust the angle of attack.
     /// Fix Thruster power-
@@ -385,6 +384,10 @@ void FixedWingControllerPlugin::PreUpdate(
     rightFlap.set_data(offset);
     this->dataPtr->rightFlap.Publish(rightFlap);
     cmd = offset;
+
+    auto linVelocityComp =
+      _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
+    auto linVel = linVelocityComp->Data().Length();
 
     /// Detect if sufficient lift is achieved
     if (linVel > this->dataPtr->takeOffSpeed) {
@@ -417,6 +420,13 @@ void FixedWingControllerPlugin::PreUpdate(
     this->dataPtr->ExecuteAttitudeControlLoop(rotation, _info);
   }
 
+  // For Logging
+  // auto currPitch = rotation.Dot(this->dataPtr->pitchAxis);
+  // auto angVelocityComp =
+  //   _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
+  // auto linVelocityComp =
+  //   _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->entity);
+  // auto linVel = linVelocityComp->Data().Length();
 
   //this->dataPtr->logFile << currPitch << "," << linVel << ", " << cmd << "\n";
   //this->dataPtr->logFile.flush();
