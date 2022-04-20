@@ -54,7 +54,6 @@ def generate_test_description():
     arguments={'name'  : 'quadrotor',
                'world' : 'empty_platform',
                'model' : 'mbzirc_quadrotor',
-               'type'  : 'uav',
                'z'     : '0.08',}
     # add hd camera
     arguments['slot0'] = 'mbzirc_hd_camera'
@@ -74,7 +73,6 @@ def generate_test_description():
                'world' : 'empty_platform',
                'model' : 'mbzirc_hexrotor',
                'gripper' : 'mbzirc_oberon7_gripper',
-               'type'  : 'uav',
                'x'     : '2',
                'z'     : '0.08',}
     # add rgbd camera
@@ -89,6 +87,23 @@ def generate_test_description():
     delay_launch_hexrotor = TimerAction(
             period=13.0,
             actions=[spawn_hexrotor])
+
+    # spawn fixed wing
+    arguments={'name'  : 'fixed_wing',
+               'world' : 'empty_platform',
+               'model' : 'mbzirc_fixed_wing',
+               'x'     : '4',
+               'z'     : '0.08',}
+    spawn_fixed_wing = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('mbzirc_ign'),
+                'launch/spawn.launch.py')
+        ),
+        launch_arguments=arguments.items())
+    delay_launch_fixed_wing= TimerAction(
+            period=15.0,
+            actions=[spawn_fixed_wing])
 
     # spawn usv with arm and gripper
     arguments={'name'   : 'usv',
@@ -108,7 +123,7 @@ def generate_test_description():
         ),
         launch_arguments=arguments.items())
     delay_launch_usv = TimerAction(
-            period=16.0,
+            period=17.0,
             actions=[spawn_usv])
 
     # ros launch does not bring down the ign gazebo process so manually kill it
@@ -132,6 +147,7 @@ def generate_test_description():
         gazebo,
         delay_launch_quadrotor,
         delay_launch_hexrotor,
+        delay_launch_fixed_wing,
         delay_launch_usv,
         process_under_test,
         kill_proc_handler,
@@ -143,7 +159,7 @@ def generate_test_description():
 class RosApiTest(unittest.TestCase):
 
     def test_termination(self, process_under_test, proc_info):
-        proc_info.assertWaitForShutdown(process=process_under_test, timeout=250)
+        proc_info.assertWaitForShutdown(process=process_under_test, timeout=280)
 
 @launch_testing.post_shutdown_test()
 class RosApiTestAfterShutdown(unittest.TestCase):

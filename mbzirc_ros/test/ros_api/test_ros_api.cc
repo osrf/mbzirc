@@ -254,6 +254,27 @@ TEST(RosApiTest, UAVTopics)
     node, gripperRightWrench.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(gripperRightWrench.callbackExecuted);
 
+  // fixed wing imu
+  MyTestClass<sensor_msgs::msg::Imu> fixedWingImu(
+      "/fixed_wing/imu/data");
+  waitUntilBoolVarAndSpin(
+    node, fixedWingImu.callbackExecuted, 10ms, 3000);
+  EXPECT_TRUE(fixedWingImu.callbackExecuted);
+
+  // fixed wing air_pressure
+  MyTestClass<sensor_msgs::msg::FluidPressure> fixedWingAirPressure(
+      "/fixed_wing/air_pressure");
+  waitUntilBoolVarAndSpin(
+    node, fixedWingAirPressure.callbackExecuted, 10ms, 3000);
+  EXPECT_TRUE(fixedWingAirPressure.callbackExecuted);
+
+  // fixed wing magnetometer
+  MyTestClass<sensor_msgs::msg::MagneticField> fixedWingMagnetometer(
+      "/fixed_wing/magnetic_field");
+  waitUntilBoolVarAndSpin(
+    node, fixedWingMagnetometer.callbackExecuted, 10ms, 3000);
+  EXPECT_TRUE(fixedWingMagnetometer.callbackExecuted);
+
   // \todo check cmd_vel and points (lidar) topics
 }
 
