@@ -1,10 +1,9 @@
-**This is work in progress and is subject to change in the next releases. Please do not use the information provided in the simulation environment until unless officially announced by the organizers of MBZIRC**
-
-
 # MBZIRC Maritime Grand Challenge Simulator
 
 This repository contains simulation software created for the
 MBZIRC Maritime Grand Challenge.
+
+This simulator will be enhanced with additional features throughout the simulation phase of the MBZIRC Maritime Grand Challenge.
 
 ## Installation
 
