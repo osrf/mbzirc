@@ -1,6 +1,21 @@
 from mbzirc_ign.bridge import Bridge, BridgeDirection
 
 
+def camera_models():
+    models = ['mbzirc_vga_camera', 'mbzirc_hd_camera']
+    return models
+
+
+def rgbd_models():
+    models = ['mbzirc_rgbd_camera']
+    return models
+
+
+def lidar_models():
+    models = ['mbzirc_planar_lidar', 'mbzirc_3d_lidar']
+    return models
+
+
 def slot_prefix(world_name, model_name, slot_idx):
     s = f'/world/{world_name}/model/{model_name}/model/sensor_{slot_idx}/link/sensor_link/sensor'
     return s
@@ -58,16 +73,16 @@ def camera_points(world_name, model_name, slot_idx):
 
 def payload_bridges(world_name, model_name, payload, idx):
     bridges = []
-    if payload in ['mbzirc_vga_camera', 'mbzirc_hd_camera']:
+    if payload in camera_models():
         bridges = [
             image(world_name, model_name, idx),
             camera_info(world_name, model_name, idx)
         ]
-    elif payload in ['mbzirc_planar_lidar', 'mbzirc_3d_lidar']:
+    elif payload in lidar_models():
         bridges = [
             lidar_points(world_name, model_name, idx)
         ]
-    elif payload in ['mbzirc_rgbd_camera']:
+    elif payload in rgbd_models():
         bridges = [
             image(world_name, model_name, idx),
             camera_info(world_name, model_name, idx),

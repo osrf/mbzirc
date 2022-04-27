@@ -2,7 +2,7 @@
 <package format="2">
   <name>mbzirc_ros</name>
   <version>0.0.0</version>
-  <description>MBZIRC ROS resources</description>
+o <description>MBZIRC ROS resources</description>
 
   <maintainer email="ichen@openrobotics.org">Ian Chen</maintainer>
 
@@ -13,10 +13,12 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>geometry_msgs</depend>
-  <depend>rclcpp</depend>
-  <depend>ros_ign_interfaces</depend>
   <depend>mavros_msgs</depend>
+  <depend>radar_msgs</depend>
+  <depend>rclcpp</depend>
   <depend>rosgraph_msgs</depend>
+  <depend>ros_ign_bridge</depend>
+  <depend>ros_ign_interfaces</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
