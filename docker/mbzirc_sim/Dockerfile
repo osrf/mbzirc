@@ -114,7 +114,7 @@ RUN cd /home/$USERNAME/mbzirc_ws/src \
 
 WORKDIR /home/$USERNAME/mbzirc_ws
 
-COPY . src/mbzric
+COPY . src/mbzirc
 
 ENV IGNITION_VERSION fortress
 
