@@ -1,1 +1,2 @@
 add_subdirectory(naive_radar)
+add_subdirectory(point_lidar)
