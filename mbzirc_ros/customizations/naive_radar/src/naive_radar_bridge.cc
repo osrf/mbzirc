@@ -25,6 +25,7 @@
 
 using namespace std::chrono_literals;
 
+/// \brief Bridge for converting ign msgs to ros
 class NaiveRadarBridge : public rclcpp::Node
 {
   public:
@@ -83,20 +84,10 @@ class NaiveRadarBridge : public rclcpp::Node
       return;
 
     // pack ros msg and publish
-
-    // populate header
+    // convert ign header to ros header
     radar_msgs::msg::RadarScan rosMsg;
     ros_ign_bridge::convert_ign_to_ros(_msg.header(), rosMsg.header);
-//     rosMsg.stamp = rclcpp::Time(_msg.stamp().sec(), _msg.stamp().nsec());
-//     for (int i = 0; i < _msg.data_size(); ++i)
-//     {
-//       auto aPair = _msg.data(i);
-//       if (aPair.key() == "frame_id" && aPair.value_size() > 0)
-//       {
-//         rosMsg.frame_id = frame_id_ign_to_ros(aPair.value(0));
-//       }
-//     }
-
+    // fill radar return data
     for (unsigned int i = 0; i < _msg.data().size(); i+=3u)
     {
       float range = _msg.data(i);

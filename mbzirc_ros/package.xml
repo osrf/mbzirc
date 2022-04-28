@@ -2,7 +2,7 @@
 <package format="2">
   <name>mbzirc_ros</name>
   <version>0.0.0</version>
-o <description>MBZIRC ROS resources</description>
+  <description>MBZIRC ROS resources</description>
 
   <maintainer email="ichen@openrobotics.org">Ian Chen</maintainer>
 
