@@ -22,12 +22,10 @@ target_link_libraries(NaiveRadar PUBLIC
   ignition-math${IGN_MATH_VER}::ignition-math${IGN_MATH_VER}
 )
 
-install(
-  TARGETS NaiveRadar
-  DESTINATION lib)
-
-
-# Resources
-install(DIRECTORY
-  models
-  DESTINATION share/${PROJECT_NAME})
+# Uncomment the install calls below to install the example naive radar model
+# install(
+#   TARGETS NaiveRadar
+#   DESTINATION lib)
+# install(DIRECTORY
+#   models
+#   DESTINATION share/${PROJECT_NAME})
