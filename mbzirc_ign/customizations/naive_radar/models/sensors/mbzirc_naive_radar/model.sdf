@@ -29,13 +29,13 @@
           <max_angle>0.1745</max_angle>
         </vertical>
         <range>
-          <min>1.0</min>
-          <max>1000.0</max>
+          <min>6.0</min>
+          <max>5000.0</max>
         </range>
         <noise>
           <type>gaussian</type>
           <mean>0</mean>
-          <stddev>0.01</stddev>
+          <stddev>2</stddev>
         </noise>
       </scan>
     </plugin>
