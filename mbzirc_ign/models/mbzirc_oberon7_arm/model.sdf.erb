@@ -51,10 +51,10 @@ $camera_sensor_local_pose = "0.19 0.075 0.0 -1.570796326794896 0 0"
       </collision>
       -->
       <collision name="Base02">
-        <pose>-0.145315 -0.031051 0.0 1.5708 0.0 0.0</pose>
+        <pose>-0.16 0.0 0.0 1.5708 0.0 0.0</pose>
         <geometry>
           <box>
-            <size>0.214431 0.13 0.113131</size>
+            <size>0.18 0.13 0.113131</size>
           </box>
         </geometry>
       </collision>
@@ -62,25 +62,9 @@ $camera_sensor_local_pose = "0.19 0.075 0.0 -1.570796326794896 0 0"
         <pose>-0.0203551 0.00103727 0.0 0.0 0.0 0.0</pose>
         <geometry>
           <cylinder>
-            <length>0.13</length>
+            <length>0.05</length>
             <radius>0.0485029</radius>
           </cylinder>
-        </geometry>
-      </collision>
-      <collision name="Base04">
-        <pose>-0.0619724 0.0560192 0.0 1.5708 0.0 3.14159</pose>
-        <geometry>
-          <box>
-            <size>0.0471749 0.13 0.113131</size>
-          </box>
-        </geometry>
-      </collision>
-      <collision name="Base03">
-        <pose>-0.149891 0.0172752 0.0 1.5708 0.0 1.80709</pose>
-        <geometry>
-          <box>
-            <size>0.0471749 0.13 0.148202</size>
-          </box>
         </geometry>
       </collision>
       <visual name='base_visual'>
@@ -101,8 +85,12 @@ $camera_sensor_local_pose = "0.19 0.075 0.0 -1.570796326794896 0 0"
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
+          <!--
           <lower>-1.04719758</lower>
           <upper>1.04719758</upper>
+          -->
+          <lower>-2.0944</lower>
+          <upper>2.0944</upper>
           <effort>200</effort>
           <velocity>0.17000000000000001</velocity>
         </limit>
@@ -132,7 +120,7 @@ $camera_sensor_local_pose = "0.19 0.075 0.0 -1.570796326794896 0 0"
         <pose>0.03967 0.005441 0.017383 0 0 0</pose>
         <geometry>
           <cylinder>
-            <length>0.23962700000000001</length>
+            <length>0.12</length>
             <radius>0.068183999999999995</radius>
           </cylinder>
         </geometry>
