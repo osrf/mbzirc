@@ -37,7 +37,7 @@
                 <albedo_map>materials/textures/USV_Albedo.jpg</albedo_map>
                 <normal_map>materials/textures/USV_Normal.jpg</normal_map>
                 <roughness_map>materials/textures/USV_Roughness.jpg</roughness_map>
-                <metalness_map>materials/textures/USV_Metalness.jpg</metalness_map>
+                <metalness_map>materials/textures/USV_Metalness.png</metalness_map>
             </metal>
           </pbr>
       </material>
@@ -129,18 +129,18 @@
       </geometry>
     </collision>
     <collision name="box_collision002">
-      <pose>-1.41327 0.0 0.120878 0.0 0.0 1.57079</pose>
+      <pose>-1.73 0.0 0.120878 0.0 0.0 1.57079</pose>
       <geometry>
         <box>
-          <size>1.99008 1.11563 0.0231074</size>
+          <size>1.99008 1.52 0.028</size>
         </box>
       </geometry>
     </collision>
     <collision name="box_collision003">
-      <pose>1.41327 0.0 0.120878 0.0 0.0 1.57079</pose>
+      <pose>1.73 0.0 0.120878 0.0 0.0 1.57079</pose>
       <geometry>
         <box>
-          <size>1.99008 1.11563 0.0231074</size>
+          <size>1.99008 1.52 0.028</size>
         </box>
       </geometry>
     </collision>
@@ -148,7 +148,7 @@
       <pose>0.0 -1.36239 -0.240119 1.5708 0.0 1.57079</pose>
       <geometry>
         <cylinder>
-          <length>5.29989</length>
+          <length>7</length>
           <radius>0.272196</radius>
         </cylinder>
       </geometry>
@@ -157,7 +157,7 @@
       <pose>0.0 -1.36239 -0.0436482 0.0 0.0 1.57079</pose>
       <geometry>
         <box>
-          <size>0.5444 5.93886 0.392941</size>
+          <size>0.5444 7 0.44</size>
         </box>
       </geometry>
     </collision>
@@ -233,67 +233,11 @@
         </box>
       </geometry>
     </collision>
-    <collision name="box_collision021">
-      <pose>-0.148006 0.757578 0.345798 1.5708 0.0 1.57079</pose>
-      <geometry>
-        <box>
-          <size>0.803743 0.441853 0.0459061</size>
-        </box>
-      </geometry>
-    </collision>
-    <collision name="box_collision022">
-      <pose> 0.185036 0.757578 0.334445 1.309 0.0 1.57079</pose>
-      <geometry>
-        <box>
-          <size>0.803743 0.441853 0.0459061</size>
-        </box>
-      </geometry>
-    </collision>
-    <collision name="box_collision023">
-      <pose>-0.148006 -0.73159 0.345798 1.5708 0.0 1.57079</pose>
-      <geometry>
-        <box>
-          <size>0.803743 0.441853 0.0459061</size>
-        </box>
-      </geometry>
-    </collision>
-    <collision name="box_collision024">
-      <pose>-0.35878 1.10465 0.225041 1.5708 0.0 3.14159</pose>
-      <geometry>
-        <box>
-          <size>0.442059 0.243019 0.0459061</size>
-        </box>
-      </geometry>
-    </collision>
-    <collision name="box_collision025">
-      <pose>0.00359192 -1.08202 0.582752 1.5708 0.0 3.14159</pose>
-      <geometry>
-        <box>
-          <size>0.880139 0.0535857 0.0459061</size>
-        </box>
-      </geometry>
-    </collision>
-    <collision name="box_collision026">
-      <pose>0.332458 -1.04962 0.502834 1.5708 0.0 3.14159</pose>
-      <geometry>
-        <box>
-          <size>0.290446 0.0535857 0.148965</size>
-        </box>
-      </geometry>
-    </collision>
-    <collision name="box_collision030">
-      <pose>0.0 1.362 0.0404701 0.0 0.0 1.57079</pose>
-      <geometry>
-        <box>
-          <size>0.691388 4.2583 0.161106</size>
-        </box>
-      </geometry>
-    </collision>
     <collision name="box_collision031">
       <pose>0.0 1.362 -0.0436482 0.0 0.0 1.57079</pose>
       <geometry>
         <box>
-          <size>0.5444 5.93886 0.392941</size>
+          <size>0.5444 7 0.44</size>
         </box>
       </geometry>
     </collision>
@@ -301,7 +245,7 @@
       <pose>0.0 1.362 -0.240119 1.5708 0.0 1.57079</pose>
       <geometry>
         <cylinder>
-          <length>5.29989</length>
+          <length>7</length>
           <radius>0.272196</radius>
         </cylinder>
       </geometry>
@@ -354,10 +298,58 @@
         </box>
       </geometry>
     </collision>
+    <collision name="box_collision038">
+      <pose>0.73 1.37 0.36 -1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.6 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision039">
+      <pose>0.73 -1.37 0.36 -1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.6 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision040">
+      <pose>-0.73 1.37 0.36 -1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.6 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision041">
+      <pose>-0.73 -1.37 0.36 -1.5708 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.734711 0.6 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision042">
+      <pose>0.0 -1.36239 0.645 0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.76 1.5 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="box_collision043">
+      <pose>0.0 1.36239 0.645 0 0.0 1.57079</pose>
+      <geometry>
+        <box>
+          <size>0.76 1.5 0.0459061</size>
+        </box>
+      </geometry>
+    </collision>
   </link>
 
   <link name="left_engine_link">
-    <pose>0 1.358 -0.716 0 0 1.57079</pose>
+    <pose>0 1.348 -0.546 0 0 1.57079</pose>
     <inertial>
       <mass>15.0</mass>
       <inertia>
@@ -405,7 +397,7 @@
   </link>
 
   <link name="left_propeller_link">
-    <pose>-0.2 1.358 -0.716 0 0 1.57079</pose>
+    <pose>-0.151 1.348 -0.716 0 0 1.57079</pose>
 
     <inertial>
       <mass>0.5</mass>
@@ -454,7 +446,7 @@
   </link>
 
   <link name="right_engine_link">
-    <pose>0 -1.358 -0.716 0 0 1.57079</pose>
+    <pose>0 -1.348 -0.546 0 0 1.57079</pose>
     <inertial>
       <mass>15.0</mass>
       <inertia>
@@ -503,7 +495,7 @@
 
 
   <link name="right_propeller_link">
-    <pose>-0.2 -1.358 -0.716 0 0 1.57079</pose>
+    <pose>-0.151 -1.348 -0.716 0 0 1.57079</pose>
     <inertial>
       <mass>0.5</mass>
       <inertia>
@@ -612,7 +604,7 @@
 
   <!-- arm slot -->
   <frame name="arm_slot_0">
-    <pose>0.0 1.1 0.74 0 0 1.5708</pose>
+    <pose>0.0 1.7 0.74 0 0 1.5708</pose>
   </frame>
 
   <!-- Front payload slot -->
