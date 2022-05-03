@@ -63,7 +63,7 @@ class TestModel(unittest.TestCase):
 
         [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
 
-        self.assertEqual(len(payload_bridges), 4)
+        self.assertEqual(len(payload_bridges), 6)
         self.assertEqual(len(payload_nodes), 1)
 
     def test_single_usv_config(self):
@@ -85,7 +85,7 @@ class TestModel(unittest.TestCase):
 
         [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
 
-        self.assertEqual(len(payload_bridges), 4)
+        self.assertEqual(len(payload_bridges), 6)
         self.assertEqual(len(payload_nodes), 1)
 
     def test_single_usv_with_arm_gripper_config(self):
