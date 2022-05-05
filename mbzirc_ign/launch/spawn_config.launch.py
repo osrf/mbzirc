@@ -43,8 +43,7 @@ def spawn(context, config_file, world_name):
         arguments=model.spawn_args()
     )
 
-    nodes = []
-    bridges = model.bridges(world_name)
+    bridges, nodes = model.bridges(world_name)
 
     if model.isUAV():
         [payload_bridges, payload_nodes] = model.payload_bridges(world_name)
@@ -82,7 +81,7 @@ def spawn(context, config_file, world_name):
         package='mbzirc_ros',
         executable='video_target_relay',
         output='screen',
-        parameterss=[{'model_name': model.model_name}]
+        parameters=[{'model_name': model.model_name}]
     ))
 
     group_action = GroupAction([
