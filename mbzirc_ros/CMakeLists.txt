@@ -60,9 +60,6 @@ ament_target_dependencies(video_stream_publisher
   sensor_msgs
 )
 
-# customizations
-add_subdirectory(customizations)
-
 # Resources
 install(TARGETS
   fixed_wing_bridge

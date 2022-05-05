@@ -15,7 +15,7 @@ def rgbd_models():
 def lidar_models():
     models = ['mbzirc_planar_lidar',
               'mbzirc_3d_lidar',
-              'mbzirc_point_lidar']
+              ]
     return models
 
 

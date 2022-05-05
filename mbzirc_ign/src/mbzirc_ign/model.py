@@ -17,7 +17,10 @@ import os
 import subprocess
 
 from ament_index_python.packages import get_package_share_directory
+from ament_index_python.packages import PackageNotFoundError
 
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
 import mbzirc_ign.bridges
@@ -185,6 +188,7 @@ class Model:
     def payload_bridges(self, world_name, payloads=None):
         bridges = []
         nodes = []
+        payload_launches = []
 
         if not payloads:
             payloads = self.payload
@@ -194,11 +198,12 @@ class Model:
                 continue
 
             # check if it is a custom payload
-            [custom_bridges, custom_nodes] = self.custom_payload(world_name, self.model_name,
-                                                                 p['sensor'], idx)
-            if (len(custom_bridges) > 0 or len(custom_nodes) > 0):
-                bridges.extend(custom_bridges)
-                nodes.extend(custom_nodes)
+            if self.is_custom_payload(p['sensor']):
+                payload_launch = self.custom_payload_launch(world_name, self.model_name,
+                                                            p['sensor'], idx)
+                if payload_launch is not None:
+                    payload_launches.append(payload_launch)
+
             # if not custom payload, add our own bridges and nodes
             else:
                 bridges.extend(
@@ -229,23 +234,26 @@ class Model:
                         arguments=['1'],
                         remappings=[('input/image', f'slot{idx}/depth'),
                                     ('output/image', f'slot{idx}/optical/depth')]))
-        return [bridges, nodes]
+        return [bridges, nodes, payload_launches]
 
-    def custom_payload(self, world_name, model_name, payload, idx):
-        bridges = []
-        nodes = []
+    def is_custom_payload(self, payload):
+        try:
+            get_package_share_directory(payload)
+        except PackageNotFoundError:
+            return False
+        return True
 
-        # custom payload - naive radar
-        if payload == 'mbzirc_naive_radar':
-            ignTopic = f'/model/{model_name}/model/sensor_{idx}/radar/scan'
-            nodes.append(Node(
-                package='mbzirc_ros',
-                executable='naive_radar_bridge',
-                parameters=[{'topic': ignTopic}],
-                remappings=[('radar/scan', f'slot{idx}/radar/scan')]))
-        # custom sensor bridges and nodes should be added here
-
-        return [bridges, nodes]
+    def custom_payload_launch(self, world_name, model_name, payload, idx):
+        payload_launch = None
+        path = os.path.join(
+            get_package_share_directory(payload), 'launch')
+        if os.path.exists(path):
+            payload_launch = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([path, '/bridge.launch.py']),
+                launch_arguments={'world_name': world_name,
+                                  'model_name': model_name,
+                                  'slot_idx': str(idx)}.items())
+        return payload_launch
 
     def set_flight_time(self, flight_time):
         # UAV specific, sets flight time

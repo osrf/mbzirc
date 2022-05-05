@@ -24,10 +24,11 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(bridges), 8)
         self.assertEqual(len(nodes), 0)
 
-        [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
+        [payload_bridges, payload_nodes, launch] = model.payload_bridges('test_world_name')
 
         self.assertEqual(len(payload_bridges), 8)
         self.assertEqual(len(payload_nodes), 4)
+        self.assertEqual(len(launch), 0)
 
     def test_single_uav_with_gripper_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
@@ -61,10 +62,11 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(bridges), 7)
         self.assertEqual(len(nodes), 0)
 
-        [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
+        [payload_bridges, payload_nodes, launch] = model.payload_bridges('test_world_name')
 
         self.assertEqual(len(payload_bridges), 6)
         self.assertEqual(len(payload_nodes), 1)
+        self.assertEqual(len(launch), 0)
 
     def test_single_usv_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
@@ -83,10 +85,11 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(bridges), 9)
         self.assertEqual(len(nodes), 0)
 
-        [payload_bridges, payload_nodes] = model.payload_bridges('test_world_name')
+        [payload_bridges, payload_nodes, launch] = model.payload_bridges('test_world_name')
 
         self.assertEqual(len(payload_bridges), 6)
         self.assertEqual(len(payload_nodes), 1)
+        self.assertEqual(len(launch), 0)
 
     def test_single_usv_with_arm_gripper_config(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),

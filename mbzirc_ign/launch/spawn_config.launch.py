@@ -36,20 +36,24 @@ def spawn(context, config_file, world_name):
     else:
         model = m
 
+    launch_processes = []
     ignition_spawn_entity = Node(
         package='ros_ign_gazebo',
         executable='create',
         output='screen',
         arguments=model.spawn_args()
     )
+    launch_processes.append(ignition_spawn_entity)
 
     nodes = []
     bridges = model.bridges(world_name)
+    payload_launches = []
 
     if model.isUAV():
-        [payload_bridges, payload_nodes] = model.payload_bridges(world_name)
+        [payload_bridges, payload_nodes, payload_launches] = model.payload_bridges(world_name)
         bridges.extend(payload_bridges)
         nodes.extend(payload_nodes)
+        payload_launches.extend(payload_launches)
 
     if model.isFixedWingUAV():
         nodes.append(Node(
@@ -96,7 +100,10 @@ def spawn(context, config_file, world_name):
             on_exit=[group_action],
         )
     )
-    return [ignition_spawn_entity, handler]
+    launch_processes.append(handler)
+    launch_processes.extend(payload_launches)
+
+    return launch_processes
 
 
 def launch(context, *args, **kwargs):
