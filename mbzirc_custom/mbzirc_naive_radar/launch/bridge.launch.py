@@ -27,6 +27,8 @@ def launch(context, *args, **kwargs):
     slot_idx = LaunchConfiguration('slot_idx').perform(context)
 
     nodes = []
+
+    # create a node to launch the the custom IGN to ROS bridge executable
     ignTopic = f'/model/{model_name}/model/sensor_{slot_idx}/radar/scan'
     nodes.append(Node(
         package='mbzirc_naive_radar',
@@ -34,6 +36,7 @@ def launch(context, *args, **kwargs):
         parameters=[{'topic': ignTopic}],
         remappings=[('radar/scan', f'slot{slot_idx}/radar/scan')]))
 
+    # Add model name as namepace to generate unique topic names
     launch_processes = []
     group_action = GroupAction([
         PushRosNamespace(model_name),
@@ -45,6 +48,8 @@ def launch(context, *args, **kwargs):
 
 def generate_launch_description():
     return LaunchDescription([
+        # Launch arguments passed in from mbzirc_ign/src/mbzirc_ign/model.py
+        # Used for remapping topic names and namespacing ros node
         DeclareLaunchArgument('World name', default_value='',
             description='Name of world'),
         DeclareLaunchArgument('model_name', default_value='',

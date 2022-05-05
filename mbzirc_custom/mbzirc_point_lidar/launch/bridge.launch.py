@@ -32,11 +32,17 @@ def launch(context, *args, **kwargs):
 
     nodes = []
 
+    # create IGN to ROS bridges for lidar scan and point cloud topic
+    # using the mbzirc_ign module, see available bridge in
+    # mbzirc_ign/src/mbzirc_ign/payload_bridges.py
     bridges = [
         mbzirc_ign.payload_bridges.lidar_scan(world_name, model_name, slot_idx),
         mbzirc_ign.payload_bridges.lidar_points(world_name, model_name, slot_idx)
     ]
 
+    # create a node the bridges
+    # The node runs the parameter_bridge executable, see
+    # https://github.com/ignitionrobotics/ros_ign/blob/galactic/ros_ign_bridge
     nodes.append(Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
@@ -46,6 +52,7 @@ def launch(context, *args, **kwargs):
         parameters=[{'lazy': True}],
     ))
 
+    # Add model name as namepace to generate unique topic names
     launch_processes = []
     group_action = GroupAction([
         PushRosNamespace(model_name),
@@ -57,6 +64,8 @@ def launch(context, *args, **kwargs):
 
 def generate_launch_description():
     return LaunchDescription([
+        # Launch arguments passed in from mbzirc_ign/src/mbzirc_ign/model.py
+        # Used for remapping topic names and namespacing ros node
         DeclareLaunchArgument('world_name', default_value='',
             description='Name of world'),
         DeclareLaunchArgument('model_name', default_value='',
