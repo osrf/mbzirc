@@ -41,6 +41,10 @@ $slot2_rpy = '0 0 0'
 $slot3_payload = nil
 $slot3_rpy = '0 0 0'
 
+$arm_slot_payload = '0'
+if defined?(arm_slot)
+  $arm_slot_payload = arm_slot
+end
 if defined?(slot0)
   $slot0_payload = slot0
 end
@@ -84,10 +88,10 @@ end
     <name>arm</name>
     <uri>model://<%= $arm_name%></uri>
     <placement_frame>arm_mount_point</placement_frame>
-    <pose relative_to="arm_slot_0">0 0 0 0 0 0</pose>
+    <pose relative_to="arm_slot_<%= $arm_slot_payload%>">0 0 0 0 0 0</pose>
   </include>
-  <joint name="arm_slot_0_joint" type="fixed">
-    <parent>arm_slot_0</parent>
+  <joint name="arm_slot_joint" type="fixed">
+    <parent>arm_slot_<%= $arm_slot_payload%></parent>
     <child>arm::arm_mount_point</child>
   </joint>
   <% end %>
