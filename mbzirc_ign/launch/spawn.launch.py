@@ -82,12 +82,16 @@ def spawn(context, model_type, world_name, model_name, position):
         model.set_wavefield(world_name)
         model.set_arm(arm)
         model.set_arm_slot(arm_slot)
+    elif model_type == 'static_arm':
+        arm = LaunchConfiguration('arm').perform(context)
+        model.set_arm(arm)
 
     model.set_gripper(gripper)
     model.set_payload(payloads)
 
     launch_proceses = []
     if sim_mode == 'full' or sim_mode == 'sim':
+        print(model.spawn_args())
         ignition_spawn_entity = Node(
             package='ros_ign_gazebo',
             executable='create',
