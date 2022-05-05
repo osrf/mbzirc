@@ -404,6 +404,9 @@ class Model:
         if 'arm' in config:
             model.set_arm(config['arm'])
 
+        if 'arm_slot' in config:
+            model.set_arm_slot(config['arm_slot'])
+
         if 'gripper' in config:
             model.set_gripper(config['gripper'])
 
