@@ -14,7 +14,6 @@
 
   <depend>geometry_msgs</depend>
   <depend>mavros_msgs</depend>
-  <depend>radar_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rosgraph_msgs</depend>
   <depend>ros_ign_bridge</depend>
