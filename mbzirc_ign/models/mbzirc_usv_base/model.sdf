@@ -615,11 +615,6 @@
     <pose>0.0 1.1 0.74 0 0 1.5708</pose>
   </frame>
 
-  <!-- arm slot #1-->
-  <frame name="arm_slot_1">
-    <pose>0.0 -1.1 0.74 0 0 -1.5708</pose>
-  </frame>
-
   <!-- Front payload slot -->
   <frame name="slot_0">
     <pose>0.738 0 0.68 0 0 0</pose>
