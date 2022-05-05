@@ -65,6 +65,7 @@ class Model:
         self.payload = {}
         self.arm = ''
         self.gripper = ''
+        self.arm_slot = '0'
 
     def isUAV(self):
         return self.model_type in UAVS
@@ -276,6 +277,9 @@ class Model:
     def set_arm(self, arm):
         self.arm = arm
 
+    def set_arm_slot(self, arm_slot):
+        self.arm_slot = arm_slot
+
     def set_gripper(self, gripper):
         self.gripper = gripper
 
@@ -312,6 +316,7 @@ class Model:
             # and also for arm and gripper to generate unique topic names
             if self.hasValidArm():
                 command.append(f'arm={self.arm}')
+                command.append(f'arm_slot={self.arm_slot}')
                 arm_model_file = os.path.join(
                     get_package_share_directory('mbzirc_ign'), 'models',
                     self.arm, 'model.sdf.erb')
@@ -431,6 +436,9 @@ class Model:
 
         if 'arm' in config:
             model.set_arm(config['arm'])
+
+        if 'arm_slot' in config:
+            model.set_arm_slot(config['arm_slot'])
 
         if 'gripper' in config:
             model.set_gripper(config['gripper'])
