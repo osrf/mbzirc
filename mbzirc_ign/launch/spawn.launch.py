@@ -77,9 +77,11 @@ def spawn(context, model_type, world_name, model_name, position):
         model.set_flight_time(flight_time)
     elif model.isUSV():
         arm = LaunchConfiguration('arm').perform(context)
+        arm_slot = LaunchConfiguration('arm_slot').perform(context)
 
         model.set_wavefield(world_name)
         model.set_arm(arm)
+        model.set_arm_slot(arm_slot)
 
     model.set_gripper(gripper)
     model.set_payload(payloads)
@@ -246,6 +248,10 @@ def generate_launch_description():
             'gripper',
             default_value='',
             description='gripper model to attach to arm or UAV'),
+        DeclareLaunchArgument(
+            'arm_slot',
+            default_value='0',
+            description='arm slot to attach to usv'),
         DeclareLaunchArgument(
             'slot0',
             default_value='',

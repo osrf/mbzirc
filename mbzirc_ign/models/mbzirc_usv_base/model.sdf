@@ -602,7 +602,7 @@
     <child>right_propeller_link</child>
   </joint>
 
-  <!-- arm slot -->
+  <!-- arm slot #0-->
   <frame name="arm_slot_0">
     <pose>0.0 1.7 0.74 0 0 1.5708</pose>
   </frame>
