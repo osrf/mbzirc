@@ -279,6 +279,7 @@
       filename="ignition-gazebo-sensors-system"
       name="ignition::gazebo::systems::Sensors">
       <render_engine>ogre2</render_engine>
+      <disable_on_drained_battery>true</disable_on_drained_battery>
     </plugin>
     <plugin
       filename="ignition-gazebo-air-pressure-system"
