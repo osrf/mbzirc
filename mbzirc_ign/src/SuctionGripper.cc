@@ -48,6 +48,13 @@ class mbzirc::SuctionGripperPrivate
   /// \brief Two-dimensional array of contact points
   public: std::array<std::array<Entity, 3>, 3> contacts;
 
+  /// \brief Publisher for contact points
+  public: transport::Node::Publisher contactPublisherCenter;
+  public: transport::Node::Publisher contactPublisherLeft;
+  public: transport::Node::Publisher contactPublisherRight;
+  public: transport::Node::Publisher contactPublisherTop;
+  public: transport::Node::Publisher contactPublisherBottom;
+
   /// \brief Callback for when contact is made
   public: void OnContact(int idx0, int idx1,
               const ignition::msgs::Contacts &_msg)
@@ -145,6 +152,18 @@ void SuctionGripperPlugin::Configure(const Entity &_entity,
       std::bind(&SuctionGripperPrivate::OnContact, this->dataPtr.get(), 1, 2,
         std::placeholders::_1);
     this->dataPtr->node.Subscribe(prefix + "/contact_sensor_12", callback_12);
+
+
+    this->dataPtr->contactPublisherCenter = 
+      this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/center");
+    this->dataPtr->contactPublisherLeft = 
+      this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/left");
+    this->dataPtr->contactPublisherRight = 
+      this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/right");
+    this->dataPtr->contactPublisherTop = 
+      this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/top");
+    this->dataPtr->contactPublisherBottom = 
+      this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/bottom");
   }
   else
   {
@@ -175,6 +194,23 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
   if (_info.paused) return;
   std::lock_guard<std::mutex> lock(this->dataPtr->mtx);
 
+  msgs::Boolean contact;
+
+  contact.set_data(this->dataPtr->contacts[1][1] != kNullEntity);
+  this->dataPtr->contactPublisherCenter.Publish(contact);
+
+  contact.set_data(this->dataPtr->contacts[1][0] != kNullEntity);
+  this->dataPtr->contactPublisherLeft.Publish(contact);
+
+  contact.set_data(this->dataPtr->contacts[1][2] != kNullEntity);
+  this->dataPtr->contactPublisherRight.Publish(contact);
+
+  contact.set_data(this->dataPtr->contacts[0][1] != kNullEntity);
+  this->dataPtr->contactPublisherTop.Publish(contact);
+
+  contact.set_data(this->dataPtr->contacts[2][1] != kNullEntity);
+  this->dataPtr->contactPublisherBottom.Publish(contact);
+
   if (!this->dataPtr->jointCreated && this->dataPtr->suctionOn)
   {
     // check that two sensors are making contact with the same object
@@ -192,8 +228,8 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
     bool contactMade =
       (checkContacts({1, 1}, {1, 0}) ||  // Center + left
        checkContacts({1, 1}, {1, 2}) ||  // Center + right
-       checkContacts({1, 1}, {0, 1}) ||  // Center + up
-       checkContacts({1, 1}, {2, 1}));   // Center + down
+       checkContacts({1, 1}, {0, 1}) ||  // Center + top
+       checkContacts({1, 1}, {2, 1}));   // Center + bottom 
 
     if (contactMade)
     {
@@ -205,7 +241,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
       this->dataPtr->pendingJointCreation = true;
       this->dataPtr->childItem = this->dataPtr->contacts[1][0];
     }
-    else if (checkContacts({0, 1}, {2, 1}))  // up + down 
+    else if (checkContacts({0, 1}, {2, 1}))  // top + bottom 
     {
       this->dataPtr->pendingJointCreation = true;
       this->dataPtr->childItem = this->dataPtr->contacts[0][1];

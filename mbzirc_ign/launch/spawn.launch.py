@@ -23,9 +23,9 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 
-from mbzirc_ign.model import Model
-
 import mbzirc_ign.bridges
+
+from mbzirc_ign.model import Model
 
 
 def spawn(context, model_type, world_name, model_name, position):
@@ -91,7 +91,6 @@ def spawn(context, model_type, world_name, model_name, position):
 
     launch_proceses = []
     if sim_mode == 'full' or sim_mode == 'sim':
-        print(model.spawn_args())
         ignition_spawn_entity = Node(
             package='ros_ign_gazebo',
             executable='create',

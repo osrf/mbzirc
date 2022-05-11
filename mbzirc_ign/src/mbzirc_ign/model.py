@@ -181,6 +181,13 @@ class Model:
                 bridges.append(
                     mbzirc_ign.bridges.gripper_suction_control(self.model_name, isAttachedToArm)
                 )
+                bridges.extend([
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'center'),
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'left'),
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'right'),
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'top'),
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'bottom')
+                ])
 
         return [bridges, nodes]
 
@@ -323,7 +330,6 @@ class Model:
             with open(gripper_model_output_file, 'w') as f:
                 f.write(str_output)
             # print(gripper_command, str_output)
-
 
         command.append(template_file)
         process = subprocess.Popen(command,
