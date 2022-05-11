@@ -19,7 +19,6 @@ from launch.substitutions import ThisLaunchFileDir
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
-# ros2 launch mbzirc_ign spawn.launch.py name:=quadrotor_1 world:=coast model:=mbzirc_quadrotor x:=0 y:=0.5 z:=0 R:=0 P:=0 Y:=0 gripper:=mbzirc_suction_gripper
 def generate_launch_description():
     return LaunchDescription([
         IncludeLaunchDescription(
@@ -27,7 +26,7 @@ def generate_launch_description():
                 [ThisLaunchFileDir(), '/spawn.launch.py']),
             launch_arguments={
                 'name': 'quadrotor_1',
-                'world': 'coast',
+                'world': 'empty_platform',
                 'model': 'mbzirc_quadrotor',
                 'x': '0',
                 'y': '0.5',
@@ -41,7 +40,7 @@ def generate_launch_description():
             launch_arguments={
                 'name': 'quadrotor_2',
                 'world': 'coast',
-                'model': 'mbzirc_quadrotor',
+                'model': 'empty_platform',
                 'x': '0',
                 'y': '-0.5',
                 'z': '0',
