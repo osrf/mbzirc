@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="mbzirc_naive_radar">
+    <link name="sensor_link">
+      <inertial>
+        <mass>0.005</mass>
+        <inertia>
+          <ixx>8.33e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.33e-03</iyy>
+          <iyz>0</iyz>
+          <izz>8.33e-03</izz>
+        </inertia>
+      </inertial>
+    </link>
+    <frame name="mount_point"/>
+    <plugin
+        filename="libNaiveRadar.so"
+        name="mbzirc::NaiveRadar">
+      <update_rate>1</update_rate>
+      <scan>
+        <horizontal>
+          <min_angle>-3.14159265</min_angle>
+          <max_angle>3.14159265</max_angle>
+        </horizontal>
+        <vertical>
+          <min_angle>-0.1745</min_angle>
+          <max_angle>0.1745</max_angle>
+        </vertical>
+        <range>
+          <min>6.0</min>
+          <max>5000.0</max>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0</mean>
+          <stddev>2</stddev>
+        </noise>
+      </scan>
+    </plugin>
+  </model>
+</sdf>

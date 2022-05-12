@@ -251,11 +251,11 @@ class TestPayloadBridges(unittest.TestCase):
 
         bridges = payload_bridges.payload_bridges(
             self.world_name, self.model_name, 'mbzirc_planar_lidar', self.idx)
-        self.assertEqual(len(bridges), 1)
+        self.assertEqual(len(bridges), 2)
 
         bridges = payload_bridges.payload_bridges(
             self.world_name, self.model_name, 'mbzirc_3d_lidar', self.idx)
-        self.assertEqual(len(bridges), 1)
+        self.assertEqual(len(bridges), 2)
 
         bridges = payload_bridges.payload_bridges(
             self.world_name, self.model_name, 'mbzirc_rgbd_camera', self.idx)
