@@ -17,7 +17,10 @@ import os
 import subprocess
 
 from ament_index_python.packages import get_package_share_directory
+from ament_index_python.packages import PackageNotFoundError
 
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
 import mbzirc_ign.bridges
@@ -194,6 +197,7 @@ class Model:
     def payload_bridges(self, world_name, payloads=None):
         bridges = []
         nodes = []
+        payload_launches = []
 
         if not payloads:
             payloads = self.payload
@@ -201,35 +205,64 @@ class Model:
             p = payloads[k]
             if not p['sensor'] or p['sensor'] == 'None' or p['sensor'] == '':
                 continue
-            bridges.extend(
-                mbzirc_ign.payload_bridges.payload_bridges(
-                    world_name, self.model_name, p['sensor'], idx))
 
-            if p['sensor'] in ['mbzirc_vga_camera', 'mbzirc_hd_camera']:
-                nodes.append(Node(
-                    package='mbzirc_ros',
-                    executable='optical_frame_publisher',
-                    arguments=['1'],
-                    remappings=[('input/image', f'slot{idx}/image_raw'),
-                                ('output/image', f'slot{idx}/optical/image_raw'),
-                                ('input/camera_info', f'slot{idx}/camera_info'),
-                                ('output/camera_info', f'slot{idx}/optical/camera_info')]))
-            elif p['sensor'] in ['mbzirc_rgbd_camera']:
-                nodes.append(Node(
-                    package='mbzirc_ros',
-                    executable='optical_frame_publisher',
-                    arguments=['1'],
-                    remappings=[('input/image', f'slot{idx}/image_raw'),
-                                ('output/image', f'slot{idx}/optical/image_raw'),
-                                ('input/camera_info', f'slot{idx}/camera_info'),
-                                ('output/camera_info', f'slot{idx}/optical/camera_info')]))
-                nodes.append(Node(
-                    package='mbzirc_ros',
-                    executable='optical_frame_publisher',
-                    arguments=['1'],
-                    remappings=[('input/image', f'slot{idx}/depth'),
-                                ('output/image', f'slot{idx}/optical/depth')]))
-        return [bridges, nodes]
+            # check if it is a custom payload
+            if self.is_custom_payload(p['sensor']):
+                payload_launch = self.custom_payload_launch(world_name, self.model_name,
+                                                            p['sensor'], idx)
+                if payload_launch is not None:
+                    payload_launches.append(payload_launch)
+
+            # if not custom payload, add our own bridges and nodes
+            else:
+                bridges.extend(
+                    mbzirc_ign.payload_bridges.payload_bridges(
+                        world_name, self.model_name, p['sensor'], idx))
+
+                if p['sensor'] in mbzirc_ign.payload_bridges.camera_models():
+                    nodes.append(Node(
+                        package='mbzirc_ros',
+                        executable='optical_frame_publisher',
+                        arguments=['1'],
+                        remappings=[('input/image', f'slot{idx}/image_raw'),
+                                    ('output/image', f'slot{idx}/optical/image_raw'),
+                                    ('input/camera_info', f'slot{idx}/camera_info'),
+                                    ('output/camera_info', f'slot{idx}/optical/camera_info')]))
+                elif p['sensor'] in mbzirc_ign.payload_bridges.rgbd_models():
+                    nodes.append(Node(
+                        package='mbzirc_ros',
+                        executable='optical_frame_publisher',
+                        arguments=['1'],
+                        remappings=[('input/image', f'slot{idx}/image_raw'),
+                                    ('output/image', f'slot{idx}/optical/image_raw'),
+                                    ('input/camera_info', f'slot{idx}/camera_info'),
+                                    ('output/camera_info', f'slot{idx}/optical/camera_info')]))
+                    nodes.append(Node(
+                        package='mbzirc_ros',
+                        executable='optical_frame_publisher',
+                        arguments=['1'],
+                        remappings=[('input/image', f'slot{idx}/depth'),
+                                    ('output/image', f'slot{idx}/optical/depth')]))
+        return [bridges, nodes, payload_launches]
+
+    def is_custom_payload(self, payload):
+        try:
+            get_package_share_directory(payload)
+        except PackageNotFoundError:
+            return False
+        return True
+
+    def custom_payload_launch(self, world_name, model_name, payload, idx):
+        payload_launch = None
+        path = os.path.join(
+            get_package_share_directory(payload), 'launch')
+        if os.path.exists(path):
+            payload_launch = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([path, '/bridge.launch.py']),
+                launch_arguments={'world_name': world_name,
+                                  'model_name': model_name,
+                                  'slot_idx': str(idx)}.items())
+        return payload_launch
 
     def set_flight_time(self, flight_time):
         # UAV specific, sets flight time

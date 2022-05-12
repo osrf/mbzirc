@@ -89,7 +89,7 @@ def spawn(context, model_type, world_name, model_name, position):
     model.set_gripper(gripper)
     model.set_payload(payloads)
 
-    launch_proceses = []
+    launch_processes = []
     if sim_mode == 'full' or sim_mode == 'sim':
         ignition_spawn_entity = Node(
             package='ros_ign_gazebo',
@@ -97,16 +97,18 @@ def spawn(context, model_type, world_name, model_name, position):
             output='screen',
             arguments=model.spawn_args()
         )
-        launch_proceses.append(ignition_spawn_entity)
+        launch_processes.append(ignition_spawn_entity)
 
     bridges = []
     nodes = []
+    payload_launches = []
     if sim_mode == 'full' or sim_mode == 'bridge':
         bridges, nodes = model.bridges(world_name)
 
-        [payload_bridges, payload_nodes] = model.payload_bridges(world_name)
+        [payload_bridges, payload_nodes, payload_launches] = model.payload_bridges(world_name)
         bridges.extend(payload_bridges)
         nodes.extend(payload_nodes)
+        payload_launches.extend(payload_launches)
 
         if model.isFixedWingUAV():
             nodes.append(Node(
@@ -155,13 +157,15 @@ def spawn(context, model_type, world_name, model_name, position):
                     on_exit=[group_action],
                 )
             )
-            launch_proceses.append(handler)
+            launch_processes.append(handler)
         elif sim_mode == 'bridge':
-            launch_proceses.append(group_action)
+            launch_processes.append(group_action)
+
+        launch_processes.extend(payload_launches)
 
     if sim_mode == 'bridge' and bridge_competition_topics:
-        launch_proceses.extend(launch_competition_bridges())
-    return launch_proceses
+        launch_processes.extend(launch_competition_bridges())
+    return launch_processes
 
 
 def launch_competition_bridges():

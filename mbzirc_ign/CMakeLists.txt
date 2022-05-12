@@ -98,6 +98,8 @@ install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME})
 
+#============================================================================
+
 if(BUILD_TESTING)
   find_package(python_cmake_module REQUIRED)
   find_package(PythonExtra MODULE REQUIRED)
