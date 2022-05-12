@@ -45,7 +45,7 @@ void NaiveRadar::Configure(const ignition::gazebo::Entity &_entity,
     ignition::gazebo::EventManager &/*_eventMgr*/)
 {
   // parse configuration parameters from SDF
-  auto sdf = const_cast<sdf::Element *>(_sdf.get());
+  auto sdf = _sdf.get();
   this->updateRate = sdf->Get("update_rate", this->updateRate).first;
   if (sdf->HasElement("scan"))
   {
