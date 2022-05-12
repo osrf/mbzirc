@@ -97,7 +97,7 @@
 
     <include>
       <name>small_blue_box_a_test</name>
-      <pose>1 0 1.25 -1.57079 0 0</pose>
+      <pose>1 -0.1 1.25 -1.57079 0 0</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>

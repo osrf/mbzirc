@@ -196,20 +196,34 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
 
   msgs::Boolean contact;
 
-  contact.set_data(this->dataPtr->contacts[1][1] != kNullEntity);
-  this->dataPtr->contactPublisherCenter.Publish(contact);
+  // If the gripper is engaged and holding an object, return contacts as true
+  if (this->dataPtr->jointCreated)
+  {
+    contact.set_data(true);
+    this->dataPtr->contactPublisherCenter.Publish(contact);
+    this->dataPtr->contactPublisherLeft.Publish(contact);
+    this->dataPtr->contactPublisherRight.Publish(contact);
+    this->dataPtr->contactPublisherTop.Publish(contact);
+    this->dataPtr->contactPublisherBottom.Publish(contact);
+  } 
+  else
+  {
+    contact.set_data(this->dataPtr->contacts[1][1] != kNullEntity);
+    this->dataPtr->contactPublisherCenter.Publish(contact);
 
-  contact.set_data(this->dataPtr->contacts[1][0] != kNullEntity);
-  this->dataPtr->contactPublisherLeft.Publish(contact);
+    contact.set_data(this->dataPtr->contacts[1][0] != kNullEntity);
+    this->dataPtr->contactPublisherLeft.Publish(contact);
 
-  contact.set_data(this->dataPtr->contacts[1][2] != kNullEntity);
-  this->dataPtr->contactPublisherRight.Publish(contact);
+    contact.set_data(this->dataPtr->contacts[1][2] != kNullEntity);
+    this->dataPtr->contactPublisherRight.Publish(contact);
 
-  contact.set_data(this->dataPtr->contacts[0][1] != kNullEntity);
-  this->dataPtr->contactPublisherTop.Publish(contact);
+    contact.set_data(this->dataPtr->contacts[0][1] != kNullEntity);
+    this->dataPtr->contactPublisherTop.Publish(contact);
 
-  contact.set_data(this->dataPtr->contacts[2][1] != kNullEntity);
-  this->dataPtr->contactPublisherBottom.Publish(contact);
+    contact.set_data(this->dataPtr->contacts[2][1] != kNullEntity);
+    this->dataPtr->contactPublisherBottom.Publish(contact);
+  }
+
 
   if (!this->dataPtr->jointCreated && this->dataPtr->suctionOn)
   {
