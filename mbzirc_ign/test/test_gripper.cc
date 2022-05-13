@@ -103,15 +103,17 @@ TEST_F(GripperTestFixture, GripperController)
   }
   // Move arm to pick up object
   ignition::msgs::Double gripperMsg;
-  gripperMsg.set_data(1.57);
+  gripperMsg.set_data(1.56);
   gripper_pub.Publish(gripperMsg);
-  Step(20000);
+  Step(6000);
   //using namespace std::chrono_literals;
   //std::this_thread::sleep_for(2000ms);
   {
     //std::lock_guard<std::mutex> lock(pos_mutex);
-    EXPECT_NEAR(pos.X(), 1, 1e-3);
-    EXPECT_NEAR(pos.Y(), 0, 1e-2);
+    // large tol because the arm moves the cube slightly
+    // when in contact
+    EXPECT_NEAR(pos.X(), 1.01, 1e-2);
+    EXPECT_NEAR(pos.Y(), 0, 1e-1);
     igndbg << pos <<"\n";
   }
 

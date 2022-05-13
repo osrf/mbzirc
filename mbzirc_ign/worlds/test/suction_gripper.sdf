@@ -79,7 +79,7 @@
         </visual>
       </link>
       <link name="arm_link">
-        <pose>0 0 0.1 1.57 0 0</pose>
+        <pose>0 0 0.08 1.57 0 0</pose>
         <collision name="arm_collision">
           <geometry>
             <cylinder>
@@ -101,15 +101,178 @@
             <specular>0 0 0.8 1</specular>
           </material>
         </visual>
-        <sensor name='sensor_contact' type='contact'>
+
+        <visual name="arm_contact_visual_11">
+          <pose>0.01 0 0.97 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0 0.8 0 1</ambient>
+            <diffuse>0 0.8 0 1</diffuse>
+            <specular>0 0.8 0 1</specular>
+          </material>
+        </visual>
+
+        <collision name="arm_contact_collision_11">
+          <pose>0.01 0 0.97 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+        </collision>
+
+        <sensor name='sensor_contact_11' type='contact'>
           <contact>
-            <collision>arm_collision</collision>
-            <topic>/arm_contact</topic>
+            <collision>arm_contact_collision_11</collision>
+            <topic>/arm/contact_sensor_11</topic>
           </contact>
           <always_on>1</always_on>
           <update_rate>100</update_rate>
         </sensor>
-      </link>
+
+        <visual name="arm_contact_visual_01">
+          <pose>0.01 0.003 0.97 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0 0.8 0 1</ambient>
+            <diffuse>0 0.8 0 1</diffuse>
+            <specular>0 0.8 0 1</specular>
+          </material>
+        </visual>
+
+        <collision name="arm_contact_collision_01">
+          <pose>0.01 0.003 0.97 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+        </collision>
+
+        <sensor name='sensor_contact_01' type='contact'>
+          <contact>
+            <collision>arm_contact_collision_01</collision>
+            <topic>/arm/contact_sensor_01</topic>
+          </contact>
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+        </sensor>
+
+        <visual name="arm_contact_visual_21">
+          <pose>0.01 -0.003 0.97 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0 0.8 0 1</ambient>
+            <diffuse>0 0.8 0 1</diffuse>
+            <specular>0 0.8 0 1</specular>
+          </material>
+        </visual>
+
+        <collision name="arm_contact_collision_21">
+          <pose>0.01 -0.003 0.97 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+        </collision>
+
+        <sensor name='sensor_contact_21' type='contact'>
+          <contact>
+            <collision>arm_contact_collision_21</collision>
+            <topic>/arm/contact_sensor_21</topic>
+          </contact>
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+        </sensor>
+
+        <visual name="arm_contact_visual_10">
+          <pose>0.01 0.0 0.967 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0 0.8 0 1</ambient>
+            <diffuse>0 0.8 0 1</diffuse>
+            <specular>0 0.8 0 1</specular>
+          </material>
+        </visual>
+
+        <collision name="arm_contact_collision_10">
+          <pose>0.01 0.0 0.967 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+        </collision>
+
+        <sensor name='sensor_contact_10' type='contact'>
+          <contact>
+            <collision>arm_contact_collision_10</collision>
+            <topic>/arm/contact_sensor_10</topic>
+          </contact>
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+        </sensor>
+
+        <visual name="arm_contact_visual_12">
+          <pose>0.01 0.0 0.973 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0 0.8 0 1</ambient>
+            <diffuse>0 0.8 0 1</diffuse>
+            <specular>0 0.8 0 1</specular>
+          </material>
+        </visual>
+
+        <collision name="arm_contact_collision_12">
+          <pose>0.01 0.0 0.973 0 1.57 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.001</radius>
+              <length>0.001</length>
+            </cylinder>
+          </geometry>
+        </collision>
+
+        <sensor name='sensor_contact_12' type='contact'>
+          <contact>
+            <collision>arm_contact_collision_12</collision>
+            <topic>/arm/contact_sensor_12</topic>
+          </contact>
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+        </sensor>
+
+     </link>
       <joint name="panda_joint_world" type="fixed">
         <parent>world</parent>
         <child>base_link</child>
@@ -122,7 +285,7 @@
           <limit>
             <lower>-1.57</lower>
             <upper>1.57</upper>
-            <effort>0.5</effort>
+            <velocity>0.1</velocity>
           </limit>
         </axis>
       </joint>
@@ -130,20 +293,31 @@
         filename="ignition-gazebo-joint-position-controller-system"
         name="ignition::gazebo::systems::JointPositionController">
         <joint_name>suction_gripper_joint</joint_name>
-        <p_gain>0.1</p_gain>
+        <use_velocity_commands>true</use_velocity_commands>
       </plugin>
       <plugin
         filename="libSuctionGripper.so"
         name="mbzirc::SuctionGripperPlugin">
         <parent_link>arm_link</parent_link>
-        <contact_sensor_topic>arm_contact</contact_sensor_topic>
+        <contact_sensor_topic_prefix>/arm</contact_sensor_topic_prefix>
         <command_topic>gripper/suction_on</command_topic>
       </plugin>
     </model>
 
     <model name="object">
-      <pose>1 0 0.05 0 0 0</pose>
+      <pose>1.01 0 0.05 0 0 0</pose>
       <link name="object_1">
+        <inertial>
+          <mass>100</mass>
+          <inertia>
+            <ixx>0.167</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.167</iyy>
+            <iyz>0</iyz>
+            <izz>0.167</izz>
+          </inertia>
+        </inertial>
         <collision name="object_1_col">
           <geometry>
             <box>
