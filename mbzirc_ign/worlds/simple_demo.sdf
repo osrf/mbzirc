@@ -65,7 +65,7 @@
       </range_config>
       <radio_config>
         <capacity>1000000</capacity>
-        <tx_power>20</tx_power>
+        <tx_power>25</tx_power>
         <noise_floor>-90</noise_floor>
         <modulation>QPSK</modulation>
       </radio_config>
