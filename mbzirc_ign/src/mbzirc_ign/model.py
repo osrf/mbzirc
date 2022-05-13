@@ -117,48 +117,49 @@ class Model:
                 mbzirc_ign.bridges.thrust_joint_pos(self.model_name, 'left'),
                 mbzirc_ign.bridges.thrust_joint_pos(self.model_name, 'right'),
             ])
-            if self.hasValidArm():
-                # arm joint states
+
+        if self.hasValidArm():
+            # arm joint states
+            bridges.append(
+                mbzirc_ign.bridges.arm_joint_states(world_name, self.model_name)
+            )
+
+            if self.arm == 'mbzirc_oberon7_arm':
+                # arm joint pos cmd
+                arm_joints = ['azimuth', 'shoulder', 'elbow', 'roll', 'pitch', 'wrist']
+                for joint in arm_joints:
+                    bridges.append(
+                        mbzirc_ign.bridges.arm_joint_pos(self.model_name, joint)
+                    )
+
+                camera_link = 'wrist_link'
+                camera_link_no_suffix = camera_link.rstrip('_link')
                 bridges.append(
-                    mbzirc_ign.bridges.arm_joint_states(world_name, self.model_name)
+                    mbzirc_ign.bridges.arm_image(world_name, self.model_name, camera_link)
                 )
-
-                if self.arm == 'mbzirc_oberon7_arm':
-                    # arm joint pos cmd
-                    arm_joints = ['azimuth', 'shoulder', 'elbow', 'roll', 'pitch', 'wrist']
-                    for joint in arm_joints:
-                        bridges.append(
-                            mbzirc_ign.bridges.arm_joint_pos(self.model_name, joint)
-                        )
-
-                    camera_link = 'wrist_link'
-                    camera_link_no_suffix = camera_link.rstrip('_link')
-                    bridges.append(
-                        mbzirc_ign.bridges.arm_image(world_name, self.model_name, camera_link)
+                bridges.append(
+                    mbzirc_ign.bridges.arm_camera_info(
+                        world_name, self.model_name, camera_link
                     )
-                    bridges.append(
-                        mbzirc_ign.bridges.arm_camera_info(
-                            world_name, self.model_name, camera_link
-                        )
-                    )
-                    bridges.append(
-                        mbzirc_ign.bridges.wrist_joint_force_torque(self.model_name),
-                    )
-                    nodes.append(Node(
-                        package='mbzirc_ros',
-                        executable='optical_frame_publisher',
-                        arguments=['1'],
-                        remappings=[('input/image', f'arm/{camera_link_no_suffix}/image_raw'),
-                                    ('output/image',
-                                    f'arm/{camera_link_no_suffix}/optical/image_raw'),
-                                    ('input/camera_info',
-                                    f'arm/{camera_link_no_suffix}/camera_info'),
-                                    ('output/camera_info',
-                                        f'arm/{camera_link_no_suffix}/optical/camera_info')]))
+                )
+                bridges.append(
+                    mbzirc_ign.bridges.wrist_joint_force_torque(self.model_name),
+                )
+                nodes.append(Node(
+                    package='mbzirc_ros',
+                    executable='optical_frame_publisher',
+                    arguments=['1'],
+                    remappings=[('input/image', f'arm/{camera_link_no_suffix}/image_raw'),
+                                ('output/image',
+                                f'arm/{camera_link_no_suffix}/optical/image_raw'),
+                                ('input/camera_info',
+                                f'arm/{camera_link_no_suffix}/camera_info'),
+                                ('output/camera_info',
+                                    f'arm/{camera_link_no_suffix}/optical/camera_info')]))
 
-                    # default to oberon7 gripper if not specified.
-                    if not self.gripper:
-                        self.gripper = 'mbzirc_oberon7_gripper'
+                # default to oberon7 gripper if not specified.
+                if not self.gripper:
+                    self.gripper = 'mbzirc_oberon7_gripper'
 
         if self.hasValidGripper():
             isAttachedToArm = self.isUSV()
@@ -183,6 +184,13 @@ class Model:
                 bridges.append(
                     mbzirc_ign.bridges.gripper_suction_control(self.model_name, isAttachedToArm)
                 )
+                bridges.extend([
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'center'),
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'left'),
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'right'),
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'top'),
+                    mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'bottom')
+                ])
 
         return [bridges, nodes]
 
@@ -309,7 +317,7 @@ class Model:
             if self.hasValidGripper():
                 command.append(f'gripper={self.gripper}')
 
-        if self.model_type in USVS:
+        if self.model_type in USVS or self.model_type == 'static_arm':
             command.append(f'wavefieldSize={self.wavefield_size}')
 
             # run erb for arm to attach the user specified gripper
@@ -372,7 +380,6 @@ class Model:
         stdout = process.communicate()[0]
         model_sdf = codecs.getdecoder('unicode_escape')(stdout)[0]
         print(command)
-        # print(model_sdf)
 
         return command, model_sdf
 

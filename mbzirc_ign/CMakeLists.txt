@@ -123,7 +123,7 @@ if(BUILD_TESTING)
     test_game_logic
     test_spawn_usv_maxspeed
     test_fixed_wing
-    test_gripper
+    # test_gripper
     test_spawn_usv_arm
     )
     ament_add_gtest(
