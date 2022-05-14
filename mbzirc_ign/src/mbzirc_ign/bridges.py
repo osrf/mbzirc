@@ -206,6 +206,19 @@ def gripper_suction_contacts(model_name, isAttachedToArm):
     )
 
 
+def gripper_contact(model_name, isAttachedToArm, direction):
+    prefix = 'gripper'
+    if isAttachedToArm:
+        prefix = 'arm/gripper'
+    return Bridge(
+        ign_topic=f'/{model_name}/{prefix}/contacts/{direction}',
+        ros_topic=f'{prefix}/contacts/{direction}',
+        ign_type='ignition.msgs.Boolean',
+        ros_type='std_msgs/msg/Bool',
+        direction=BridgeDirection.IGN_TO_ROS
+    )
+
+
 def gripper_suction_control(model_name, isAttachedToArm):
     prefix = 'gripper'
     if isAttachedToArm:

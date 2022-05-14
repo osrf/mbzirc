@@ -1,0 +1,78 @@
+<%
+$model_name = 'static_arm'
+
+$arm_name = nil
+if defined?(arm)
+  $arm_name = arm
+end
+
+if !defined?(gripper) || gripper== nil || gripper.empty?
+  $gripper_name = 'mbzirc_oberon7_gripper'
+else
+  $model_name = gripper
+end
+%>
+
+<?xml version="1.0"?>
+
+<sdf version='1.9'>
+<model name="<%= $model_name%>">
+  <static>false</static>
+  <self_collide>true</self_collide>
+
+  <link name="link">
+    <inertial>
+      <mass>10000</mass>
+      <inertia>
+        <ixx>100</ixx>
+        <ixy>0.0</ixy>
+        <ixz>0.0</ixz>
+        <iyy>100</iyy>
+        <iyz>0.0</iyz>
+        <izz>100</izz>
+      </inertia>
+    </inertial>
+
+    <visual name="visual">
+      <pose>0 0 0.5 0 0 0</pose>
+      <geometry><box><size>0.5 0.5 1.0</size></box></geometry>
+    </visual>
+    <collision name="col">
+      <pose>0 0 0.5 0 0 0</pose>
+      <geometry><box><size>0.5 0.5 1.0</size></box></geometry>
+    </collision>
+  </link>
+
+  <frame name="arm_slot_0">
+    <pose>0.4 0.0 1.0 0 0 0</pose>
+  </frame>
+
+
+  <% if $arm_name != nil%>
+  <include>
+    <name>arm</name>
+    <uri>model://<%= $arm_name%></uri>
+    <placement_frame>arm_mount_point</placement_frame>
+    <pose relative_to="arm_slot_0">0 0 0 0 0 0</pose>
+  </include>
+  <joint name="arm_slot_0_joint" type="fixed">
+    <parent>arm_slot_0</parent>
+    <child>arm::arm_mount_point</child>
+  </joint>
+  <% end %>
+
+  <!-- Publish robot state information -->
+  <plugin filename="libignition-gazebo-pose-publisher-system.so"
+    name="ignition::gazebo::systems::PosePublisher">
+    <publish_link_pose>true</publish_link_pose>
+    <publish_sensor_pose>true</publish_sensor_pose>
+    <publish_collision_pose>false</publish_collision_pose>
+    <publish_visual_pose>false</publish_visual_pose>
+    <publish_nested_model_pose>true</publish_nested_model_pose>
+    <publish_model_pose>false</publish_model_pose>
+    <use_pose_vector_msg>true</use_pose_vector_msg>
+    <static_publisher>true</static_publisher>
+    <static_update_frequency>1</static_update_frequency>
+  </plugin>
+</model>
+</sdf>

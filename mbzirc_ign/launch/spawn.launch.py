@@ -23,9 +23,9 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 
-from mbzirc_ign.model import Model
-
 import mbzirc_ign.bridges
+
+from mbzirc_ign.model import Model
 
 
 def spawn(context, model_type, world_name, model_name, position):
@@ -82,6 +82,9 @@ def spawn(context, model_type, world_name, model_name, position):
         model.set_wavefield(world_name)
         model.set_arm(arm)
         model.set_arm_slot(arm_slot)
+    elif model_type == 'static_arm':
+        arm = LaunchConfiguration('arm').perform(context)
+        model.set_arm(arm)
 
     model.set_gripper(gripper)
     model.set_payload(payloads)

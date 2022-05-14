@@ -56,20 +56,21 @@ end
           <izz>0.00166667</izz>
          </inertia>
       </inertial>
-      <collision name='suction_collision'>
+
+      <collision name='suction_collision_11'>
         <pose>0.0505 0 0 0 1.57079 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.04</radius>
+            <radius>0.02</radius>
             <length>0.01</length>
           </cylinder>
         </geometry>
       </collision>
-      <visual name='suction_visual'>
+      <visual name='suction_visual_11'>
         <pose>0.0505 0 0 0 1.57079 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.04</radius>
+            <radius>0.02</radius>
             <length>0.01</length>
           </cylinder>
         </geometry>
@@ -78,14 +79,139 @@ end
           <specular>0.3 0.3 0.3</specular>
         </material>
       </visual>
-      <sensor name='sensor_contact' type='contact'>
+      <sensor name='sensor_contact_11' type='contact'>
         <contact>
-          <collision>suction_collision</collision>
-          <topic><%= $topic_prefix %>/gripper/contact</topic>
+          <collision>suction_collision_11</collision>
+          <topic><%= $topic_prefix %>/gripper/contact_sensor_11</topic>
         </contact>
         <always_on>1</always_on>
         <update_rate>100</update_rate>
       </sensor>
+
+      <collision name='suction_collision_10'>
+        <pose>0.0505 0 -0.04 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='suction_visual_10'>
+        <pose>0.0505 0 -0.04 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>0.02 0.02 0.02</diffuse>
+          <specular>0.3 0.3 0.3</specular>
+        </material>
+      </visual>
+      <sensor name='sensor_contact_10' type='contact'>
+        <contact>
+          <collision>suction_collision_10</collision>
+          <topic><%= $topic_prefix %>/gripper/contact_sensor_10</topic>
+        </contact>
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+      </sensor>
+
+      <collision name='suction_collision_12'>
+        <pose>0.0505 0 0.04 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='suction_visual_12'>
+        <pose>0.0505 0 0.04 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>0.02 0.02 0.02</diffuse>
+          <specular>0.3 0.3 0.3</specular>
+        </material>
+      </visual>
+      <sensor name='sensor_contact_12' type='contact'>
+        <contact>
+          <collision>suction_collision_12</collision>
+          <topic><%= $topic_prefix %>/gripper/contact_sensor_12</topic>
+        </contact>
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+      </sensor>
+
+      <collision name='suction_collision_01'>
+        <pose>0.0505 -0.04 0 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='suction_visual_01'>
+        <pose>0.0505 -0.04 0 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>0.02 0.02 0.02</diffuse>
+          <specular>0.3 0.3 0.3</specular>
+        </material>
+      </visual>
+      <sensor name='sensor_contact_01' type='contact'>
+        <contact>
+          <collision>suction_collision_01</collision>
+          <topic><%= $topic_prefix %>/gripper/contact_sensor_01</topic>
+        </contact>
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+      </sensor>
+
+      <collision name='suction_collision_21'>
+        <pose>0.0505 0.04 0 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='suction_visual_21'>
+        <pose>0.0505 0.04 0 0 1.57079 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.02</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>0.02 0.02 0.02</diffuse>
+          <specular>0.3 0.3 0.3</specular>
+        </material>
+      </visual>
+      <sensor name='sensor_contact_21' type='contact'>
+        <contact>
+          <collision>suction_collision_21</collision>
+          <topic><%= $topic_prefix %>/gripper/contact_sensor_21</topic>
+        </contact>
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+      </sensor>
+
     </link>
 
     <joint name='suction_joint' type='fixed'>
@@ -98,7 +224,7 @@ end
       filename="libSuctionGripper.so"
       name="mbzirc::SuctionGripperPlugin">
       <parent_link>suction</parent_link>
-      <contact_sensor_topic><%= $topic_prefix %>/gripper/contact</contact_sensor_topic>
+      <contact_sensor_topic_prefix><%= $topic_prefix %>/gripper</contact_sensor_topic_prefix>
       <command_topic><%= $topic_prefix %>/gripper/suction_on</command_topic>
     </plugin>
 
