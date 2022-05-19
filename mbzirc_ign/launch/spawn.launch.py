@@ -53,7 +53,7 @@ def spawn(context, model_type, world_name, model_name, position):
 
     gripper = LaunchConfiguration('gripper').perform(context)
 
-    if model.isUAV():
+    if model.is_UAV():
         # take flight time in minutes
         flight_time = LaunchConfiguration('flightTime').perform(context)
 
@@ -75,7 +75,7 @@ def spawn(context, model_type, world_name, model_name, position):
         })
 
         model.set_flight_time(flight_time)
-    elif model.isUSV():
+    elif model.is_USV():
         arm = LaunchConfiguration('arm').perform(context)
         arm_slot = LaunchConfiguration('arm_slot').perform(context)
 
@@ -110,7 +110,7 @@ def spawn(context, model_type, world_name, model_name, position):
         nodes.extend(payload_nodes)
         payload_launches.extend(payload_launches)
 
-        if model.isFixedWingUAV():
+        if model.is_fixed_wing_UAV():
             nodes.append(Node(
                 package='mbzirc_ros',
                 executable='fixed_wing_bridge',
