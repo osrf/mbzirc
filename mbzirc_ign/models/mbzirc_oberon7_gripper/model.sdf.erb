@@ -272,13 +272,12 @@ end
           <izz>0.0012155560985734151</izz>
         </inertia>
       </inertial>
-      <collision name='finger_tip_left_collision'>
-        <pose>0 0 0 0 0 0</pose>
+      <collision name="finger_tip_left_collision_1">
+        <pose>0.073 0.0348 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>meshes/parallel_gripper/visual/FingerTip.dae</uri>
-          </mesh>
+          <box>
+            <size>0.03 0.005 0.038</size>
+          </box>
         </geometry>
         <surface>
           <contact>
@@ -296,6 +295,174 @@ end
           </friction>
         </surface>
         <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_left_collision_2">
+        <pose>0.0577 0.0303 0 0 0 0.78</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.01 0.048</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_left_collision_3">
+        <pose>0.045 0.0255 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.004 0.052</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_left_collision_4">
+        <pose>0.0348 0.0318 0 0 0 -0.77</pose>
+        <geometry>
+          <box>
+            <size>0.011 0.004 0.056</size>
+          </box>
+        </geometry>
+      </collision>
+      <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      <collision name="finger_tip_left_collision_5">
+        <pose>0.028 0.0323 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.007 0.01 0.059</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_left_collision_6">
+        <pose>0.0255 0.0325 0 0 0 0.5</pose>
+        <geometry>
+          <box>
+            <size>0.002 0.01 0.061</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_left_collision_7">
+        <pose>0.018 0.0314 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.006 0.01 0.061</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_left_collision_8">
+        <pose>0.05 0.011 0 0 0 0.55</pose>
+        <geometry>
+          <box>
+            <size>0.065 0.01 0.01</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="finger_tip_left_collision_9">
+        <pose>0.016 0.01 0 0 0 1.5708</pose>
+        <geometry>
+          <box>
+            <size>0.045 0.01 0.063</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="finger_tip_left_collision_10">
+        <pose>0.047 0.024 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 0.002 0.039</size>
+          </box>
+        </geometry>
       </collision>
 
       <visual name='finger_tip_left_visual'>
@@ -541,13 +708,12 @@ end
           <izz>0.0012155560985734151</izz>
         </inertia>
       </inertial>
-      <collision name='finger_tip_right_collision'>
-        <pose>0 0 0 0 0 0</pose>
+      <collision name="finger_tip_right_collision_1">
+        <pose>0.073 0.0348 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>meshes/parallel_gripper/visual/FingerTip.dae</uri>
-          </mesh>
+          <box>
+            <size>0.03 0.005 0.038</size>
+          </box>
         </geometry>
         <surface>
           <contact>
@@ -566,6 +732,175 @@ end
         </surface>
         <max_contacts>3</max_contacts>
       </collision>
+      <collision name="finger_tip_right_collision_2">
+        <pose>0.0577 0.0303 0 0 0 0.78</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.01 0.048</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_right_collision_3">
+        <pose>0.045 0.0255 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.004 0.052</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_right_collision_4">
+        <pose>0.0348 0.0318 0 0 0 -0.77</pose>
+        <geometry>
+          <box>
+            <size>0.011 0.004 0.056</size>
+          </box>
+        </geometry>
+      </collision>
+      <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      <collision name="finger_tip_right_collision_5">
+        <pose>0.028 0.0323 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.007 0.01 0.059</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_right_collision_6">
+        <pose>0.0255 0.0325 0 0 0 0.5</pose>
+        <geometry>
+          <box>
+            <size>0.002 0.01 0.061</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_right_collision_7">
+        <pose>0.018 0.0314 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.006 0.01 0.061</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>1000000</kp>
+              <kd>1</kd>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+            </ode>
+          </friction>
+        </surface>
+        <max_contacts>3</max_contacts>
+      </collision>
+      <collision name="finger_tip_right_collision_8">
+        <pose>0.05 0.011 0 0 0 0.55</pose>
+        <geometry>
+          <box>
+            <size>0.065 0.01 0.01</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="finger_tip_right_collision_9">
+        <pose>0.016 0.01 0 0 0 1.5708</pose>
+        <geometry>
+          <box>
+            <size>0.045 0.01 0.063</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="finger_tip_right_collision_10">
+        <pose>0.047 0.024 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 0.002 0.039</size>
+          </box>
+        </geometry>
+      </collision>
+
       <visual name='finger_tip_right_visual'>
         <pose>0 0 0 0 0 0</pose>
         <geometry>
