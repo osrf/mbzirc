@@ -9,9 +9,9 @@ ament_environment_hooks("hooks/resource_paths.dsv.in")
 ament_environment_hooks("hooks/resource_paths.sh")
 
 # Uncomment the install call below to install the example simple arm model
-install(DIRECTORY
-  models
-  launch
-  DESTINATION share/${PROJECT_NAME})
+# install(DIRECTORY
+#   models
+#   launch
+#   DESTINATION share/${PROJECT_NAME})
 
 ament_package()
