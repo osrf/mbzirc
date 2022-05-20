@@ -101,9 +101,10 @@ def spawn(context, model_type, world_name, model_name, position):
 
     bridges = []
     nodes = []
+    custom_launches = []
     payload_launches = []
     if sim_mode == 'full' or sim_mode == 'bridge':
-        bridges, nodes = model.bridges(world_name)
+        [bridges, nodes, custom_launches] = model.bridges(world_name)
 
         [payload_bridges, payload_nodes, payload_launches] = model.payload_bridges(world_name)
         bridges.extend(payload_bridges)
@@ -162,6 +163,7 @@ def spawn(context, model_type, world_name, model_name, position):
             launch_processes.append(group_action)
 
         launch_processes.extend(payload_launches)
+        launch_processes.extend(custom_launches)
 
     if sim_mode == 'bridge' and bridge_competition_topics:
         launch_processes.extend(launch_competition_bridges())
