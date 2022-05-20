@@ -32,7 +32,7 @@ def spawn(context, config_file, world_name):
     with open(config_file, 'r') as stream:
         models = Model.FromConfig(stream)
 
-    if type(m) != list:
+    if type(models) != list:
         models = [models]
 
     sim_mode = LaunchConfiguration('sim_mode').perform(context)
@@ -57,15 +57,13 @@ def spawn(context, config_file, world_name):
             launch_processes.append(ignition_spawn_entity)
 
         if sim_mode == 'full' or sim_mode == 'bridge':
-            bridges, nodes = model.bridges(world_name)
+            [bridges, nodes, custom_launches] = model.bridges(world_name)
 
-            if model.isUAV():
-                [payload_bridges, payload_nodes, payload_launches] = model.payload_bridges(world_name)
-                bridges.extend(payload_bridges)
-                nodes.extend(payload_nodes)
-                launch_processes.extend(payload_launches)
+            [payload_bridges, payload_nodes, payload_launches] = model.payload_bridges(world_name)
+            bridges.extend(payload_bridges)
+            nodes.extend(payload_nodes)
 
-            if model.isFixedWingUAV():
+            if model.is_fixed_wing_UAV():
                 nodes.append(Node(
                     package='mbzirc_ros',
                     executable='fixed_wing_bridge',
@@ -114,6 +112,10 @@ def spawn(context, config_file, world_name):
                 launch_processes.append(handler)
             elif sim_mode == 'bridge':
                 launch_processes.append(group_action)
+
+            launch_processes.extend(payload_launches)
+            launch_processes.extend(custom_launches)
+
     return launch_processes
 
 

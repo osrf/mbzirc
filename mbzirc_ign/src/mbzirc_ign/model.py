@@ -257,6 +257,8 @@ class Model:
         return [bridges, nodes, payload_launches]
 
     def is_custom_model(self, model):
+        if not model:
+            return False
         try:
             get_package_share_directory(model)
         except PackageNotFoundError:
