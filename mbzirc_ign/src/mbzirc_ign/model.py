@@ -163,14 +163,13 @@ class Model:
                     self.gripper = 'mbzirc_oberon7_gripper'
         elif self.is_custom_model(self.arm):
             custom_launch = self.custom_model_launch(world_name, self.model_name,
-                                                self.arm)
+                                                     self.arm)
             if custom_launch is not None:
                 custom_launches.append(custom_launch)
 
             # default to oberon7 gripper if not specified.
             if not self.gripper:
                 self.gripper = 'mbzirc_oberon7_gripper'
-
 
         if self.has_valid_gripper():
             isAttachedToArm = self.is_USV()
@@ -275,7 +274,6 @@ class Model:
                 launch_arguments={'world_name': world_name,
                                   'model_name': model_name}.items())
         return custom_launch
-
 
     def custom_payload_launch(self, world_name, model_name, payload, idx):
         payload_launch = None
