@@ -546,10 +546,10 @@
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
-        <lower>-1.57079</lower>
-        <upper>1.57079</upper>
+        <lower>0</lower>
+        <upper>3.14159</upper>
         <effort>10</effort>
-        <velocity>10</velocity>
+        <velocity>0.2618</velocity>
       </limit>
     </axis>
     <parent>base_link</parent>
@@ -576,10 +576,10 @@
     <axis>
       <xyz>0 0 1</xyz>
       <limit>
-        <lower>-1.57079</lower>
-        <upper>1.57079</upper>
+        <lower>0</lower>
+        <upper>3.14159</upper>
         <effort>10</effort>
-        <velocity>10</velocity>
+        <velocity>0.2618</velocity>
       </limit>
     </axis>
     <parent>base_link</parent>
