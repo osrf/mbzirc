@@ -56,7 +56,7 @@ def pose_static(model_name):
 def cmd_vel(model_name):
     return Bridge(
         ign_topic=f'/model/{model_name}/cmd_vel',
-        ros_topic=f'cmd_vel',
+        ros_topic='cmd_vel',
         ign_type='ignition.msgs.Twist',
         ros_type='geometry_msgs/msg/Twist',
         direction=BridgeDirection.ROS_TO_IGN)
@@ -153,7 +153,7 @@ def gripper_joint_pos(model_name, joint_name, isAttachedToArm):
 def wrist_joint_force_torque(model_name):
     return Bridge(
         ign_topic=f'/{model_name}/arm/wrist/forcetorque',
-        ros_topic=f'arm/wrist/joint/wrench',
+        ros_topic='arm/wrist/joint/wrench',
         ign_type='ignition.msgs.Wrench',
         ros_type='geometry_msgs/msg/Wrench',
         direction=BridgeDirection.IGN_TO_ROS)
@@ -235,7 +235,7 @@ def gripper_suction_control(model_name, isAttachedToArm):
 def comms_tx(model_name):
     return Bridge(
         ign_topic='/broker/msgs',
-        ros_topic=f'tx',
+        ros_topic='tx',
         ign_type='ignition.msgs.Dataframe',
         ros_type='ros_ign_interfaces/msg/Dataframe',
         direction=BridgeDirection.ROS_TO_IGN)
@@ -244,7 +244,7 @@ def comms_tx(model_name):
 def comms_rx(model_name):
     return Bridge(
         ign_topic=f'/model/{model_name}/rx',
-        ros_topic=f'rx',
+        ros_topic='rx',
         ign_type='ignition.msgs.Dataframe',
         ros_type='ros_ign_interfaces/msg/Dataframe',
         direction=BridgeDirection.IGN_TO_ROS)
