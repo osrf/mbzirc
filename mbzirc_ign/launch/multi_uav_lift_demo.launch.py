@@ -39,8 +39,8 @@ def generate_launch_description():
                 [ThisLaunchFileDir(), '/spawn.launch.py']),
             launch_arguments={
                 'name': 'quadrotor_2',
-                'world': 'coast',
-                'model': 'empty_platform',
+                'world': 'empty_platform',
+                'model': 'mbzirc_quadrotor',
                 'x': '0',
                 'y': '-0.5',
                 'z': '0',
