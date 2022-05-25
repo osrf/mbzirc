@@ -32,7 +32,8 @@ def spawn(context, config_file, world_name):
     with open(config_file, 'r') as stream:
         models = Model.FromConfig(stream)
 
-    if type(m) != list:
+    if type(models) != list:
+        # In the case that a single model is parsed, pack it in a list
         models = [models]
 
     sim_mode = LaunchConfiguration('sim_mode').perform(context)
