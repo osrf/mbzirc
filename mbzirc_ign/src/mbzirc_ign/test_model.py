@@ -108,12 +108,30 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(bridges), 24)
         self.assertEqual(len(nodes), 1)
 
-    def test_multiple_config(self):
+    def test_coast(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),
-                              'config', 'coast_config.yaml')
+                              'config', 'coast', 'hexrotor.yaml')
         with open(config, 'r') as stream:
-            models = Model.FromConfig(stream)
+            hexrotor = Model.FromConfig(stream)
 
-        for model in models:
-            model.generate()
-            model.spawn_args()
+        config = os.path.join(get_package_share_directory('mbzirc_ign'),
+                              'config', 'coast', 'quadrotor.yaml')
+        with open(config, 'r') as stream:
+            quadrotor = Model.FromConfig(stream)
+
+        config = os.path.join(get_package_share_directory('mbzirc_ign'),
+                              'config', 'coast', 'usv.yaml')
+        with open(config, 'r') as stream:
+            usv = Model.FromConfig(stream)
+
+        config = os.path.join(get_package_share_directory('mbzirc_ign'),
+                              'config', 'coast', 'config_team.yaml')
+        with open(config, 'r') as stream:
+            team = Model.FromConfig(stream)
+
+        self.assertIsInstance(hexrotor, Model)
+        self.assertIsInstance(quadrotor, Model)
+        self.assertIsInstance(usv, Model)
+        self.assertIsInstance(team, list)
+        self.assertEqual(len(team), 3)
+        self.assertIsInstance(team[0], Model)
