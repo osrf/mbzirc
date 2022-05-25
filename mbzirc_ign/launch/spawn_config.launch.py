@@ -30,95 +30,94 @@ import mbzirc_ign.bridges
 
 def spawn(context, config_file, world_name):
     with open(config_file, 'r') as stream:
-        m = Model.FromConfig(stream)
+        models = Model.FromConfig(stream)
 
-    if type(m) == list:
-        print('Spawn Config only supports one model currently')
-        model = m[0]
-    else:
-        model = m
+    if type(models) != list:
+        # In the case that a single model is parsed, pack it in a list
+        models = [models]
 
     sim_mode = LaunchConfiguration('sim_mode').perform(context)
     bridge_competition_topics = LaunchConfiguration('bridge_competition_topics').perform(context)
 
     launch_processes = []
-
-    if sim_mode == 'full' or sim_mode == 'sim':
-        ignition_spawn_entity = Node(
-            package='ros_ign_gazebo',
-            executable='create',
-            output='screen',
-            arguments=model.spawn_args()
-        )
-        launch_processes.append(ignition_spawn_entity)
-
     bridges = []
     nodes = []
-    payload_launches = []
 
-    if sim_mode == 'full' or sim_mode == 'bridge':
-        bridges, nodes = model.bridges(world_name)
-
-        if model.isUAV():
-            [payload_bridges, payload_nodes, payload_launches] = model.payload_bridges(world_name)
-            bridges.extend(payload_bridges)
-            nodes.extend(payload_nodes)
-            payload_launches.extend(payload_launches)
-
-        if model.isFixedWingUAV():
-            nodes.append(Node(
-                package='mbzirc_ros',
-                executable='fixed_wing_bridge',
-                output='screen',
-                parameters=[{'model_name': model.model_name}],
-            ))
-
-        nodes.append(Node(
-            package='ros_ign_bridge',
-            executable='parameter_bridge',
-            output='screen',
-            arguments=[bridge.argument() for bridge in bridges],
-            remappings=[bridge.remapping() for bridge in bridges],
-        ))
-
-        # tf broadcaster
-        nodes.append(Node(
-            package='mbzirc_ros',
-            executable='pose_tf_broadcaster',
-            output='screen',
-            parameters=[
-                {'world_frame': world_name}
-            ]
-        ))
-
-        # video target relay
-        nodes.append(Node(
-            package='mbzirc_ros',
-            executable='video_target_relay',
-            output='screen',
-            parameters=[{'model_name': model.model_name}]
-        ))
-
-        group_action = GroupAction([
-            PushRosNamespace(model.model_name),
-            *nodes
-        ])
-
-        if sim_mode == 'full':
-            handler = RegisterEventHandler(
-                event_handler=OnProcessExit(
-                    target_action=ignition_spawn_entity,
-                    on_exit=[group_action],
-                )
-            )
-            launch_processes.append(handler)
-        elif sim_mode == 'bridge':
-            launch_processes.append(group_action)
-
-        launch_processes.extend(payload_launches)
-
+    # Only one instance of compeititon topics required
     if sim_mode == 'bridge' and bridge_competition_topics:
         launch_processes.extend(launch_competition_bridges())
+
+    for model in models:
+        if sim_mode == 'full' or sim_mode == 'sim':
+            ignition_spawn_entity = Node(
+                package='ros_ign_gazebo',
+                executable='create',
+                output='screen',
+                arguments=model.spawn_args()
+            )
+            launch_processes.append(ignition_spawn_entity)
+
+        if sim_mode == 'full' or sim_mode == 'bridge':
+            bridges, nodes = model.bridges(world_name)
+
+            if model.isUAV():
+                payload = model.payload_bridges(world_name)
+                payload_bridges = payload[0]
+                payload_nodes = payload[1]
+                payload_launches = payload[2]
+                bridges.extend(payload_bridges)
+                nodes.extend(payload_nodes)
+                launch_processes.extend(payload_launches)
+
+            if model.isFixedWingUAV():
+                nodes.append(Node(
+                    package='mbzirc_ros',
+                    executable='fixed_wing_bridge',
+                    output='screen',
+                    parameters=[{'model_name': model.model_name}],
+                ))
+
+            nodes.append(Node(
+                package='ros_ign_bridge',
+                executable='parameter_bridge',
+                output='screen',
+                arguments=[bridge.argument() for bridge in bridges],
+                remappings=[bridge.remapping() for bridge in bridges],
+            ))
+
+            # tf broadcaster
+            nodes.append(Node(
+                package='mbzirc_ros',
+                executable='pose_tf_broadcaster',
+                output='screen',
+                parameters=[
+                    {'world_frame': world_name}
+                ]
+            ))
+
+            # video target relay
+            nodes.append(Node(
+                package='mbzirc_ros',
+                executable='video_target_relay',
+                output='screen',
+                parameters=[{'model_name': model.model_name}]
+            ))
+
+            group_action = GroupAction([
+                PushRosNamespace(model.model_name),
+                *nodes
+            ])
+
+            if sim_mode == 'full':
+                handler = RegisterEventHandler(
+                    event_handler=OnProcessExit(
+                        target_action=ignition_spawn_entity,
+                        on_exit=[group_action],
+                    )
+                )
+                launch_processes.append(handler)
+            elif sim_mode == 'bridge':
+                launch_processes.append(group_action)
     return launch_processes
 
 

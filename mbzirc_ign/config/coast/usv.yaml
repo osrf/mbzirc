@@ -1,0 +1,18 @@
+---
+# Example coast configuration from:
+# https://github.com/osrf/mbzirc/wiki/Running-the-coast-environment
+model_name: 'usv'
+model_type: 'usv'
+position:
+  xyz: [-1462, -16.5, 0.3]
+  rpy: [0, 0, 0]
+arm: mbzirc_oberon7_arm
+gripper: mbzirc_oberon7_gripper
+arm_slot: '0'
+payload:
+  slot0:
+    sensor: 'mbzirc_vga_camera'
+    rpy: [0, 0, 0]
+  slot1:
+    sensor: 'mbzirc_planar_lidar'
+    rpy: [0, 0, 0]

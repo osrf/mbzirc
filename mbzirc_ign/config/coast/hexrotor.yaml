@@ -1,0 +1,13 @@
+---
+# Example coast configuration from:
+# https://github.com/osrf/mbzirc/wiki/Running-the-coast-environment
+model_name: 'hexrotor_1'
+model_type: 'mbzirc_hexrotor'
+flight_time: 20
+position:
+  xyz: [-1500, -2, 4.3]
+  rpy: [0, 0, 0]
+payload:
+  slot0:
+    sensor: 'mbzirc_3d_lidar'
+    rpy: [0, 0, 0]
