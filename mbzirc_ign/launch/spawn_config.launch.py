@@ -61,7 +61,10 @@ def spawn(context, config_file, world_name):
             bridges, nodes = model.bridges(world_name)
 
             if model.isUAV():
-                [payload_bridges, payload_nodes, payload_launches] = model.payload_bridges(world_name)
+                payload = model.payload_bridges(world_name)
+                payload_bridges = payload[0]
+                payload_nodes = payload[1]
+                payload_launches = payload[2]
                 bridges.extend(payload_bridges)
                 nodes.extend(payload_nodes)
                 launch_processes.extend(payload_launches)
