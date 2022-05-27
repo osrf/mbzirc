@@ -63,6 +63,7 @@ class Model:
         self.battery_capacity = 0
         self.wavefield_size = 0
         self.payload = {}
+        self.arm_payload = {}
         self.arm = ''
         self.gripper = ''
         self.arm_slot = '0'
@@ -132,30 +133,30 @@ class Model:
                         mbzirc_ign.bridges.arm_joint_pos(self.model_name, joint)
                     )
 
-                camera_link = 'wrist_link'
-                camera_link_no_suffix = camera_link.rstrip('_link')
-                bridges.append(
-                    mbzirc_ign.bridges.arm_image(world_name, self.model_name, camera_link)
-                )
-                bridges.append(
-                    mbzirc_ign.bridges.arm_camera_info(
-                        world_name, self.model_name, camera_link
-                    )
-                )
+                # camera_link = 'wrist_link'
+                # camera_link_no_suffix = camera_link.rstrip('_link')
+                # bridges.append(
+                #     mbzirc_ign.bridges.arm_image(world_name, self.model_name, camera_link)
+                # )
+                # bridges.append(
+                #     mbzirc_ign.bridges.arm_camera_info(
+                #         world_name, self.model_name, camera_link
+                #     )
+                # )
                 bridges.append(
                     mbzirc_ign.bridges.wrist_joint_force_torque(self.model_name),
                 )
-                nodes.append(Node(
-                    package='mbzirc_ros',
-                    executable='optical_frame_publisher',
-                    arguments=['1'],
-                    remappings=[('input/image', f'arm/{camera_link_no_suffix}/image_raw'),
-                                ('output/image',
-                                f'arm/{camera_link_no_suffix}/optical/image_raw'),
-                                ('input/camera_info',
-                                f'arm/{camera_link_no_suffix}/camera_info'),
-                                ('output/camera_info',
-                                    f'arm/{camera_link_no_suffix}/optical/camera_info')]))
+                # nodes.append(Node(
+                #     package='mbzirc_ros',
+                #     executable='optical_frame_publisher',
+                #     arguments=['1'],
+                #     remappings=[('input/image', f'arm/{camera_link_no_suffix}/image_raw'),
+                #                 ('output/image',
+                #                 f'arm/{camera_link_no_suffix}/optical/image_raw'),
+                #                 ('input/camera_info',
+                #                 f'arm/{camera_link_no_suffix}/camera_info'),
+                #                 ('output/camera_info',
+                #                     f'arm/{camera_link_no_suffix}/optical/camera_info')]))
 
                 # default to oberon7 gripper if not specified.
                 if not self.gripper:
@@ -195,12 +196,23 @@ class Model:
         return [bridges, nodes]
 
     def payload_bridges(self, world_name, payloads=None):
+        # payloads on usv and uav
+        if not payloads:
+            payloads = self.payload
+        bridges, nodes, payload_launches = self.payload_bridges_impl(world_name, payloads)
+
+        # payloads on arm
+        b_out, n_out, l_out = self.payload_bridges_impl(world_name, self.arm_payload, True)
+        bridges.extend(b_out)
+        nodes.extend(n_out)
+        payload_launches.extend(l_out)
+
+        return [bridges, nodes, payload_launches]
+
+    def payload_bridges_impl(self, world_name, payloads, is_arm=False):
         bridges = []
         nodes = []
         payload_launches = []
-
-        if not payloads:
-            payloads = self.payload
         for (idx, k) in enumerate(sorted(payloads.keys())):
             p = payloads[k]
             if not p['sensor'] or p['sensor'] == 'None' or p['sensor'] == '':
@@ -215,34 +227,41 @@ class Model:
 
             # if not custom payload, add our own bridges and nodes
             else:
+                model_prefix = ''
+                ros_slot_prefix = f'slot{idx}'
+                if is_arm:
+                    model_prefix = 'arm'
+                    ros_slot_prefix = 'arm/' + ros_slot_prefix
                 bridges.extend(
                     mbzirc_ign.payload_bridges.payload_bridges(
-                        world_name, self.model_name, p['sensor'], idx))
+                        world_name, self.model_name, p['sensor'], idx, model_prefix))
 
                 if p['sensor'] in mbzirc_ign.payload_bridges.camera_models():
                     nodes.append(Node(
                         package='mbzirc_ros',
                         executable='optical_frame_publisher',
                         arguments=['1'],
-                        remappings=[('input/image', f'slot{idx}/image_raw'),
-                                    ('output/image', f'slot{idx}/optical/image_raw'),
-                                    ('input/camera_info', f'slot{idx}/camera_info'),
-                                    ('output/camera_info', f'slot{idx}/optical/camera_info')]))
+                        remappings=[('input/image', f'{ros_slot_prefix}/image_raw'),
+                                    ('output/image', f'{ros_slot_prefix}/optical/image_raw'),
+                                    ('input/camera_info', f'{ros_slot_prefix}/camera_info'),
+                                    ('output/camera_info',
+                                     f'{ros_slot_prefix}/optical/camera_info')]))
                 elif p['sensor'] in mbzirc_ign.payload_bridges.rgbd_models():
                     nodes.append(Node(
                         package='mbzirc_ros',
                         executable='optical_frame_publisher',
                         arguments=['1'],
-                        remappings=[('input/image', f'slot{idx}/image_raw'),
-                                    ('output/image', f'slot{idx}/optical/image_raw'),
-                                    ('input/camera_info', f'slot{idx}/camera_info'),
-                                    ('output/camera_info', f'slot{idx}/optical/camera_info')]))
+                        remappings=[('input/image', f'{ros_slot_prefix}/image_raw'),
+                                    ('output/image', f'{ros_slot_prefix}/optical/image_raw'),
+                                    ('input/camera_info', f'{ros_slot_prefix}/camera_info'),
+                                    ('output/camera_info',
+                                     f'{ros_slot_prefix}/optical/camera_info')]))
                     nodes.append(Node(
                         package='mbzirc_ros',
                         executable='optical_frame_publisher',
                         arguments=['1'],
-                        remappings=[('input/image', f'slot{idx}/depth'),
-                                    ('output/image', f'slot{idx}/optical/depth')]))
+                        remappings=[('input/image', f'{ros_slot_prefix}/depth'),
+                                    ('output/image', f'{ros_slot_prefix}/optical/depth')]))
         return [bridges, nodes, payload_launches]
 
     def is_custom_payload(self, payload):
@@ -275,6 +294,9 @@ class Model:
     def set_payload(self, payload):
         # UAV specific
         self.payload = payload
+
+    def set_arm_payload(self, arm_payload):
+        self.arm_payload = arm_payload
 
     def set_wavefield(self, world_name):
         if world_name not in WAVEFIELD_SIZE:
@@ -335,6 +357,18 @@ class Model:
 
                 if self.gripper:
                     arm_command.append(f'gripper={self.gripper}')
+
+                # arm payloads
+                for (slot, payload) in self.arm_payload.items():
+                    if payload['sensor'] and payload['sensor'] != 'None':
+                        arm_command.append(f"arm_{slot}={payload['sensor']}")
+                    if 'rpy' in payload:
+                        if type(payload['rpy']) is str:
+                            r, p, y = payload['rpy'].split(' ')
+                        else:
+                            r, p, y = payload['rpy']
+                        arm_command.append(f'arm_{slot}_pos={r} {p} {y}')
+
                 arm_command.append(f'topic_prefix={self.model_name}')
                 arm_command.append(arm_model_file)
                 process = subprocess.Popen(arm_command, stdout=subprocess.PIPE)
@@ -440,6 +474,9 @@ class Model:
 
         if 'payload' in config:
             model.set_payload(config['payload'])
+
+        if 'arm_payload' in config:
+            model.set_arm_payload(config['arm_payload'])
 
         if 'arm' in config:
             model.set_arm(config['arm'])

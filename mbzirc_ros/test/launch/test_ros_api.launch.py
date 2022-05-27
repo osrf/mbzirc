@@ -114,7 +114,8 @@ def generate_test_description():
                'z'      : '0.08',
                'arm'    : 'mbzirc_oberon7_arm',
                'gripper': 'mbzirc_oberon7_gripper',}
-
+    # add hd camera to arm
+    arguments['arm_payload_slot0'] = 'mbzirc_hd_camera'
     spawn_usv = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
