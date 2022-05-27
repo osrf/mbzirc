@@ -133,31 +133,9 @@ class Model:
                         mbzirc_ign.bridges.arm_joint_pos(self.model_name, joint)
                     )
 
-                # camera_link = 'wrist_link'
-                # camera_link_no_suffix = camera_link.rstrip('_link')
-                # bridges.append(
-                #     mbzirc_ign.bridges.arm_image(world_name, self.model_name, camera_link)
-                # )
-                # bridges.append(
-                #     mbzirc_ign.bridges.arm_camera_info(
-                #         world_name, self.model_name, camera_link
-                #     )
-                # )
                 bridges.append(
                     mbzirc_ign.bridges.wrist_joint_force_torque(self.model_name),
                 )
-                # nodes.append(Node(
-                #     package='mbzirc_ros',
-                #     executable='optical_frame_publisher',
-                #     arguments=['1'],
-                #     remappings=[('input/image', f'arm/{camera_link_no_suffix}/image_raw'),
-                #                 ('output/image',
-                #                 f'arm/{camera_link_no_suffix}/optical/image_raw'),
-                #                 ('input/camera_info',
-                #                 f'arm/{camera_link_no_suffix}/camera_info'),
-                #                 ('output/camera_info',
-                #                     f'arm/{camera_link_no_suffix}/optical/camera_info')]))
-
                 # default to oberon7 gripper if not specified.
                 if not self.gripper:
                     self.gripper = 'mbzirc_oberon7_gripper'
