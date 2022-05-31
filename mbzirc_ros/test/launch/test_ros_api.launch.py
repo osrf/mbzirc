@@ -160,7 +160,7 @@ def generate_test_description():
 class RosApiTest(unittest.TestCase):
 
     def test_termination(self, process_under_test, proc_info):
-        proc_info.assertWaitForShutdown(process=process_under_test, timeout=280)
+        proc_info.assertWaitForShutdown(process=process_under_test, timeout=300)
 
 @launch_testing.post_shutdown_test()
 class RosApiTestAfterShutdown(unittest.TestCase):
