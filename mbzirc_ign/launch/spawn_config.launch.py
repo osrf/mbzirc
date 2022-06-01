@@ -60,13 +60,12 @@ def spawn(context, config_file, world_name):
         if sim_mode == 'full' or sim_mode == 'bridge':
             [bridges, nodes, custom_launches] = model.bridges(world_name)
 
-            if model.is_UAV():
-                payload = model.payload_bridges(world_name)
-                payload_bridges = payload[0]
-                payload_nodes = payload[1]
-                payload_launches = payload[2]
-                bridges.extend(payload_bridges)
-                nodes.extend(payload_nodes)
+            payload = model.payload_bridges(world_name)
+            payload_bridges = payload[0]
+            payload_nodes = payload[1]
+            payload_launches = payload[2]
+            bridges.extend(payload_bridges)
+            nodes.extend(payload_nodes)
 
             if model.is_fixed_wing_UAV():
                 nodes.append(Node(
