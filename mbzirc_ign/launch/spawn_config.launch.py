@@ -38,6 +38,7 @@ def spawn(context, config_file, world_name):
 
     sim_mode = LaunchConfiguration('sim_mode').perform(context)
     bridge_competition_topics = LaunchConfiguration('bridge_competition_topics').perform(context)
+    robot = LaunchConfiguration('robot').perform(context)
 
     launch_processes = []
     bridges = []
@@ -48,6 +49,9 @@ def spawn(context, config_file, world_name):
         launch_processes.extend(launch_competition_bridges())
 
     for model in models:
+        if len(robot) > 0 and model.model_name != robot:
+            continue
+
         if sim_mode == 'full' or sim_mode == 'sim':
             ignition_spawn_entity = Node(
                 package='ros_ign_gazebo',
@@ -155,7 +159,6 @@ def generate_launch_description():
             'world',
             default_value='simple_demo',
             description='Name of world'),
-
         DeclareLaunchArgument(
             'config_file',
             description='YAML configuration file to spawn'),
@@ -170,6 +173,11 @@ def generate_launch_description():
             'bridge_competition_topics',
             default_value='True',
             description='True to bridge competition topics, False to disable bridge.'),
+        DeclareLaunchArgument(
+            'robot',
+            default_value='',
+            description='Name of robot to spawn if specified. '
+                        'This must match one of the robots in the config_file'),
         # launch setup
         OpaqueFunction(function=launch)
     ])

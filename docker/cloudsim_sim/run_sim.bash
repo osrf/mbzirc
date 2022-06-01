@@ -9,6 +9,4 @@ mkdir -p /tmp/ign/logs
 atop -R -w /tmp/ign/logs/atop_log &
 
 export ROS_LOG_DIR=/tmp/ign/logs/ros
-# todo(iche033) update this to use a new launch file that laucnhes sim and
-# spawns all robots using spawn_config
 unbuffer ros2 launch mbzirc_ign competition.launch.py "$@" 2>&1 | tee /tmp/ign/logs/gzserver_stdout.log
