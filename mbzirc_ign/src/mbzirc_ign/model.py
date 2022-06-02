@@ -117,6 +117,11 @@ class Model:
                 mbzirc_ign.bridges.thrust_joint_pos(self.model_name, 'left'),
                 mbzirc_ign.bridges.thrust_joint_pos(self.model_name, 'right'),
             ])
+            nodes.append(Node(
+                package='mbzirc_ros',
+                executable='usv_bridge',
+                parameters=[{'model_name': self.model_name}],
+                ))
 
         if self.hasValidArm():
             # arm joint states
