@@ -120,6 +120,19 @@
       </imu>
     </sensor>
 
+    <!-- Here's our custom sensor -->
+    <sensor name="an_odometer" type="custom" ignition:type="odometer">
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <visualize>true</visualize>
+      <ignition:odometer>
+        <noise type="gaussian">
+          <mean>0.00001</mean>
+          <stddev>0.00001</stddev>
+        </noise>
+      </ignition:odometer>
+    </sensor>
+
     <collision name="box_collision001">
       <pose>0.0 0.0 0.389269 0.0 0.0 1.57079</pose>
       <geometry>
