@@ -171,28 +171,6 @@ def gripper_joint_force_torque(model_name, joint_name, isAttachedToArm):
         direction=BridgeDirection.IGN_TO_ROS)
 
 
-def arm_image(world_name, model_name, link_name):
-    prefix = f'/world/{world_name}/model/{model_name}/model/arm/link/{link_name}/sensor'
-    link = link_name.rstrip('_link')
-    return Bridge(
-        ign_topic=f'{prefix}/camera/image',
-        ros_topic=f'arm/{link}/image_raw',
-        ign_type='ignition.msgs.Image',
-        ros_type='sensor_msgs/msg/Image',
-        direction=BridgeDirection.IGN_TO_ROS)
-
-
-def arm_camera_info(world_name, model_name, link_name):
-    prefix = f'/world/{world_name}/model/{model_name}/model/arm/link/{link_name}/sensor'
-    link = link_name.rstrip('_link')
-    return Bridge(
-        ign_topic=f'{prefix}/camera/camera_info',
-        ros_topic=f'arm/{link}/camera_info',
-        ign_type='ignition.msgs.CameraInfo',
-        ros_type='sensor_msgs/msg/CameraInfo',
-        direction=BridgeDirection.IGN_TO_ROS)
-
-
 def gripper_suction_contacts(model_name, isAttachedToArm):
     prefix = 'gripper'
     if isAttachedToArm:

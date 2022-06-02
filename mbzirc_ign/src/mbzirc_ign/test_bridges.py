@@ -92,17 +92,6 @@ class TestBridges(unittest.TestCase):
                          f'/{self.model_name}/arm/elbow'
                          '@std_msgs/msg/Float64]ignition.msgs.Double')
 
-        camera_link = 'wrist_link'
-        prefix = (f'/world/{self.world_name}/model/{self.model_name}/'
-                  f'model/arm/link/{camera_link}/sensor')
-        bridge = bridges.arm_image(self.world_name, self.model_name, camera_link)
-        self.assertEqual(bridge.argument(),
-                         f'{prefix}/camera/image'
-                         '@sensor_msgs/msg/Image[ignition.msgs.Image')
-        bridge = bridges.arm_camera_info(self.world_name, self.model_name, 'wrist_link')
-        self.assertEqual(bridge.argument(),
-                         f'{prefix}/camera/camera_info'
-                         '@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo')
         bridge = bridges.wrist_joint_force_torque(self.model_name)
         self.assertEqual(bridge.argument(),
                          f'/{self.model_name}/arm/wrist/forcetorque'
@@ -206,11 +195,16 @@ class TestPayloadBridges(unittest.TestCase):
     world_name = 'foo'
     model_name = 'bar'
     link_name = 'baz'
+    arm_name = 'arm'
     idx = 0
 
-    def prefix(self):
-        return (f'/world/{self.world_name}/model/{self.model_name}'
-                f'/model/sensor_{self.idx}/link/sensor_link/sensor')
+    def prefix(self, model_prefix=''):
+        if model_prefix:
+            return (f'/world/{self.world_name}/model/{self.model_name}/model/{model_prefix}'
+                    f'/model/sensor_{self.idx}/link/sensor_link/sensor')
+        else:
+            return (f'/world/{self.world_name}/model/{self.model_name}'
+                    f'/model/sensor_{self.idx}/link/sensor_link/sensor')
 
     def test_image(self):
         bridge = payload_bridges.image(self.world_name, self.model_name, self.idx)
@@ -223,10 +217,27 @@ class TestPayloadBridges(unittest.TestCase):
                          f'{self.prefix()}/camera/depth_image'
                          '@sensor_msgs/msg/Image[ignition.msgs.Image')
 
+        bridge = payload_bridges.image(self.world_name, self.model_name, self.idx, self.arm_name)
+        self.assertEqual(bridge.argument(),
+                         f'{self.prefix(self.arm_name)}/camera/image'
+                         '@sensor_msgs/msg/Image[ignition.msgs.Image')
+
+        bridge = payload_bridges.depth_image(self.world_name, self.model_name, self.idx,
+                                             self.arm_name)
+        self.assertEqual(bridge.argument(),
+                         f'{self.prefix(self.arm_name)}/camera/depth_image'
+                         '@sensor_msgs/msg/Image[ignition.msgs.Image')
+
     def test_camera_info(self):
         bridge = payload_bridges.camera_info(self.world_name, self.model_name, self.idx)
         self.assertEqual(bridge.argument(),
                          f'{self.prefix()}/camera/camera_info'
+                         '@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo')
+
+        bridge = payload_bridges.camera_info(self.world_name, self.model_name, self.idx,
+                                             self.arm_name)
+        self.assertEqual(bridge.argument(),
+                         f'{self.prefix(self.arm_name)}/camera/camera_info'
                          '@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo')
 
     def test_points(self):
@@ -238,6 +249,18 @@ class TestPayloadBridges(unittest.TestCase):
         bridge = payload_bridges.camera_points(self.world_name, self.model_name, self.idx)
         self.assertEqual(bridge.argument(),
                          f'{self.prefix()}/camera/points'
+                         '@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked')
+
+        bridge = payload_bridges.lidar_points(self.world_name, self.model_name, self.idx,
+                                              self.arm_name)
+        self.assertEqual(bridge.argument(),
+                         f'{self.prefix(self.arm_name)}/lidar/scan/points'
+                         '@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked')
+
+        bridge = payload_bridges.camera_points(self.world_name, self.model_name, self.idx,
+                                               self.arm_name)
+        self.assertEqual(bridge.argument(),
+                         f'{self.prefix(self.arm_name)}/camera/points'
                          '@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked')
 
     def test_payload_bridges(self):
