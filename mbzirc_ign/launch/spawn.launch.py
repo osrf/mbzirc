@@ -14,25 +14,28 @@
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.actions import GroupAction
 from launch.actions import OpaqueFunction
-from launch.actions import RegisterEventHandler
-from launch.event_handlers import OnProcessExit
 from launch.substitutions import LaunchConfiguration
 
-from launch_ros.actions import Node
-from launch_ros.actions import PushRosNamespace
-
 import mbzirc_ign.bridges
+import mbzirc_ign.launch
 
 from mbzirc_ign.model import Model
 
 
-def spawn(context, model_type, world_name, model_name, position):
-    model = Model(model_name, model_type, position)
+def parse_from_cli(context, world_name):
+    robot_name = LaunchConfiguration('name').perform(context)
+    model_type = LaunchConfiguration('model').perform(context)
 
-    sim_mode = LaunchConfiguration('sim_mode').perform(context)
-    bridge_competition_topics = LaunchConfiguration('bridge_competition_topics').perform(context)
+    x_pos = LaunchConfiguration('x').perform(context)
+    y_pos = LaunchConfiguration('y').perform(context)
+    z_pos = LaunchConfiguration('z').perform(context)
+    r_rot = LaunchConfiguration('R').perform(context)
+    p_rot = LaunchConfiguration('P').perform(context)
+    y_rot = LaunchConfiguration('Y').perform(context)
+    position = [x_pos, y_pos, z_pos, r_rot, p_rot, y_rot]
+
+    model = Model(robot_name, model_type, position)
 
     slot0_payload = LaunchConfiguration('slot0').perform(context)
     slot1_payload = LaunchConfiguration('slot1').perform(context)
@@ -83,132 +86,48 @@ def spawn(context, model_type, world_name, model_name, position):
 
     model.set_gripper(gripper)
     model.set_payload(payloads)
-
-    launch_processes = []
-    if sim_mode == 'full' or sim_mode == 'sim':
-        ignition_spawn_entity = Node(
-            package='ros_ign_gazebo',
-            executable='create',
-            output='screen',
-            arguments=model.spawn_args()
-        )
-        launch_processes.append(ignition_spawn_entity)
-
-    bridges = []
-    nodes = []
-    if sim_mode == 'full' or sim_mode == 'bridge':
-        [bridges, nodes, custom_launches] = model.bridges(world_name)
-
-        [payload_bridges, payload_nodes, payload_launches] = model.payload_bridges(world_name)
-        bridges.extend(payload_bridges)
-        nodes.extend(payload_nodes)
-
-        if model.is_fixed_wing_UAV():
-            nodes.append(Node(
-                package='mbzirc_ros',
-                executable='fixed_wing_bridge',
-                output='screen',
-                parameters=[{'model_name': model_name}],
-            ))
-
-        nodes.append(Node(
-            package='ros_ign_bridge',
-            executable='parameter_bridge',
-            output='screen',
-            arguments=[bridge.argument() for bridge in bridges],
-            remappings=[bridge.remapping() for bridge in bridges],
-            parameters=[{'lazy': True}],
-        ))
-
-        # tf broadcaster
-        nodes.append(Node(
-            package='mbzirc_ros',
-            executable='pose_tf_broadcaster',
-            output='screen',
-            parameters=[
-                {'world_frame': world_name}
-            ]
-        ))
-
-        # video target relay
-        nodes.append(Node(
-            package='mbzirc_ros',
-            executable='video_target_relay',
-            output='screen',
-            parameters=[{'model_name': model_name}]
-        ))
-
-        group_action = GroupAction([
-            PushRosNamespace(model_name),
-            *nodes
-        ])
-
-        if sim_mode == 'full':
-            handler = RegisterEventHandler(
-                event_handler=OnProcessExit(
-                    target_action=ignition_spawn_entity,
-                    on_exit=[group_action],
-                )
-            )
-            launch_processes.append(handler)
-        elif sim_mode == 'bridge':
-            launch_processes.append(group_action)
-
-        launch_processes.extend(payload_launches)
-        launch_processes.extend(custom_launches)
-
-    if sim_mode == 'bridge' and bridge_competition_topics:
-        launch_processes.extend(launch_competition_bridges())
-    return launch_processes
-
-
-def launch_competition_bridges():
-    bridges = [
-        mbzirc_ign.bridges.score(),
-        mbzirc_ign.bridges.clock(),
-        mbzirc_ign.bridges.run_clock(),
-        mbzirc_ign.bridges.phase(),
-        mbzirc_ign.bridges.stream_status(),
-    ]
-    nodes = []
-    nodes.append(Node(
-        package='ros_ign_bridge',
-        executable='parameter_bridge',
-        output='screen',
-        arguments=[bridge.argument() for bridge in bridges],
-        remappings=[bridge.remapping() for bridge in bridges],
-    ))
-
-    return nodes
+    return model
 
 
 def launch(context, *args, **kwargs):
-    robot_name = LaunchConfiguration('name').perform(context)
-    model_type = LaunchConfiguration('model').perform(context)
     world_name = LaunchConfiguration('world').perform(context)
+    sim_mode = LaunchConfiguration('sim_mode').perform(context)
+    bridge_competition_topics = LaunchConfiguration('bridge_competition_topics').perform(context)
 
-    x_pos = LaunchConfiguration('x').perform(context)
-    y_pos = LaunchConfiguration('y').perform(context)
-    z_pos = LaunchConfiguration('z').perform(context)
-    r_rot = LaunchConfiguration('R').perform(context)
-    p_rot = LaunchConfiguration('P').perform(context)
-    y_rot = LaunchConfiguration('Y').perform(context)
+    model = parse_from_cli(context, world_name)
 
-    position = [x_pos, y_pos, z_pos, r_rot, p_rot, y_rot]
-    return spawn(context, model_type, world_name, robot_name, position)
+    launch_processes = []
+
+    launch_processes.extend(mbzirc_ign.launch.spawn(sim_mode, world_name, model))
+    if sim_mode == 'bridge' and bridge_competition_topics:
+        launch_processes.extend(mbzirc_ign.launch.competition_bridges())
+
+    return launch_processes
 
 
 def generate_launch_description():
     return LaunchDescription([
         # Launch Arguments
         DeclareLaunchArgument(
-            'name',
-            default_value='',
-            description='Name of robot to spawn'),
-        DeclareLaunchArgument(
             'world',
             default_value='simple_demo',
             description='Name of world'),
+        DeclareLaunchArgument(
+            'sim_mode',
+            default_value='full',
+            description='Simulation mode: "full", "sim", "bridge".'
+                        'full: spawns robot and launch ros_ign bridges, '
+                        'sim: spawns robot only, '
+                        'bridge: launch ros_ign bridges only.'),
+        DeclareLaunchArgument(
+            'bridge_competition_topics',
+            default_value='True',
+            description='True to bridge competition topics, False to disable bridge.'),
+
+        DeclareLaunchArgument(
+            'name',
+            default_value='',
+            description='Name of robot to spawn'),
         DeclareLaunchArgument(
             'model',
             default_value='',
@@ -317,17 +236,6 @@ def generate_launch_description():
             'slot7_rpy',
             default_value='0 0 0',
             description='Roll, Pitch, Yaw in degrees of payload mount'),
-        DeclareLaunchArgument(
-            'sim_mode',
-            default_value='full',
-            description='Simulation mode: "full", "sim", "bridge".'
-                        'full: spawns robot and launch ros_ign bridges, '
-                        'sim: spawns robot only, '
-                        'bridge: launch ros_ign bridges only.'),
-        DeclareLaunchArgument(
-            'bridge_competition_topics',
-            default_value='True',
-            description='True to bridge competition topics, False to disable bridge.'),
         # launch setup
         OpaqueFunction(function=launch)
     ])
