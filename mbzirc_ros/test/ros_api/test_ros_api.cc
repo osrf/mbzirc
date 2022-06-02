@@ -127,7 +127,7 @@ TEST(RosApiTest, SimTopics)
   // run_clock
   MyTestClass<rosgraph_msgs::msg::Clock> runClock("/mbzirc/run_clock");
   waitUntilBoolVarAndSpin(
-    node, runClock.callbackExecuted, 10ms, 500);
+    node, runClock.callbackExecuted, 10ms, 3500);
   EXPECT_TRUE(runClock.callbackExecuted);
 }
 
