@@ -26,11 +26,10 @@
 #include <string>
 
 using std::placeholders::_1;
-using namespace std::chrono_literals;
 
-/// \brief A class that converts data from robot frame to optical frame
-/// It subscribes to existing topic, modifies the frame_id of the message to
-/// a new optical frame, then republishes the updated data to a new topic.
+/// \brief A bridge node that offers ROS2 APIs matching the ones provided by
+/// the real USV hardware. The node processes the input cmd data and forwards
+/// them to the sim ROS2 APIs.
 class USVBridge : public rclcpp::Node
 {
   /// \brief Constructor
