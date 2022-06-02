@@ -71,8 +71,8 @@
       </radio_config>
     </plugin>
     <plugin
-      filename="libOdometerSystem.so"
-      name="custom::OdometerSystem">
+      filename="libRFRange.so"
+      name="ignition::gazebo::systems::RFRange">
     </plugin>
 
     <scene>

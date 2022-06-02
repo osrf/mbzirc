@@ -46,27 +46,13 @@ install(
   TARGETS Waves
   DESTINATION lib)
 
-# Odometer
-add_library(Odometer SHARED
-  src/Odometer.cc
-)
-target_link_libraries(Odometer PUBLIC
-  ignition-common${IGN_COMMON_VER}::ignition-common${IGN_COMMON_VER}
-  ignition-gazebo${IGN_GAZEBO_VER}::core
-  ignition-math${IGN_MATH_VER}
-  ignition-sensors${IGN_SENSORS_VER}::ignition-sensors${IGN_SENSORS_VER}
-)
-install(
-  TARGETS Odometer
-  DESTINATION lib)
-
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
   BaseStation
   FixedWingController
   GameLogicPlugin
   EntityDetector
-  OdometerSystem
+  RFRange
   SimpleHydrodynamics
   SuctionGripper
   Surface
@@ -81,7 +67,6 @@ foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
     ignition-rendering${IGN_RENDERING_VER}::ignition-rendering${IGN_RENDERING_VER}
     ignition-sensors${IGN_SENSORS_VER}::ignition-sensors${IGN_SENSORS_VER}
     Waves
-    Odometer
   )
 endforeach()
 
