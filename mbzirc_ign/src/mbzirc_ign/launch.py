@@ -79,7 +79,7 @@ def spawn(sim_mode, world_name, models, robot=None):
             launch_processes.append(ignition_spawn_entity)
 
         if sim_mode == 'full' or sim_mode == 'bridge':
-            bridges, nodes = model.bridges(world_name)
+            bridges, nodes, custom_launches = model.bridges(world_name)
 
             payload = model.payload_bridges(world_name)
             payload_bridges = payload[0]
@@ -88,9 +88,8 @@ def spawn(sim_mode, world_name, models, robot=None):
 
             bridges.extend(payload_bridges)
             nodes.extend(payload_nodes)
-            launch_processes.extend(payload_launches)
 
-            if model.isFixedWingUAV():
+            if model.is_fixed_wing_UAV():
                 nodes.append(Node(
                     package='mbzirc_ros',
                     executable='fixed_wing_bridge',
@@ -139,4 +138,8 @@ def spawn(sim_mode, world_name, models, robot=None):
                 launch_processes.append(handler)
             elif sim_mode == 'bridge':
                 launch_processes.append(group_action)
+
+            launch_processes.extend(payload_launches)
+            launch_processes.extend(custom_launches)
+
     return launch_processes
