@@ -136,7 +136,6 @@ def spawn(sim_mode, world_name, models):
             elif sim_mode == 'bridge':
                 launch_processes.append(group_action)
 
-
             launch_processes.extend(payload_launches)
             launch_processes.extend(custom_launches)
 
