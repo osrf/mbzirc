@@ -86,7 +86,7 @@ class TestModel(unittest.TestCase):
 
         [bridges, nodes, launches] = model.bridges('test_world_name')
         self.assertEqual(len(bridges), 9)
-        self.assertEqual(len(nodes), 0)
+        self.assertEqual(len(nodes), 1)
         self.assertEqual(len(launches), 0)
 
         [payload_bridges, payload_nodes, launch] = model.payload_bridges('test_world_name')
@@ -110,7 +110,7 @@ class TestModel(unittest.TestCase):
 
         [bridges, nodes, launches] = model.bridges('test_world_name')
         self.assertEqual(len(bridges), 22)
-        self.assertEqual(len(nodes), 0)
+        self.assertEqual(len(nodes), 1)
         self.assertEqual(len(launches), 0)
 
         [payload_bridges, payload_nodes, launch] = model.payload_bridges('test_world_name')

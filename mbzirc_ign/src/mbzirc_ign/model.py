@@ -122,8 +122,7 @@ class Model:
             nodes.append(Node(
                 package='mbzirc_ros',
                 executable='usv_bridge',
-                parameters=[{'model_name': self.model_name}],
-                ))
+                parameters=[{'model_name': self.model_name}],))
 
         if self.has_valid_arm():
             # arm joint states
