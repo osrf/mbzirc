@@ -27,18 +27,23 @@ def main(args=None):
         node.create_publisher(Bool, '/quadrotor_1/gripper/suction_on', 10)
     quadrotor_gripper2 = \
         node.create_publisher(Bool, '/quadrotor_2/gripper/suction_on', 10)
+    quadrotor_gripper3 = \
+        node.create_publisher(Bool, '/quadrotor_3/gripper/suction_on', 10)
 
     # Create a publisher for the two quadrotor's thrust
     quadrotor_cmd1 = node.create_publisher(Twist, '/quadrotor_1/cmd_vel', 10)
     quadrotor_cmd2 = node.create_publisher(Twist, '/quadrotor_2/cmd_vel', 10)
+    quadrotor_cmd3 = node.create_publisher(Twist, '/quadrotor_3/cmd_vel', 10)
 
     # Enable the grippers
     quadrotor_gripper1.publish(Bool(data=True))
     quadrotor_gripper2.publish(Bool(data=True))
+    quadrotor_gripper3.publish(Bool(data=True))
 
     # liftoff
-    quadrotor_cmd1.publish(Twist(linear=Vector3(x=0.0, y=0.0, z=5.0)))
-    quadrotor_cmd2.publish(Twist(linear=Vector3(x=0.0, y=0.0, z=5.0)))
+    quadrotor_cmd1.publish(Twist(linear=Vector3(x=0.0, y=0.0, z=10.0)))
+    quadrotor_cmd2.publish(Twist(linear=Vector3(x=0.0, y=0.0, z=10.0)))
+    quadrotor_cmd3.publish(Twist(linear=Vector3(x=0.0, y=0.0, z=10.0)))
 
     node.destroy_node()
     rclpy.shutdown()
