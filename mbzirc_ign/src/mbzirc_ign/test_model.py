@@ -105,8 +105,14 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(args), 18)
 
         [bridges, nodes] = model.bridges('test_world_name')
-        self.assertEqual(len(bridges), 24)
-        self.assertEqual(len(nodes), 1)
+        self.assertEqual(len(bridges), 22)
+        self.assertEqual(len(nodes), 0)
+
+        [payload_bridges, payload_nodes, launch] = model.payload_bridges('test_world_name')
+
+        self.assertEqual(len(payload_bridges), 6)
+        self.assertEqual(len(payload_nodes), 3)
+        self.assertEqual(len(launch), 0)
 
     def test_coast(self):
         config = os.path.join(get_package_share_directory('mbzirc_ign'),

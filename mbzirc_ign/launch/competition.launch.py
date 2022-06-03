@@ -33,6 +33,7 @@ def launch(context, *args, **kwargs):
     with open(config_file, 'r') as stream:
         models = Model.FromConfig(stream)
 
+    launch_processes.extend(mbzirc_ign.launch.simulation(world_name))
     launch_processes.extend(mbzirc_ign.launch.spawn(sim_mode, world_name, models))
 
     if sim_mode == 'bridge' and bridge_competition_topics:
