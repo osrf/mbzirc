@@ -68,6 +68,12 @@ def parse_from_cli(context, world_name):
 
     gripper = LaunchConfiguration('gripper').perform(context)
 
+    arm_slot0_payload = LaunchConfiguration('arm_payload_slot0').perform(context)
+    arm_slot0_rpy = LaunchConfiguration('arm_payload_slot0_rpy').perform(context)
+    arm_payloads = {
+        'slot0': {'sensor': arm_slot0_payload, 'rpy': arm_slot0_rpy},
+    }
+
     if model.isUAV():
         # take flight time in minutes
         flight_time = LaunchConfiguration('flightTime').perform(context)
@@ -86,6 +92,7 @@ def parse_from_cli(context, world_name):
 
     model.set_gripper(gripper)
     model.set_payload(payloads)
+    model.set_arm_payload(arm_payloads)
     return model
 
 
@@ -236,6 +243,14 @@ def generate_launch_description():
             'slot7_rpy',
             default_value='0 0 0',
             description='Roll, Pitch, Yaw in degrees of payload mount'),
+        DeclareLaunchArgument(
+            'arm_payload_slot0',
+            default_value='',
+            description='Payload mounted to slot 0 on the arm'),
+        DeclareLaunchArgument(
+            'arm_payload_slot0_rpy',
+            default_value='0 0 0',
+            description='Roll, Pitch, Yaw in degrees of payload mount on the arm'),
         # launch setup
         OpaqueFunction(function=launch)
     ])
