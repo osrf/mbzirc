@@ -102,7 +102,7 @@ if(BUILD_TESTING)
   )
 
   add_launch_test(test/launch/test_ros_api.launch.py
-    TIMEOUT 280
+    TIMEOUT 300
   )
 endif()
 

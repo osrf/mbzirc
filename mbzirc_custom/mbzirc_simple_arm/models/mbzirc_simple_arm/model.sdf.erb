@@ -1,0 +1,217 @@
+<%
+if !defined?(topic_prefix) || topic_prefix == nil || topic_prefix.empty?
+  $topic_prefix = ''
+else
+  $topic_prefix = topic_prefix
+end
+
+if !defined?(gripper) || gripper== nil || gripper.empty?
+  $gripper_model = 'mbzirc_oberon7_gripper'
+else
+  $gripper_model = gripper
+end
+%>
+
+<?xml version="1.0" ?>
+<sdf version='1.9'>
+  <model name="simple_arm">
+    <link name='base_link'>
+      <inertial>
+        <pose>0 0 0.0 0 0 0</pose>
+        <mass>10</mass>
+        <inertia>
+          <ixx>0.03333333</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.03333333</iyy>
+          <iyz>0</iyz>
+          <izz>0.05000000</izz>
+        </inertia>
+      </inertial>
+      <collision name="base_link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.1</length>
+            <radius>0.1</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='base_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.1</length>
+            <radius>0.1</radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>0.05 0.05 0.05</diffuse>
+        </material>
+      </visual>
+    </link>
+    <link name='lower_arm_link'>
+      <pose relative_to='base_link'>0.375 0.0 0.0 0 1.570796 0</pose>
+      <inertial>
+        <pose>0.0 0.0 0.0 0 0 0</pose>
+        <mass>10</mass>
+        <inertia>
+          <ixx>0.49375000</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.49375000</iyy>
+          <iyz>0</iyz>
+          <izz>0.05</izz>
+        </inertia>
+      </inertial>
+      <collision name='lower_link_collision'>
+        <geometry>
+          <cylinder>
+            <length>0.5</length>
+            <radius>0.1</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='lower_link_visual'>
+        <geometry>
+          <cylinder>
+            <length>0.75</length>
+            <radius>0.1</radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>0.05 0.05 0.05</diffuse>
+        </material>
+      </visual>
+    </link>
+    <link name='upper_arm_link'>
+      <pose relative_to='joint_1'>0.375 0.0 0.0 0 1.570796 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>10</mass>
+        <inertia>
+          <ixx>0.49375000</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.49375000</iyy>
+          <iyz>0</iyz>
+          <izz>0.05</izz>
+        </inertia>
+      </inertial>
+      <collision name='upper_link_collision'>
+        <geometry>
+          <cylinder>
+            <length>0.5</length>
+            <radius>0.1</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='upper_link_visual'>
+        <geometry>
+          <cylinder>
+            <length>0.75</length>
+            <radius>0.1</radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>0.05 0.05 0.05</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <frame name="gripper_mount_point">
+      <pose relative_to='joint_2'>0.0 0 0 0 0 0</pose>
+    </frame>
+
+    <include>
+      <name>gripper</name>
+      <uri>model://<%= $gripper_model%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="gripper_mount_point">0 0 0 0 0 0</pose>
+    </include>
+
+    <joint name='joint_0' type='revolute'>
+      <pose relative_to='base_link'>0.0 0.0 0.0 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>lower_arm_link</child>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-1.570796</lower>
+          <upper>1.5707896</upper>
+          <effort>500</effort>
+          <velocity>0.15</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='joint_1' type='revolute'>
+      <pose relative_to='joint_0'>0.75 0.0 0.0 0 1.570796 0</pose>
+      <parent>lower_arm_link</parent>
+      <child>upper_arm_link</child>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-1.570796</lower>
+          <upper>1.5707896</upper>
+          <effort>500</effort>
+          <velocity>0.15</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name='joint_2' type='revolute'>
+      <pose relative_to='joint_1'>0.75 0.0 0.0 0 0 0</pose>
+      <parent>upper_arm_link</parent>
+      <child>gripper::mount_point</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-6.2831853071795862</lower>
+          <upper>6.2831853071795862</upper>
+          <effort>10</effort>
+          <velocity>0.15</velocity>
+        </limit>
+      </axis>
+      <sensor name="force_torque" type="force_torque">
+        <update_rate>10</update_rate>
+        <topic><%= $topic_prefix %>/arm/joint_2/forcetorque</topic>
+      </sensor>
+    </joint>
+
+    <!-- Controller -->
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>joint_0</joint_name>
+      <topic><%= $topic_prefix %>/arm/joint_0</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+      <initial_position>0.5</initial_position>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>joint_1</joint_name>
+      <topic><%= $topic_prefix %>/arm/joint_1</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <plugin
+      filename="ignition-gazebo-joint-position-controller-system"
+      name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>joint_2</joint_name>
+      <topic><%= $topic_prefix %>/arm/joint_2</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+    </plugin>
+
+    <!-- Joint state publisher -->
+    <plugin filename="libignition-gazebo-joint-state-publisher-system.so" name="ignition::gazebo::systems::JointStatePublisher">
+      <joint_name>joint_0</joint_name>
+      <joint_name>joint_1</joint_name>
+      <joint_name>joint_2</joint_name>
+    </plugin>
+
+    <frame name="arm_mount_point"/>
+  </model>
+</sdf>
