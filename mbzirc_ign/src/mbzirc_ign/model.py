@@ -68,22 +68,23 @@ class Model:
         self.gripper = ''
         self.arm_slot = '0'
 
-    def isUAV(self):
+    def is_UAV(self):
         return self.model_type in UAVS
 
-    def isFixedWingUAV(self):
+    def is_fixed_wing_UAV(self):
         return self.model_type in FIXED_WING_UAVS
 
-    def isUSV(self):
+    def is_USV(self):
         return self.model_type in USVS
 
-    def hasValidArm(self):
+    def has_valid_arm(self):
         return self.arm in ARMS
 
-    def hasValidGripper(self):
+    def has_valid_gripper(self):
         return self.gripper in GRIPPERS
 
     def bridges(self, world_name):
+        custom_launches = []
         nodes = []
         bridges = [
             # IMU
@@ -97,19 +98,19 @@ class Model:
             # comms rx
             mbzirc_ign.bridges.comms_rx(self.model_name),
         ]
-        if self.isUAV():
+        if self.is_UAV():
             bridges.extend([
                 # Magnetometer
                 mbzirc_ign.bridges.magnetometer(world_name, self.model_name),
                 # Air Pressure
                 mbzirc_ign.bridges.air_pressure(world_name, self.model_name),
             ])
-            if not self.isFixedWingUAV():
+            if not self.is_fixed_wing_UAV():
                 bridges.extend([
                     # twist
                     mbzirc_ign.bridges.cmd_vel(self.model_name)
                 ])
-        elif self.isUSV():
+        elif self.is_USV():
             bridges.extend([
                 # thrust cmd
                 mbzirc_ign.bridges.thrust(self.model_name, 'left'),
@@ -119,7 +120,7 @@ class Model:
                 mbzirc_ign.bridges.thrust_joint_pos(self.model_name, 'right'),
             ])
 
-        if self.hasValidArm():
+        if self.has_valid_arm():
             # arm joint states
             bridges.append(
                 mbzirc_ign.bridges.arm_joint_states(world_name, self.model_name)
@@ -139,9 +140,18 @@ class Model:
                 # default to oberon7 gripper if not specified.
                 if not self.gripper:
                     self.gripper = 'mbzirc_oberon7_gripper'
+        elif self.is_custom_model(self.arm):
+            custom_launch = self.custom_model_launch(world_name, self.model_name,
+                                                     self.arm)
+            if custom_launch is not None:
+                custom_launches.append(custom_launch)
 
-        if self.hasValidGripper():
-            isAttachedToArm = self.isUSV()
+            # default to oberon7 gripper if not specified.
+            if not self.gripper:
+                self.gripper = 'mbzirc_oberon7_gripper'
+
+        if self.has_valid_gripper():
+            isAttachedToArm = self.is_USV()
             # gripper joint pos cmd
             if self.gripper == 'mbzirc_oberon7_gripper':
                 # gripper_joint states
@@ -171,7 +181,7 @@ class Model:
                     mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'bottom')
                 ])
 
-        return [bridges, nodes]
+        return [bridges, nodes, custom_launches]
 
     def payload_bridges(self, world_name, payloads=None):
         # payloads on usv and uav
@@ -197,7 +207,7 @@ class Model:
                 continue
 
             # check if it is a custom payload
-            if self.is_custom_payload(p['sensor']):
+            if self.is_custom_model(p['sensor']):
                 payload_launch = self.custom_payload_launch(world_name, self.model_name,
                                                             p['sensor'], idx)
                 if payload_launch is not None:
@@ -242,12 +252,25 @@ class Model:
                                     ('output/image', f'{ros_slot_prefix}/optical/depth')]))
         return [bridges, nodes, payload_launches]
 
-    def is_custom_payload(self, payload):
+    def is_custom_model(self, model):
+        if not model:
+            return False
         try:
-            get_package_share_directory(payload)
+            get_package_share_directory(model)
         except PackageNotFoundError:
             return False
         return True
+
+    def custom_model_launch(self, world_name, model_name, model):
+        custom_launch = None
+        path = os.path.join(
+            get_package_share_directory(model), 'launch')
+        if os.path.exists(path):
+            custom_launch = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([path, '/bridge.launch.py']),
+                launch_arguments={'world_name': world_name,
+                                  'model_name': model_name}.items())
+        return custom_launch
 
     def custom_payload_launch(self, world_name, model_name, payload, idx):
         payload_launch = None
@@ -314,7 +337,7 @@ class Model:
             if self.battery_capacity == 0:
                 raise RuntimeError('Battery Capacity is zero, was flight_time set?')
             command.append(f'capacity={self.battery_capacity}')
-            if self.hasValidGripper():
+            if self.has_valid_gripper():
                 command.append(f'gripper={self.gripper}')
 
         if self.model_type in USVS or self.model_type == 'static_arm':
@@ -322,14 +345,17 @@ class Model:
 
             # run erb for arm to attach the user specified gripper
             # and also for arm and gripper to generate unique topic names
-            if self.hasValidArm():
+            if self.has_valid_arm() or self.is_custom_model(self.arm):
                 command.append(f'arm={self.arm}')
                 command.append(f'arm_slot={self.arm_slot}')
+                arm_package = 'mbzirc_ign'
+                if self.is_custom_model(self.arm):
+                    arm_package = self.arm
                 arm_model_file = os.path.join(
-                    get_package_share_directory('mbzirc_ign'), 'models',
+                    get_package_share_directory(arm_package), 'models',
                     self.arm, 'model.sdf.erb')
                 arm_model_output_file = os.path.join(
-                    get_package_share_directory('mbzirc_ign'), 'models',
+                    get_package_share_directory(arm_package), 'models',
                     self.arm, 'model.sdf')
                 arm_command = ['erb']
 
@@ -356,7 +382,7 @@ class Model:
                     f.write(str_output)
                 # print(arm_command, str_output)
 
-        if self.hasValidGripper():
+        if self.has_valid_gripper():
             gripper_model_file = os.path.join(
                 get_package_share_directory('mbzirc_ign'), 'models',
                 self.gripper, 'model.sdf.erb')
@@ -365,7 +391,7 @@ class Model:
                 self.gripper, 'model.sdf')
             gripper_command = ['erb']
             topic_prefix = f'{self.model_name}'
-            if (self.isUSV()):
+            if (self.is_USV()):
                 topic_prefix += '/arm'
             gripper_command.append(f'topic_prefix={topic_prefix}')
             gripper_command.append(gripper_model_file)

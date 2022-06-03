@@ -74,12 +74,12 @@ def parse_from_cli(context, world_name):
         'slot0': {'sensor': arm_slot0_payload, 'rpy': arm_slot0_rpy},
     }
 
-    if model.isUAV():
+    if model.is_UAV():
         # take flight time in minutes
         flight_time = LaunchConfiguration('flightTime').perform(context)
 
         model.set_flight_time(flight_time)
-    elif model.isUSV():
+    elif model.is_USV():
         arm = LaunchConfiguration('arm').perform(context)
         arm_slot = LaunchConfiguration('arm_slot').perform(context)
 
