@@ -17,20 +17,55 @@
 
 #include <ignition/msgs/param_v.pb.h>
 
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <ignition/common/Profiler.hh>
 #include <ignition/plugin/Register.hh>
 #include <ignition/transport/Node.hh>
 #include <sdf/sdf.hh>
 
+#include "ignition/gazebo/components/Model.hh"
+#include "ignition/gazebo/components/ParentEntity.hh"
+#include "ignition/gazebo/components/Pose.hh"
 #include "ignition/gazebo/Link.hh"
 #include "ignition/gazebo/Model.hh"
+#include "ignition/gazebo/Util.hh"
 
 #include "RFRange.hh"
 
 using namespace ignition;
 using namespace gazebo;
 using namespace systems;
+
+//////////////////////////////////////////////////
+RFRangeSensor::RFRangeSensor()
+{
+  ignerr << "RFRangeSensor constructor" << std::endl;
+}
+
+//////////////////////////////////////////////////
+RFRangeSensor::~RFRangeSensor() = default;
+
+//////////////////////////////////////////////////
+void RFRangeSensor::Configure(const Entity &_entity,
+    const std::shared_ptr<const sdf::Element> &_sdf,
+    EntityComponentManager &_ecm,
+    EventManager &/*_eventMgr*/)
+{
+  auto entity = _ecm.CreateEntity();
+
+  _ecm.SetParentEntity(entity, _entity);
+  _ecm.CreateComponent(entity, RFRangeType());
+
+  ignition::math::Pose3d pose;
+  if (_ecm.EntityHasComponentType(_entity, gazebo::components::Model::typeId))
+  {
+    auto modelPose = _ecm.Component<gazebo::components::Pose>(_entity);
+    pose += modelPose->Data();
+    _ecm.CreateComponent(entity, gazebo::components::WorldPose(pose));
+  }
+}
 
 class ignition::gazebo::systems::RFRangePrivate
 {
@@ -54,6 +89,9 @@ class ignition::gazebo::systems::RFRangePrivate
 
   /// \brief System update period calculated from <update_rate>.
   public: std::chrono::steady_clock::duration updatePeriod{0};
+
+  /// \brief ToDO.
+  public: std::vector<ignition::gazebo::Entity> entityVector;
 };
 
 
@@ -105,10 +143,28 @@ void RFRange::PreUpdate(
 {
   IGN_PROFILE("RFRange::PreUpdate");
 
+  _ecm.EachNew<RFRangeType,
+               ignition::gazebo::components::WorldPose>(
+    [&](const ignition::gazebo::Entity &_entity,
+        const RFRangeType *_custom,
+        const ignition::gazebo::components::WorldPose *_pose)->bool
+      {
+        auto parentId = ignition::gazebo::topLevelModel(_entity, _ecm);
+
+        ignerr << "Parent: " << _ecm.ParentEntity(_entity) << std::endl;
+
+        // Keep track of this sensor.
+        this->dataPtr->entityVector.push_back(_ecm.ParentEntity(_entity));
+
+        ignerr << "New sensor detected at " << _pose->Data() << std::endl;
+
+        return true;
+      });
+
   if (_info.paused)
     return;
 
-  // Throttle update rate
+  // Throttle update rate.
   auto elapsed = _info.simTime - this->dataPtr->lastUpdateTime;
   if (elapsed > std::chrono::steady_clock::duration::zero() &&
       elapsed < this->dataPtr->updatePeriod)
@@ -116,6 +172,12 @@ void RFRange::PreUpdate(
     return;
   }
   this->dataPtr->lastUpdateTime = _info.simTime;
+
+  for (auto entityId : this->dataPtr->entityVector)
+  {
+    ignerr << "Sensor at [" << ignition::gazebo::worldPose(entityId, _ecm)
+           << "]" << std::endl;
+  }
 
   // Publish output.
   ignition::msgs::Param_V outputMsg;
@@ -145,3 +207,10 @@ IGNITION_ADD_PLUGIN(RFRange,
 
 IGNITION_ADD_PLUGIN_ALIAS(RFRange,
                           "ignition::gazebo::systems::RFRange")
+
+IGNITION_ADD_PLUGIN(RFRangeSensor,
+                    ignition::gazebo::System,
+                    RFRangeSensor::ISystemConfigure)
+
+IGNITION_ADD_PLUGIN_ALIAS(RFRangeSensor,
+                          "ignition::gazebo::systems::RFRangeSensor")

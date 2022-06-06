@@ -18,8 +18,18 @@
 #define RFRANGE_HH_
 
 #include <memory>
+#include <string>
+#include <ignition/gazebo/components/Component.hh>
+#include <ignition/gazebo/components/Factory.hh>
 #include <ignition/gazebo/System.hh>
-#include <sdf/sdf.hh>
+#include <ignition/plugin/Register.hh>
+#include <sdf/Element.hh>
+
+
+using RFRangeType =
+  ignition::gazebo::components::Component<ignition::gazebo::components::NoData,
+                                          class RFRangeTypeTag>;
+IGN_GAZEBO_REGISTER_COMPONENT("mbzirc_components.RFRangeType", RFRangeType)
 
 namespace ignition
 {
@@ -31,6 +41,24 @@ namespace systems
 {
   // Forward declaration
   class RFRangePrivate;
+
+  /// \brief ToDo.
+  class RFRangeSensor
+      : public System,
+        public ISystemConfigure
+  {
+    /// \brief Constructor.
+    public: RFRangeSensor();
+
+    /// \brief Destructor.
+    public: ~RFRangeSensor();
+
+    // Documentation inherited.
+    public: void Configure(const Entity &_entity,
+                           const std::shared_ptr<const sdf::Element> &_sdf,
+                           EntityComponentManager &_ecm,
+                           EventManager &_eventMgr) override;
+  };
 
   /// \brief ToDo.
   class RFRange
