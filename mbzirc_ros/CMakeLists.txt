@@ -5,6 +5,8 @@ project(mbzirc_ros)
 find_package(ament_cmake REQUIRED)
 
 find_package(geometry_msgs REQUIRED)
+find_package(ignition-math6 REQUIRED)
+set(IGN_MATH_VER ${ignition-math6_VERSION_MAJOR})
 find_package(ignition-msgs8 REQUIRED)
 find_package(ignition-transport11 REQUIRED)
 set(IGN_TRANSPORT_VER ${ignition-transport11_VERSION_MAJOR})
@@ -67,7 +69,7 @@ ament_target_dependencies(usv_bridge
   std_msgs
 )
 target_link_libraries(usv_bridge PUBLIC
-  ignition-math6::ignition-math6
+  ignition-math${IGN_MATH_VER}::ignition-math${IGN_MATH_VER}
 )
 
 # Resources
