@@ -53,7 +53,7 @@ def generate_launch_description():
         namespace='',
         package='rclcpp_components',
         executable='component_container',
-        composable_node_descriptions=composable_nodes 
+        composable_node_descriptions=composable_nodes
     )
 
     return LaunchDescription([container])
