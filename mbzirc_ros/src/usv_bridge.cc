@@ -50,13 +50,13 @@ class USVBridge : public rclcpp::Node
     // cmd thrust sub
     this->cmdThrustersSub =
        this->create_subscription<std_msgs::msg::Int16MultiArray>(
-       "cat/cmd_thrusters", 1,
+       "/cat/cmd_thrusters", 1,
        std::bind(&USVBridge::OnCmdThrusters, this, _1));
 
     // cmd pod sub
     this->cmdPodSub =
        this->create_subscription<std_msgs::msg::Int16MultiArray>(
-       "cat/cmd_pod", 1,
+       "/cat/cmd_pod", 1,
        std::bind(&USVBridge::OnCmdPod, this, _1));
   }
 
