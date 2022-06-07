@@ -35,53 +35,41 @@ class USVBridge : public rclcpp::Node
   /// \brief Constructor
   public: USVBridge() : Node("usv_bridge")
   {
-    this->declare_parameter<std::string>("model_name", "usv");
-    std::string name;
-    this->get_parameter("model_name", name);
-
     // cmd thrust pub
-    std::string leftCmdThrustTopic = "/" + name
-        + "/left/thrust/cmd_thrust";
-    std::string rightCmdThrustTopic = "/" + name
-        + "/right/thrust/cmd_thrust";
     this->leftCmdThrustPub = this->create_publisher<std_msgs::msg::Float64>(
-        leftCmdThrustTopic, 10);
+        "left/thrust/cmd_thrust", 10);
     this->rightCmdThrustPub = this->create_publisher<std_msgs::msg::Float64>(
-        rightCmdThrustTopic, 10);
+        "right/thrust/cmd_thrust", 10);
 
     // cmd pos pub
-    std::string leftCmdPosTopic = "/" + name
-        + "/left/thrust/joint/cmd_pos";
-    std::string rightCmdPosTopic = "/" + name
-        + "/right/thrust/joint/cmd_pos";
     this->leftCmdPosPub = this->create_publisher<std_msgs::msg::Float64>(
-        leftCmdPosTopic, 10);
+        "left/thrust/joint/cmd_pos", 10);
     this->rightCmdPosPub = this->create_publisher<std_msgs::msg::Float64>(
-        rightCmdPosTopic, 10);
+        "right/thrust/joint/cmd_pos", 10);
 
     // cmd thrust sub
     this->cmdThrustersSub =
        this->create_subscription<std_msgs::msg::Int16MultiArray>(
-       "/cat/cmd_thrusters", 1,
+       "cat/cmd_thrusters", 1,
        std::bind(&USVBridge::OnCmdThrusters, this, _1));
 
     // cmd pod sub
     this->cmdPodSub =
        this->create_subscription<std_msgs::msg::Int16MultiArray>(
-       "/cat/cmd_pod", 1,
+       "cat/cmd_pod", 1,
        std::bind(&USVBridge::OnCmdPod, this, _1));
   }
 
   /// \brief Callback when a thrust cmd is received
   /// \param[in] _msg Thrust cmd message
   private: void OnCmdThrusters(
-      const std::shared_ptr<std_msgs::msg::Int16MultiArray> _msg)
+      const std_msgs::msg::Int16MultiArray& _msg)
   {
     // there should only be 2 values
     //     index 0: left
     //     index 1: right
-    int16_t leftValue = _msg->data[0];
-    int16_t rightValue = _msg->data[1];
+    int16_t leftValue = _msg.data[0];
+    int16_t rightValue = _msg.data[1];
 
     // forward values to sim API
     std_msgs::msg::Float64 leftThrustMsg;
@@ -96,14 +84,14 @@ class USVBridge : public rclcpp::Node
   /// \brief Callback when a pod pos cmd is received
   /// \param[in] _msg Pod pos cmd message
   private: void OnCmdPod(
-      const std::shared_ptr<std_msgs::msg::Int16MultiArray> _msg)
+      const std_msgs::msg::Int16MultiArray& _msg)
   {
     // there should only be 2 values
     //     index 0: left
     //     index 1: right
     // values are expressed in hundreds of degrees
-    int16_t leftValue = _msg->data[0];
-    int16_t rightValue = _msg->data[1];
+    int16_t leftValue = _msg.data[0];
+    int16_t rightValue = _msg.data[1];
 
     // convert to sim frame
     // -90 deg in hw = 0 in sim
