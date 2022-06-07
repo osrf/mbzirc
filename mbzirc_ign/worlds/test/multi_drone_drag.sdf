@@ -100,16 +100,50 @@ ros2 run mbzirc_ign multi_uav_demo.py
     <include>
       <static>true</static>
       <name>Vessel F</name>
-      <pose>0 0 0 0 0.0 0.0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel F</uri>
     </include>
 
     <include>
-      <name>large_crate_g_duplicate</name>
-      <pose relative_to="Vessel F">1.8 0 1.4305 0 0 0.0</pose>
+      <name>large_crate_handles</name>
+      <pose relative_to="Vessel F">3.5 0 1.55 0 0 0.0</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
       </uri>
     </include>
+
+    <include>
+      <name>large_ammo_can_handles</name>
+      <pose relative_to="Vessel F">-5.37 0.6 1.8 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
+      </uri>
+    </include>
+
+    <include>
+      <name>large_grey_box_handles</name>
+      <pose relative_to="Vessel F">-5.37 -0.54 1.8 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box Handles
+      </uri>
+    </include>
+
+    <include>
+      <name>large_dry_box_handles_flat</name>
+      <pose relative_to="Vessel F">-0.46 0 3.8 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
+      </uri>
+    </include>
+
+    <!--
+    <include>
+      <name>large_crate_handles_flat</name>
+      <pose relative_to="Vessel F">-0.46 0.2 3.8 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
+      </uri>
+    </include>
+    -->
   </world>
 </sdf>
