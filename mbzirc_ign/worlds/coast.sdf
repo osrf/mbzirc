@@ -1206,7 +1206,7 @@
 
     <include>
       <name>small_dry_bag_handle_g</name>
-      <pose relative_to="Vessel G">-5.81 0.723 1.4855 0 0 -0.5</pose>
+      <pose relative_to="Vessel G">-5.81 0.723 1.4355 0 0 -0.5</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag Handle
       </uri>
