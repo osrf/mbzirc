@@ -40,7 +40,12 @@ def generate_launch_description():
                 'y_vel': -1.0,
                 'target_pressure': 101000.0
             }]
-        )
+        ),
+        ComposableNode(
+            package='mbzirc_seed',
+            plugin='mbzirc_seed::UsvController',
+            namespace='usv',
+        ),
     ]
 
     container = ComposableNodeContainer(

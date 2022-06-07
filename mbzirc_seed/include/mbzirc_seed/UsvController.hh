@@ -20,13 +20,36 @@
 
 #include <rclcpp/node.hpp>
 
+#include <sensor_msgs/msg/imu.hpp>
+#include <std_msgs/msg/float64.hpp>
+
 namespace mbzirc_seed
 {
 
 class UsvController : public rclcpp::Node
 {
 public:
+  /// \brief Constructor
   explicit UsvController(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+
+protected:
+  /// \brief Callback for when IMU messages are received
+  void onImu(const sensor_msgs::msg::Imu & msg);
+
+  /// \brief Callback for when periodic controller timer fires
+  void onControllerTimer();
+
+  /// Publishers
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr left_thrust_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr left_pos_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr right_thrust_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr right_pos_pub_;
+
+  /// Subscriptions
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
+
+  /// Timers
+  rclcpp::TimerBase::SharedPtr controller_timer_;
 };
 
 }  // namespace mbzirc_seed

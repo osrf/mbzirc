@@ -33,27 +33,46 @@ namespace mbzirc_seed
 class UavController : public rclcpp::Node
 {
 public:
+  /// \brief Constructor
   explicit UavController(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
-  void onAirPressure(const sensor_msgs::msg::FluidPressure & msg);
-  void onImu(const sensor_msgs::msg::Imu & msg);
-  void onMagneticField(const sensor_msgs::msg::MagneticField & msg);
-
-  void onTimer();
 
 protected:
+  /// \brief Callback for when air pressure messages are received
+  void onAirPressure(const sensor_msgs::msg::FluidPressure & msg);
+
+  /// \brief Callback for when IMU messages are received
+  void onImu(const sensor_msgs::msg::Imu & msg);
+
+  /// \brief Callback for when magnetic field messages are received
+  void onMagneticField(const sensor_msgs::msg::MagneticField & msg);
+
+  /// \brief Callback for when periodic controller timer fires
+  void onControllerTimer();
+
+  /// Publishers
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
 
+  /// Subscriptions
   rclcpp::Subscription<sensor_msgs::msg::FluidPressure>::SharedPtr air_pressure_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
   rclcpp::Subscription<sensor_msgs::msg::MagneticField>::SharedPtr magnetic_field_sub_;
 
+  /// Timers
   rclcpp::TimerBase::SharedPtr controller_timer_;
 
+  /// \brief target velocity in body x-frame
   double x_vel;
+
+  /// \brief target velocity in body y-frame
   double y_vel;
+
+  /// \brief latest measurement of air pressure (altitude)
   double currentPressure;
+
+  /// \brief target measurement of air pressure (altitude)
   double targetPressure;
 
+  /// \brief PID controller for altitude
   ignition::math::PID altitudeControl;
 };
 

@@ -23,6 +23,37 @@ namespace mbzirc_seed
 UsvController::UsvController(const rclcpp::NodeOptions & options)
 : rclcpp::Node("usv_controller", options)
 {
+  imu_sub_ = this->create_subscription<sensor_msgs::msg::Imu>(
+      "imu/data", rclcpp::QoS(10),
+      std::bind(&UsvController::onImu, this, std::placeholders::_1));
+
+  left_thrust_pub_ = this->create_publisher<std_msgs::msg::Float64>(
+      "left/thrust/cmd_thrust", rclcpp::QoS(10));
+  left_pos_pub_ = this->create_publisher<std_msgs::msg::Float64>(
+      "left/thrust/joint/cmd_pos", rclcpp::QoS(10));
+
+  right_thrust_pub_ = this->create_publisher<std_msgs::msg::Float64>(
+      "right/thrust/cmd_thrust", rclcpp::QoS(10));
+  right_pos_pub_ = this->create_publisher<std_msgs::msg::Float64>(
+      "right/thrust/joint/cmd_pos", rclcpp::QoS(10));
+
+
+  controller_timer_ = this->create_wall_timer(
+      std::chrono::milliseconds(100),
+      std::bind(&UsvController::onControllerTimer, this));
+}
+
+void UsvController::onImu(const sensor_msgs::msg::Imu & /*msg*/)
+{
+
+}
+
+void UsvController::onControllerTimer()
+{
+  std_msgs::msg::Float64 msg;
+  msg.data = 100.0;
+  left_thrust_pub_->publish(msg);
+  right_thrust_pub_->publish(msg);
 }
 
 }  // namespace mbzirc_seed

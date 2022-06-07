@@ -64,10 +64,10 @@ UavController::UavController(const rclcpp::NodeOptions & options)
 
   controller_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(100),
-      std::bind(&UavController::onTimer, this));
+      std::bind(&UavController::onControllerTimer, this));
 }
 
-void UavController::onTimer()
+void UavController::onControllerTimer()
 {
   auto error = currentPressure - targetPressure;
   auto command = altitudeControl.Update(-error, std::chrono::milliseconds(100));
