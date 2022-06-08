@@ -135,15 +135,5 @@ ros2 run mbzirc_ign multi_uav_demo.py
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
       </uri>
     </include>
-
-    <!--
-    <include>
-      <name>large_crate_handles_flat</name>
-      <pose relative_to="Vessel F">-0.46 0.2 3.8 0 0 0.0</pose>
-      <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
-      </uri>
-    </include>
-    -->
   </world>
 </sdf>
