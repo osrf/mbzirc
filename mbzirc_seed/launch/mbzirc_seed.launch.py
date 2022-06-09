@@ -13,47 +13,82 @@
 # limitations under the License.
 
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.actions import OpaqueFunction
+from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
 
+from dataclasses import dataclass, field
 
-def generate_launch_description():
-    composable_nodes = [
-        ComposableNode(
-            package='mbzirc_seed',
-            plugin='mbzirc_seed::UavController',
-            namespace='quadrotor_1',
-            parameters=[{
-                'x_vel': 1.0,
-                'y_vel': 1.0,
-                'target_pressure': 101000.0
-            }]
-        ),
-        ComposableNode(
-            package='mbzirc_seed',
-            plugin='mbzirc_seed::UavController',
-            namespace='quadrotor_2',
-            parameters=[{
-                'x_vel': 1.0,
-                'y_vel': -1.0,
-                'target_pressure': 101000.0
-            }]
-        ),
-        ComposableNode(
-            package='mbzirc_seed',
-            plugin='mbzirc_seed::UsvController',
-            namespace='usv',
-        ),
-    ]
+@dataclass(frozen=True)
+class RobotConfig:
+    '''
+    Convenience representation of a robot configuration
+    '''
+    name: str
+    plugin: str
+    parameters: dict = field(default_factory=dict)
+
+    def node(self):
+        return ComposableNode(
+                package='mbzirc_seed',
+                plugin=f'mbzirc_seed::{self.plugin}',
+                namespace=self.name,
+                parameters=[self.parameters])
+
+
+# Enumerate all available robots
+# These should match the available platforms in the team config yaml
+ROBOTS = [
+    RobotConfig(
+        name='quadrotor_1',
+        plugin='UavController',
+        parameters={
+            'x_vel': 1.0,
+            'y_vel': 1.0,
+            'target_pressure': 101000.0
+        }
+    ),
+    RobotConfig(
+        name='quadrotor_2',
+        plugin='UavController',
+        parameters={
+            'x_vel': 1.0,
+            'y_vel': 1.0,
+            'target_pressure': 101000.0
+        }
+    ),
+    RobotConfig(
+        name='usv',
+        plugin='UsvController',
+    )
+]
+
+
+def launch(context, *args, **kwargs):
+    robot_name = LaunchConfiguration('robot_name').perform(context)
+
+    # If robot_name is empty, return all, otherwise match
+    nodes = filter(lambda r: robot_name == '' or r.name == robot_name, ROBOTS)
 
     container = ComposableNodeContainer(
-        name='uav_controllers',
+        name='controllers',
         namespace='',
         package='rclcpp_components',
         executable='component_container',
-        composable_node_descriptions=composable_nodes
+        composable_node_descriptions=[n.node() for n in nodes]
     )
+    return [container]
 
-    return LaunchDescription([container])
+def generate_launch_description():
+    return LaunchDescription([
+        # Launch Arguments
+        DeclareLaunchArgument(
+            'robot_name',
+            default_value='',
+            description='Robot name to launch'),
+        OpaqueFunction(function=launch),
+    ])
