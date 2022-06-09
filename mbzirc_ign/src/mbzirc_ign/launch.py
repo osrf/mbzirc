@@ -59,12 +59,15 @@ def competition_bridges():
     return nodes
 
 
-def spawn(sim_mode, world_name, models):
+def spawn(sim_mode, world_name, models, robot=None):
     if type(models) != list:
         models = [models]
 
     launch_processes = []
     for model in models:
+        if robot and model.model_name != robot:
+            continue
+
         # Script to insert model in running simulation
         if sim_mode == 'full' or sim_mode == 'sim':
             ignition_spawn_entity = Node(

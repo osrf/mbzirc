@@ -27,6 +27,7 @@ def launch(context, *args, **kwargs):
     world_name = LaunchConfiguration('world').perform(context)
     sim_mode = LaunchConfiguration('sim_mode').perform(context)
     bridge_competition_topics = LaunchConfiguration('bridge_competition_topics').perform(context)
+    robot = LaunchConfiguration('robot').perform(context)
 
     launch_processes = []
 
@@ -34,7 +35,7 @@ def launch(context, *args, **kwargs):
         models = Model.FromConfig(stream)
 
     launch_processes.extend(mbzirc_ign.launch.simulation(world_name))
-    launch_processes.extend(mbzirc_ign.launch.spawn(sim_mode, world_name, models))
+    launch_processes.extend(mbzirc_ign.launch.spawn(sim_mode, world_name, models, robot))
 
     if sim_mode == 'bridge' and bridge_competition_topics:
         launch_processes.extend(mbzirc_ign.launch.competition_bridges())
@@ -63,5 +64,10 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'config_file',
             description='YAML configuration file to spawn'),
+        DeclareLaunchArgument(
+            'robot',
+            default_value='',
+            description='Name of robot to spawn if specified. '
+                        'This must match one of the robots in the config_file'),
         OpaqueFunction(function=launch),
     ])
