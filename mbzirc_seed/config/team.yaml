@@ -4,6 +4,13 @@
   position:
     xyz: [-1462, -16.5, 0.3]
     rpy: [0, 0, 0]
+  arm_slot: '0'
+  arm: mbzirc_oberon7_arm
+  gripper: mbzirc_oberon7_gripper
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
 
 - model_name: 'quadrotor_1'
   model_type: 'mbzirc_quadrotor'
@@ -11,6 +18,10 @@
   position:
     xyz: [-1500, 2, 4.3]
     rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
 
 - model_name: 'quadrotor_2'
   model_type: 'mbzirc_quadrotor'
@@ -18,3 +29,8 @@
   position:
     xyz: [-1500, -2, 4.3]
     rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_vga_camera'
+      rpy: [0, 0, 0]
+
