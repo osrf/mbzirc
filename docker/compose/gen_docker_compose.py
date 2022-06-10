@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse
+import os
 import sys
 import yaml
 
@@ -25,8 +26,10 @@ def parse_args():
     parser = argparse.ArgumentParser('Team vehicle configuration.')
     parser.add_argument('--config', dest='config_file', type=str,
                         help='Set config file')
+    parser.add_argument('--image', dest='image', type=str,
+                        help='Set team solution image')
     parser.add_argument('--out', dest='out_file', type=str,
-                        help='Set output file')
+                        help='Set output docker compose yaml file')
     args = parser.parse_args()
     return args
 
@@ -34,10 +37,18 @@ def parse_args():
 def run_main():
     args = parse_args()
 
-    if not args.config_file:
-      print("Usage: python3 gen_docker_compose.py --config <config_file>")
+    if not args.config_file or not args.image:
+      print("Usage: python3 gen_docker_compose.py --config <config_file>"
+            " --image <solution_image>")
       sys.exit(1)
 
+    # symlink config file to this directory, which gets mounted onto the docker container
+    config_filename = 'config.yaml'
+    if os.path.exists(config_filename):
+        os.remove('config.yaml')
+    os.symlink(args.config_file, config_filename)
+
+    # parse the config yaml file to get vehicle names
     config_dict = None
     with open(args.config_file, "r") as stream:
         try:
@@ -49,7 +60,7 @@ def run_main():
     services:
       sim:
         image: cloudsim_sim
-        command: world:=coast config_file:=/home/developer/config/{{ config_file }} sim_mode:=sim
+        command: world:=coast config_file:=/home/developer/config/config.yaml sim_mode:=sim
         networks:
           sim_net:
             ipv4_address: 172.28.1.1
@@ -72,7 +83,7 @@ def run_main():
       {% for robot in config_dict -%}
       bridge{{ loop.index }}:
         image: cloudsim_bridge
-        command: world:=coast config_file:=/home/developer/config/{{ config_file }} sim_mode:=bridge robot:={{ robot["model_name"] }}
+        command: world:=coast config_file:=/home/developer/config/config.yaml sim_mode:=bridge robot:={{ robot["model_name"] }}
         networks:
           relay_net{{ loop.index }}:
             ipv4_address: 172.{{29 + loop.index - 1 }}.1.1
@@ -87,7 +98,7 @@ def run_main():
         depends_on:
           - "sim"
       solution{{ loop.index }}:
-        image: mbzirc_sim
+        image: {{ image }}
         stdin_open: true
         tty: true
         networks:
@@ -105,10 +116,9 @@ def run_main():
           driver: default
           config:
             - subnet: 172.28.0.0/16
-
       {% for robot in config_dict -%}
       relay_net{{ loop.index }}:
-        internal: true
+        # internal: true
         ipam:
           driver: default
           config:
@@ -116,7 +126,8 @@ def run_main():
       {% endfor %}
     """
 
-    data = { "config_file": args.config_file, "config_dict": config_dict }
+    data = { "image": args.image,
+             "config_dict": config_dict }
     j2_template = Template(template)
     out = j2_template.render(data)
     out_name = 'mbzirc_compose.yaml'
