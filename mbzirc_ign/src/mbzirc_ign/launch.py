@@ -26,7 +26,6 @@ from launch_ros.actions import PushRosNamespace
 import mbzirc_ign.bridges
 
 import os
-import shutil
 
 
 def simulation(world_name):

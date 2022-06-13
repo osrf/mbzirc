@@ -394,7 +394,8 @@ class Model:
         if self.has_valid_gripper():
             gripper_model_file = os.path.join(model_dir, self.gripper, 'model.sdf.erb')
             gripper_model_output_file = os.path.join(model_tmp_dir,
-                self.gripper + "_" + self.model_name, 'model.sdf')
+                                                     self.gripper + "_" + self.model_name,
+                                                     'model.sdf')
             gripper_command = ['erb']
             topic_prefix = f'{self.model_name}'
             if (self.is_USV()):
