@@ -25,6 +25,8 @@ from launch_ros.actions import Node
 
 import mbzirc_ign.bridges
 import mbzirc_ign.payload_bridges
+import pathlib
+import shutil
 
 import yaml
 
@@ -324,6 +326,9 @@ class Model:
             get_package_share_directory('mbzirc_ign'),
             'models', self.model_type, 'model.sdf.erb')
 
+        model_dir = os.path.join(get_package_share_directory('mbzirc_ign'), 'models')
+        model_tmp_dir = os.path.join(model_dir, 'tmp')
+
         command = ['erb']
         command.append(f'name={self.model_name}')
 
@@ -342,7 +347,7 @@ class Model:
                 raise RuntimeError('Battery Capacity is zero, was flight_time set?')
             command.append(f'capacity={self.battery_capacity}')
             if self.has_valid_gripper():
-                command.append(f'gripper={self.gripper}')
+                command.append(f'gripper={self.gripper}_{self.model_name}')
 
         if self.model_type in USVS or self.model_type == 'static_arm':
             command.append(f'wavefieldSize={self.wavefield_size}')
@@ -364,7 +369,7 @@ class Model:
                 arm_command = ['erb']
 
                 if self.gripper:
-                    arm_command.append(f'gripper={self.gripper}')
+                    arm_command.append(f'gripper={self.gripper}_{self.model_name}')
 
                 # arm payloads
                 for (slot, payload) in self.arm_payload.items():
@@ -387,18 +392,19 @@ class Model:
                 # print(arm_command, str_output)
 
         if self.has_valid_gripper():
-            gripper_model_file = os.path.join(
-                get_package_share_directory('mbzirc_ign'), 'models',
-                self.gripper, 'model.sdf.erb')
-            gripper_model_output_file = os.path.join(
-                get_package_share_directory('mbzirc_ign'), 'models',
-                self.gripper, 'model.sdf')
+            gripper_model_file = os.path.join(model_dir, self.gripper, 'model.sdf.erb')
+            gripper_model_output_file = os.path.join(model_tmp_dir,
+                self.gripper + "_" + self.model_name, 'model.sdf')
             gripper_command = ['erb']
             topic_prefix = f'{self.model_name}'
             if (self.is_USV()):
                 topic_prefix += '/arm'
             gripper_command.append(f'topic_prefix={topic_prefix}')
             gripper_command.append(gripper_model_file)
+            output_dir = os.path.dirname(gripper_model_output_file)
+            pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(os.path.join(os.path.dirname(gripper_model_file), 'model.config'),
+                            os.path.join(output_dir, 'model.config'))
             process = subprocess.Popen(gripper_command, stdout=subprocess.PIPE)
             stdout = process.communicate()[0]
             str_output = codecs.getdecoder('unicode_escape')(stdout)[0]
