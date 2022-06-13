@@ -1,0 +1,107 @@
+<?xml version="1.0" ?>
+
+<sdf version="1.9">
+  <world name="simple_demo">
+
+    <physics name="4ms" type="dart">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin
+      filename="ignition-gazebo-physics-system"
+      name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-user-commands-system"
+      name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-sensors-system"
+      name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-forcetorque-system"
+      name="ignition::gazebo::systems::ForceTorque">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-scene-broadcaster-system"
+      name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-contact-system"
+      name="ignition::gazebo::systems::Contact">
+    </plugin>
+
+    <scene>
+      <sky></sky>
+      <grid>false</grid>
+      <ambient>1.0 1.0 1.0</ambient>
+      <background>0.8 0.8 0.8</background>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_platform">
+      <static>true</static>
+      <pose>0 0 -0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>20 20 3</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>20 20 3</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+              <pbr>
+                  <metal>
+                      <albedo_map>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Cave Straight Type A/tip/files/materials/textures/Gravel_Albedo.jpg</albedo_map>
+                      <normal_map>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Cave Straight Type A/tip/files/materials/textures/Gravel_Normal.jpg</normal_map>
+                      <roughness_map>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Cave Straight Type A/tip/files/materials/textures/Gravel_Roughness.jpg</roughness_map>
+                  </metal>
+              </pbr>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <include>
+      <pose>0 0 0 0 0 0</pose>
+      <uri>
+        waves
+      </uri>
+    </include>
+
+    <include>
+      <name>small_blue_box_a_test</name>
+      <pose>1 -0.1 1.25 -1.57079 0 0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+    </include>
+
+  </world>
+</sdf>
