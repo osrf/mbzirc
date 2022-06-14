@@ -99,8 +99,10 @@ def run_main():
           - "sim"
       solution{{ loop.index }}:
         image: {{ image }}
-        stdin_open: true
-        tty: true
+        command: robot_name:={{ robot["model_name"] }}
+        # uncommment to enable interactive shell
+        # stdin_open: true
+        # tty: true
         networks:
           relay_net{{ loop.index }}:
             ipv4_address: 172.{{ 29 + loop.index - 1 }}.1.2
