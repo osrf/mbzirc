@@ -25,7 +25,6 @@
 #include <ignition/plugin/Register.hh>
 #include <sdf/Element.hh>
 
-
 using RFRangeType =
   ignition::gazebo::components::Component<ignition::gazebo::components::NoData,
                                           class RFRangeTypeTag>;
@@ -80,8 +79,8 @@ namespace systems
 
     // Documentation inherited.
     public: void PreUpdate(
-                const ignition::gazebo::UpdateInfo &_info,
-                ignition::gazebo::EntityComponentManager &_ecm) override;
+                const gazebo::UpdateInfo &_info,
+                gazebo::EntityComponentManager &_ecm) override;
 
     /// \brief Private data pointer.
     private: std::unique_ptr<RFRangePrivate> dataPtr;
