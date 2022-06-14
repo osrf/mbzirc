@@ -67,6 +67,7 @@ TEST_F(MBZIRCTestFixture, CompetitorDetector)
     {"y", "2"},
     {"z", "0.05"},
     {"flightTime", "10"},
+    {"flightTime", "10"},
     {"slot0", "mbzirc_vga_camera"},
     {"slot1", "mbzirc_hd_camera"},
     {"slot2", "mbzirc_planar_lidar"},
@@ -82,5 +83,4 @@ TEST_F(MBZIRCTestFixture, CompetitorDetector)
   EXPECT_EQ(1, model_count);
 
   StopLaunchFile(launchHandle1);
-
 }

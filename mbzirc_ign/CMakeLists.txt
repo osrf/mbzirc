@@ -47,6 +47,7 @@ install(
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
   BaseStation
+  CompetitionAuditPlugin
   CompetitorPlatformDetector
   FixedWingController
   GameLogicPlugin
