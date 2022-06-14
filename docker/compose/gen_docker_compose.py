@@ -16,6 +16,7 @@
 
 import argparse
 import os
+import shutil
 import sys
 import yaml
 
@@ -46,7 +47,7 @@ def run_main():
     config_filename = 'config.yaml'
     if os.path.exists(config_filename):
         os.remove('config.yaml')
-    os.symlink(args.config_file, config_filename)
+    shutil.copyfile(args.config_file, config_filename)
 
     # parse the config yaml file to get vehicle names
     config_dict = None
@@ -57,6 +58,7 @@ def run_main():
             print(ex)
 
     template = """
+    version: '2.4'
     services:
       sim:
         image: cloudsim_sim
@@ -92,7 +94,7 @@ def run_main():
         environment:
           - IGN_PARTITION=sim
           - IGN_IP=172.28.1.{{ loop.index + 1 }}
-          - ROS_DOMAIN_ID={{ loop.index - 1 }}
+          # - ROS_DOMAIN_ID={{ loop.index - 1 }}
         volumes:
           - "./:/home/developer/config/"
         depends_on:
@@ -107,8 +109,8 @@ def run_main():
           relay_net{{ loop.index }}:
             ipv4_address: 172.{{ 29 + loop.index - 1 }}.1.2
         runtime: nvidia
-        environment:
-          - ROS_DOMAIN_ID={{ loop.index - 1 }}
+        # environment:
+        #   - ROS_DOMAIN_ID={{ loop.index - 1 }}
         depends_on:
           - "bridge{{ loop.index }}"
       {% endfor %}
@@ -120,7 +122,7 @@ def run_main():
             - subnet: 172.28.0.0/16
       {% for robot in config_dict -%}
       relay_net{{ loop.index }}:
-        # internal: true
+        internal: true
         ipam:
           driver: default
           config:
