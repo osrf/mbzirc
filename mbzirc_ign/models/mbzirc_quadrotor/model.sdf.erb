@@ -11,10 +11,10 @@ end
 
 $attitude_gain = '2 3 0.15'
 $motor_constant = '8.54858e-06'
-if $gripper_model == 'mbzirc_oberon7_gripper'
+if $gripper_model.include?('mbzirc_oberon7_gripper')
   $attitude_gain = '10 10 0.15'
   $motor_constant = '3.95e-05'
-elsif $gripper_model == 'mbzirc_suction_gripper'
+elsif $gripper_model.include?('mbzirc_suction_gripper')
   $attitude_gain = '10 10 0.15'
   $motor_constant = '2.52e-05'
 end
