@@ -33,7 +33,7 @@ def parse_args():
                         help='Set output docker compose yaml file')
     parser.add_argument('--world', dest='world', type=str, default='coast',
                         help='Name of world')
-    parser.add_argument('--headless', dest='headless', type=bool, default='False',
+    parser.add_argument('--headless', dest='headless', type=int, default=0,
                         help='True to run simulation headless (no GUI)')
     args = parser.parse_args()
     return args
@@ -140,7 +140,7 @@ def run_main():
     data = { "image": args.image,
              "config_dict": config_dict,
              "world": args.world,
-             "headless": args.headless,
+             "headless": 'True' if args.headless else 'False',
              "world": args.world}
     j2_template = Template(template)
     out = j2_template.render(data)
