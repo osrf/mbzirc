@@ -35,10 +35,10 @@ def launch(context, *args, **kwargs):
     with open(config_file, 'r') as stream:
         models = Model.FromConfig(stream)
 
-    launch_processes.extend(mbzirc_ign.launch.simulation(world_name, headless))
+    launch_processes.extend(mbzirc_ign.launch.simulation(world_name, headless == 'True'))
     launch_processes.extend(mbzirc_ign.launch.spawn(sim_mode, world_name, models, robot))
 
-    if sim_mode == 'bridge' and bridge_competition_topics:
+    if sim_mode == 'bridge' and bridge_competition_topics == 'True':
         launch_processes.extend(mbzirc_ign.launch.competition_bridges())
 
     return launch_processes

@@ -106,7 +106,7 @@ def launch(context, *args, **kwargs):
     launch_processes = []
 
     launch_processes.extend(mbzirc_ign.launch.spawn(sim_mode, world_name, model))
-    if sim_mode == 'bridge' and bridge_competition_topics:
+    if sim_mode == 'bridge' and bridge_competition_topics == 'True':
         launch_processes.extend(mbzirc_ign.launch.competition_bridges())
 
     return launch_processes
