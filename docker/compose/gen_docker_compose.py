@@ -31,6 +31,10 @@ def parse_args():
                         help='Set team solution image')
     parser.add_argument('--out', dest='out_file', type=str,
                         help='Set output docker compose yaml file')
+    parser.add_argument('--world', dest='world', type=str, default='coast',
+                        help='Name of world')
+    parser.add_argument('--headless', dest='headless', type=bool, default='False',
+                        help='True to run simulation headless (no GUI)')
     args = parser.parse_args()
     return args
 
@@ -62,7 +66,7 @@ def run_main():
     services:
       sim:
         image: cloudsim_sim
-        command: world:=coast config_file:=/home/developer/config/config.yaml sim_mode:=sim
+        command: world:={{ world }} config_file:=/home/developer/config/config.yaml sim_mode:=sim headless:={{ headless }}
         networks:
           sim_net:
             ipv4_address: 172.28.1.1
@@ -87,7 +91,7 @@ def run_main():
       {% for robot in config_dict -%}
       bridge{{ loop.index }}:
         image: cloudsim_bridge
-        command: world:=coast config_file:=/home/developer/config/config.yaml sim_mode:=bridge robot:={{ robot["model_name"] }}
+        command: world:={{ world }} config_file:=/home/developer/config/config.yaml sim_mode:=bridge robot:={{ robot["model_name"] }}
         networks:
           relay_net{{ loop.index }}:
             ipv4_address: 172.{{29 + loop.index - 1 }}.1.1
@@ -134,7 +138,10 @@ def run_main():
     """
 
     data = { "image": args.image,
-             "config_dict": config_dict }
+             "config_dict": config_dict,
+             "world": args.world,
+             "headless": args.headless,
+             "world": args.world}
     j2_template = Template(template)
     out = j2_template.render(data)
     out_name = 'mbzirc_compose.yaml'

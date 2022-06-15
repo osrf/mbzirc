@@ -28,8 +28,10 @@ import mbzirc_ign.bridges
 import os
 
 
-def simulation(world_name):
+def simulation(world_name, headless=False):
     ign_args = ['-v 4', '-r']
+    if headless:
+        ign_args.append('-s')
     ign_args.append(f'{world_name}.sdf')
 
     ign_gazebo = IncludeLaunchDescription(
