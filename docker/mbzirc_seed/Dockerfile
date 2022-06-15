@@ -98,7 +98,7 @@ RUN sudo apt-get update \
 
 # build mbzirc_seed
 RUN /bin/bash -c 'source /opt/ros/galactic/setup.bash \
-  && colcon build --merge-install ros_ign_interfaces mbzirc_seed'
+  && colcon build --merge-install --packages-select ros_ign_interfaces mbzirc_seed'
 
 RUN /bin/sh -c 'echo ". /opt/ros/galactic/setup.bash" >> ~/.bashrc' \
  && /bin/sh -c 'echo ". ~/mbzirc_ws/install/setup.sh" >> ~/.bashrc'

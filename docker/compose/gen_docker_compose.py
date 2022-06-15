@@ -72,6 +72,8 @@ def run_main():
           - XAUTHORITY=/tmp/.docker.xauth
           - IGN_PARTITION=sim
           - IGN_IP=172.28.1.1
+          - ROS_LOCALHOST_ONLY=1
+          - ROS_DOMAIN_ID=99
         privileged: true
         runtime: nvidia
         security_opt:
@@ -94,14 +96,15 @@ def run_main():
         environment:
           - IGN_PARTITION=sim
           - IGN_IP=172.28.1.{{ loop.index + 1 }}
-          # - ROS_DOMAIN_ID={{ loop.index - 1 }}
+          - ROS_DOMAIN_ID={{ loop.index }}
+          - CYCLONEDDS_URI=file:///home/developer/config/cyclonedds.xml
         volumes:
           - "./:/home/developer/config/"
         depends_on:
           - "sim"
       solution{{ loop.index }}:
         image: {{ image }}
-        command: robot_name:={{ robot["model_name"] }}
+        command: {{ robot["model_name"] }}
         # uncommment to enable interactive shell
         # stdin_open: true
         # tty: true
@@ -109,8 +112,8 @@ def run_main():
           relay_net{{ loop.index }}:
             ipv4_address: 172.{{ 29 + loop.index - 1 }}.1.2
         runtime: nvidia
-        # environment:
-        #   - ROS_DOMAIN_ID={{ loop.index - 1 }}
+        environment:
+          - ROS_DOMAIN_ID={{ loop.index }}
         depends_on:
           - "bridge{{ loop.index }}"
       {% endfor %}
@@ -122,7 +125,7 @@ def run_main():
             - subnet: 172.28.0.0/16
       {% for robot in config_dict -%}
       relay_net{{ loop.index }}:
-        internal: true
+        # internal: true
         ipam:
           driver: default
           config:
