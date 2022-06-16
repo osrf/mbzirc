@@ -17,3 +17,15 @@ payload:
   slot3:
     sensor: 'None'
     rpy: [0, 0, 0]
+  slot4:
+    sensor: 'mbzirc_hd_camera'
+    rpy: [0, 45, 0]
+  slot5:
+    sensor: 'mbzirc_hd_camera'
+    rpy: [0, -45, 0]
+  slot6:
+    sensor: 'mbzirc_vga_camera'
+    rpy: [0, 0, 45]
+  slot7:
+    sensor: 'mbzirc_vga_camera'
+    rpy: [0, 0, -45]

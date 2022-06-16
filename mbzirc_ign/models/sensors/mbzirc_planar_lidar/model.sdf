@@ -8,9 +8,9 @@
                     <ixx>8.33e-06</ixx>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
-                    <iyy>8.33e-03</iyy>
+                    <iyy>8.33e-06</iyy>
                     <iyz>0</iyz>
-                    <izz>8.33e-03</izz>
+                    <izz>8.33e-06</izz>
                 </inertia>
             </inertial>
             <sensor name="lidar" type="gpu_ray">
@@ -34,6 +34,7 @@
                         <mean>0</mean>
                         <stddev>0.01</stddev>
                     </noise>
+                    <visibility_mask>55</visibility_mask>
                 </lidar>
             </sensor>
         </link>

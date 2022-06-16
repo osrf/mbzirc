@@ -20,6 +20,7 @@
       filename="ignition-gazebo-sensors-system"
       name="ignition::gazebo::systems::Sensors">
       <render_engine>ogre2</render_engine>
+      <disable_on_drained_battery>true</disable_on_drained_battery>
     </plugin>
     <plugin
       filename="ignition-gazebo-air-pressure-system"
@@ -64,7 +65,7 @@
       </range_config>
       <radio_config>
         <capacity>1000000</capacity>
-        <tx_power>20</tx_power>
+        <tx_power>25</tx_power>
         <noise_floor>-90</noise_floor>
         <modulation>QPSK</modulation>
       </radio_config>
@@ -249,14 +250,14 @@
         <yDotV>0.0</yDotV>
         <nDotR>0.0</nDotR>
         <!-- Linear and quadratic drag -->
-        <xU>51.3</xU>
-        <xUU>72.4</xUU>
-        <yV>40.0</yV>
+        <xU>510.3</xU>
+        <xUU>720.4</xUU>
+        <yV>400.0</yV>
         <yVV>0.0</yVV>
-        <zW>500.0</zW>
-        <kP>50.0</kP>
-        <mQ>50.0</mQ>
-        <nR>400.0</nR>
+        <zW>5000.0</zW>
+        <kP>500.0</kP>
+        <mQ>500.0</mQ>
+        <nR>15000.0</nR>
         <nRR>0.0</nRR>
       </plugin>
     </include>

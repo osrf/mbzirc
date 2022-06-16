@@ -33,6 +33,7 @@
             </wave>
           </wavefield>
         </plugin>
+        <visibility_flags>8</visibility_flags>
       </visual>
     </link>
   </model>

@@ -127,7 +127,7 @@ TEST(RosApiTest, SimTopics)
   // run_clock
   MyTestClass<rosgraph_msgs::msg::Clock> runClock("/mbzirc/run_clock");
   waitUntilBoolVarAndSpin(
-    node, runClock.callbackExecuted, 10ms, 500);
+    node, runClock.callbackExecuted, 10ms, 3500);
   EXPECT_TRUE(runClock.callbackExecuted);
 }
 
@@ -296,28 +296,28 @@ TEST(RosApiTest, ArmTopics)
 
   // image_raw
   MyTestClass<sensor_msgs::msg::Image> image(
-      "/usv/arm/wrist/image_raw");
+      "/usv/arm/slot0/image_raw");
   waitUntilBoolVarAndSpin(
     node, image.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(image.callbackExecuted);
 
   // camera_info
   MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfo(
-      "/usv/arm/wrist/camera_info");
+      "/usv/arm/slot0/camera_info");
   waitUntilBoolVarAndSpin(
     node, cameraInfo.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(cameraInfo.callbackExecuted);
 
   // optical image
   MyTestClass<sensor_msgs::msg::Image> imageOptical(
-      "/usv/arm/wrist/optical/image_raw");
+      "/usv/arm/slot0/optical/image_raw");
   waitUntilBoolVarAndSpin(
     node, imageOptical.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(imageOptical.callbackExecuted);
 
   // optical camera_info
   MyTestClass<sensor_msgs::msg::CameraInfo> cameraInfoOptical(
-      "/usv/arm/wrist/optical/camera_info");
+      "/usv/arm/slot0/optical/camera_info");
   waitUntilBoolVarAndSpin(
     node, cameraInfoOptical.callbackExecuted, 10ms, 500);
   EXPECT_TRUE(cameraInfoOptical.callbackExecuted);
