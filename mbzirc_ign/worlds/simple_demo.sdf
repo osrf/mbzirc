@@ -82,10 +82,8 @@
         <rssi_1>-15</rssi_1>
       </range_config>
       <radio_config>
-        <capacity>1000000</capacity>
         <tx_power>25</tx_power>
         <noise_floor>-90</noise_floor>
-        <modulation>QPSK</modulation>
       </radio_config>
     </plugin>
 

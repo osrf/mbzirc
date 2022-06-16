@@ -76,17 +76,11 @@ struct RangeConfiguration
 
 /// \brief Radio configuration parameters.
 ///
-/// Static parameters such as channel capacity and transmit power.
+/// Static parameters such as transmit power.
 struct RadioConfiguration
 {
-  /// \brief Capacity of radio in bits-per-second.
-  double capacity = 54000000;
-
   /// \brief Default transmit power in dBm. Default is 27dBm or 500mW.
   double txPower = 27;
-
-  /// \brief Modulation scheme, e.g., QPSK (Quadrature Phase Shift Keyring).
-  std::string modulation = "QPSK";
 
   /// \brief Noise floor of the radio in dBm.
   double noiseFloor = -90;
@@ -98,10 +92,8 @@ struct RadioConfiguration
                                   const RadioConfiguration &_config)
   {
     _oss << "Radio Configuration" << std::endl
-         << "-- capacity: " << _config.capacity << std::endl
          << "-- tx_power: " << _config.txPower << std::endl
-         << "-- noise_floor: " << _config.noiseFloor << std::endl
-         << "-- modulation: " << _config.modulation << std::endl;
+         << "-- noise_floor: " << _config.noiseFloor << std::endl;
 
     return _oss;
   }
@@ -153,37 +145,52 @@ void RFRangeSensor::Configure(const Entity &_entity,
   }
 }
 
-/// \brief ToDo.
+/// \brief Private RFRange data class.
 class gazebo::systems::RFRangePrivate
 {
-  /// \brief ToDo.
+  /// \brief Data associated to each RF Range sensor.
   public: struct RFRangeData
   {
-    /// \brief Sensor name.
+    /// \brief Name of the model attached to the sensor (unscoped).
     public: std::string name;
 
-    /// \brief Sensor pose.
+    /// \brief Pose of the model attached to the sensor.
     public: math::Pose3d pose;
 
     /// \brief An Ignition Transport publisher.
     public: transport::Node::Publisher pub;
   };
 
-  /// \brief ToDo.
+  /// \brief Configure the sensor via SDF.
+  /// \param[in] _sdf The SDF Element associated with the sensor parameters.
   public: void Load(std::shared_ptr<const sdf::Element> _sdf);
 
-  /// \brief ToDo.
+  /// \brief Convert from dBm to power.
+  /// \param[in] _dBm Input in dBm.
+  /// \return Power in watts (W).
   public: double DbmToPow(double _dBm) const;
 
-  /// \brief ToDo.
-  public: double QPSKPowerToBER(double _power, double _noise) const;
+  /// \brief Compute the bit error rate (BER).
+  /// \param[in] _power Rx power (dBm).
+  /// \param[in] _noise Noise value (dBm).
+  /// \return Based on rx_power, noise value, and modulation, compute the bit
+  // error rate (BER).
+  public: double QPSKPowerToBER(double _power,
+                                double _noise) const;
 
-  /// \brief ToDo.
+  /// \brief Function to compute the pathloss between two antenna poses.
+  /// \param[in] _txPower Tx power.
+  /// \param[in] _txPos Position of the transmitter.
+  /// \param[in] _rxPos Position of the receiver.
+  /// \return The RFPower pathloss distribution of the two antenna poses.
   public: RFPower LogNormalReceivedPower(const double &_txPower,
-    const math::Vector3d &_txPos, const math::Vector3d &_rxPos) const;
+                                         const math::Vector3d &_txPos,
+                                         const math::Vector3d &_rxPos) const;
 
-  /// \brief ToDo.
-  public: double RSSIToRange(double rssi) const;
+  /// \brief Compute a range given a received rssi.
+  /// \param[in] _rssi RSSI received.
+  /// \return The range.
+  public: double RSSIToRange(double _rssi) const;
 
   /// \brief Attempt communication between two nodes.
   ///
@@ -193,8 +200,8 @@ class gazebo::systems::RFRangePrivate
   /// limitations). This probability is then used to determine if the
   /// packet is successfully communicated.
   ///
-  /// \param[in out] _txState Current state of the transmitter.
-  /// \param[in out] _rxState Current state of the receiver.
+  /// \param[in out] _txPos Current position of the transmitter.
+  /// \param[in out] _rxPos Current position of the receiver.
   /// \param[in] _numBytes Size of the packet.
   /// \return std::tuple<bool, double> reporting if the packet should be
   /// delivered and the received signal strength (in dBm).
@@ -202,10 +209,15 @@ class gazebo::systems::RFRangePrivate
                                                math::Vector3d &_rxPos,
                                                const uint64_t &_numBytes);
 
-  /// \brief ToDo.
+  /// \brief Update the poses of all the registered RF sensors.
+  /// \param[in] _ecm Entity Component Manager.
   public: void UpdateSensorPoses(gazebo::EntityComponentManager &_ecm);
 
-  /// \brief Todo.
+  /// \brief Helper class to remove all the scope of a name leaving just
+  /// the leaf.
+  /// \param[in] _name Scoped name.
+  /// \param[in] _delim Delimiter.
+  /// \return The unscoped name.
   public: std::string RemoveAllScope(const std::string &_name,
                                      const std::string &_delim);
 
@@ -218,7 +230,9 @@ class gazebo::systems::RFRangePrivate
   /// \brief System update period calculated from <update_rate>.
   public: std::chrono::steady_clock::duration updatePeriod{0};
 
-  /// \brief ToDO.
+  /// \brief The entity map associated to all the registered sensors in the
+  /// world. The key is the entity of the model attached to a sensor. The value
+  /// is a struct with fields such as pose, name, etc.
   public: std::map<gazebo::Entity, RFRangeData> entityMap;
 
   /// \brief Range configuration.
@@ -232,6 +246,9 @@ class gazebo::systems::RFRangePrivate
 
   /// \brief Random number generator.
   public: std::default_random_engine rndEngine{rd()};
+
+  /// \brief The size in bytes of the request sent between sensors.
+  public: static constexpr uint64_t kPayloadSize = 100;
 };
 
 //////////////////////////////////////////////////
@@ -262,15 +279,8 @@ void RFRangePrivate::Load(std::shared_ptr<const sdf::Element> _sdf)
   {
     sdf::ElementPtr elem = _sdf->Clone()->GetElement("radio_config");
 
-    this->radioConfig.capacity =
-      elem->Get<double>("capacity", this->radioConfig.capacity).first;
-
     this->radioConfig.txPower =
       elem->Get<double>("tx_power", this->radioConfig.txPower).first;
-
-    this->radioConfig.modulation =
-      elem->Get<std::string>("modulation",
-        this->radioConfig.modulation).first;
 
     this->radioConfig.noiseFloor =
       elem->Get<double>("noise_floor",
@@ -291,8 +301,7 @@ double RFRangePrivate::DbmToPow(double _dBm) const
 }
 
 ////////////////////////////////////////////
-double RFRangePrivate::QPSKPowerToBER(
-  double _power, double _noise) const
+double RFRangePrivate::QPSKPowerToBER(double _power, double _noise) const
 {
   return erfc(sqrt(_power / _noise));
 }
@@ -314,10 +323,11 @@ RFPower RFRangePrivate::LogNormalReceivedPower(
 }
 
 /////////////////////////////////////////////
-double RFRangePrivate::RSSIToRange(double rssi) const
+double RFRangePrivate::RSSIToRange(double _rssi) const
 {
   return std::pow(10,
-    (this->rangeConfig.rssi1 - rssi) / (10 * this->rangeConfig.fadingExponent));
+    (this->rangeConfig.rssi1 - _rssi) /
+    (10 * this->rangeConfig.fadingExponent));
 }
 
 /////////////////////////////////////////////
@@ -335,8 +345,7 @@ std::tuple<bool, double> RFRangePrivate::AttemptSend(
     rxPower = d(this->rndEngine);
   }
 
-  // Based on rx_power, noise value, and modulation, compute the bit
-  // error rate (BER).
+  // Based on rx_power, and noise value, compute the bit error rate (BER).
   double ber = this->QPSKPowerToBER(
     this->DbmToPow(rxPower), this->DbmToPow(this->radioConfig.noiseFloor));
 
@@ -391,7 +400,6 @@ std::string RFRangePrivate::RemoveAllScope(const std::string &_name,
 RFRange::RFRange()
   : dataPtr(std::make_unique<RFRangePrivate>())
 {
-  ignerr << "RFRange initialized" << std::endl;
 }
 
 //////////////////////////////////////////////////
@@ -468,7 +476,7 @@ void RFRange::PreUpdate(
         continue;
 
       auto [sendPacket, rssi] = this->dataPtr->AttemptSend(
-        dataFrom.pose.Pos(), dataTo.pose.Pos(), 100);
+        dataFrom.pose.Pos(), dataTo.pose.Pos(), this->dataPtr->kPayloadSize);
 
       if (!sendPacket)
         continue;

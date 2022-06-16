@@ -14,11 +14,10 @@
  * limitations under the License.
  *
  */
-#ifndef RFRANGE_HH_
-#define RFRANGE_HH_
+#ifndef MBZIRC_IGN_RFRANGE_HH_
+#define MBZIRC_IGN_RFRANGE_HH_
 
 #include <memory>
-#include <string>
 #include <ignition/gazebo/components/Component.hh>
 #include <ignition/gazebo/components/Factory.hh>
 #include <ignition/gazebo/System.hh>
@@ -38,10 +37,16 @@ namespace gazebo
 inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
 namespace systems
 {
-  // Forward declaration
+  // Forward declaration.
   class RFRangePrivate;
 
-  /// \brief ToDo.
+  /// \brief A model plugin used to simulate a RF range sensor.
+  ///
+  /// Here's an example:
+  /// <plugin
+  ///   filename="libRFRange.so"
+  ///   name="ignition::gazebo::systems::RFRangeSensor">
+  /// </plugin>
   class RFRangeSensor
       : public System,
         public ISystemConfigure
@@ -59,7 +64,52 @@ namespace systems
                            EventManager &_eventMgr) override;
   };
 
-  /// \brief ToDo.
+  /// \brief A world system used to compute the range between all pairs of
+  /// RFRange sensors. This plugin builds on the same principles used in the
+  /// RFComms system.
+  ///
+  /// \ref https://github.com/gazebosim/gz-sim/blob/ign-gazebo6/src/systems/rf_comms/RFComms.hh
+  ///
+  /// This system can be configured with the following SDF parameters:
+  ///
+  /// * Optional parameters:
+  /// <update_rate> Sensor update rate (Hz).
+  /// <range_config> Element used to capture the range configuration based on a
+  ///                log-normal distribution. This block can contain any of the
+  ///                next parameters:
+  ///    * <max_range>: Hard limit on range (meters). No communication will
+  ///                   happen beyond this range. Default is 50.
+  ///    * <fading_exponent>: Fading exponent used in the normal distribution.
+  ///                         Default is 2.5.
+  ///    * <l0>: Path loss at the reference distance (1 meter) in dBm.
+  ///            Default is 40.
+  ///    * <sigma>: Standard deviation of the normal distribution.
+  ///               Default is 10.
+  ///    * <rssi_1>: RSSI value measured at the reference distance (1 meter) in
+  ///                dBm.
+  ///
+  /// <radio_config> Element used to capture the radio configuration.
+  ///                This block can contain any of the next parameters:
+  ///    * <tx_power>: Transmitter power in dBm. Default is 27dBm (500mW).
+  ///    * <noise_floor>: Noise floor in dBm.  Default is -90dBm.
+  ///
+  /// Here's an example:
+  /// <plugin
+  ///   filename="libRFRange.so"
+  ///   name="ignition::gazebo::systems::RFRange">
+  ///   <update_rate>1</update_rate>
+  ///   <range_config>
+  ///     <max_range>500000.0</max_range>
+  ///     <fading_exponent>2.6</fading_exponent>
+  ///     <l0>40</l0>
+  ///     <sigma>10.0</sigma>
+  ///     <rssi_1>-15</rssi_1>
+  ///   </range_config>
+  ///   <radio_config>
+  ///     <tx_power>25</tx_power>
+  ///     <noise_floor>-90</noise_floor>
+  ///   </radio_config>
+  /// </plugin>
   class RFRange
       : public System,
         public ISystemConfigure,
