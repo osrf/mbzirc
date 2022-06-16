@@ -21,8 +21,6 @@ set(IGN_PLUGIN_VER ${ignition-plugin1_VERSION_MAJOR})
 find_package(ignition-rendering6 REQUIRED)
 set(IGN_RENDERING_VER ${ignition-rendering6_VERSION_MAJOR})
 find_package(sdformat12 REQUIRED)
-set(IGN_SENSORS_VER ${ignition-sensors6_VERSION_MAJOR})
-find_package(ignition-sensors6 REQUIRED)
 
 find_package(std_msgs REQUIRED)
 
@@ -65,7 +63,6 @@ foreach(PLUGIN ${MBZIRC_IGN_PLUGINS})
     ignition-gazebo${IGN_GAZEBO_VER}::core
     ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
     ignition-rendering${IGN_RENDERING_VER}::ignition-rendering${IGN_RENDERING_VER}
-    ignition-sensors${IGN_SENSORS_VER}::ignition-sensors${IGN_SENSORS_VER}
     Waves
   )
 endforeach()
