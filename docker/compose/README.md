@@ -30,7 +30,3 @@ Other optional args:
 * `--world <world_name>`: Name of the world to launch. Defaults to `coast`.
 * `--headless <headless>`: `1` or `0`. `1` (True) to launch simulation headless (no GUI). Defaults to `0`.
 * `--out <output_file_path>`: Path of output docker compose yaml file. Defaults to `mbzirc_compose.yaml`.
-
-
-
-
