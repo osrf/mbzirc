@@ -99,14 +99,15 @@ def parse_from_cli(context, world_name):
 def launch(context, *args, **kwargs):
     world_name = LaunchConfiguration('world').perform(context)
     sim_mode = LaunchConfiguration('sim_mode').perform(context)
-    bridge_competition_topics = LaunchConfiguration('bridge_competition_topics').perform(context)
+    bridge_competition_topics = LaunchConfiguration(
+        'bridge_competition_topics').perform(context).lower() == 'true'
 
     model = parse_from_cli(context, world_name)
 
     launch_processes = []
 
     launch_processes.extend(mbzirc_ign.launch.spawn(sim_mode, world_name, model))
-    if sim_mode == 'bridge' and bridge_competition_topics == 'True':
+    if sim_mode == 'bridge' and bridge_competition_topics:
         launch_processes.extend(mbzirc_ign.launch.competition_bridges())
 
     return launch_processes

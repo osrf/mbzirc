@@ -26,19 +26,20 @@ def launch(context, *args, **kwargs):
     config_file = LaunchConfiguration('config_file').perform(context)
     world_name = LaunchConfiguration('world').perform(context)
     sim_mode = LaunchConfiguration('sim_mode').perform(context)
-    bridge_competition_topics = LaunchConfiguration('bridge_competition_topics').perform(context)
+    bridge_competition_topics = LaunchConfiguration(
+        'bridge_competition_topics').perform(context).lower() == 'true'
     robot = LaunchConfiguration('robot').perform(context)
-    headless = LaunchConfiguration('headless').perform(context)
+    headless = LaunchConfiguration('headless').perform(context).lower() == 'true'
 
     launch_processes = []
 
     with open(config_file, 'r') as stream:
         models = Model.FromConfig(stream)
 
-    launch_processes.extend(mbzirc_ign.launch.simulation(world_name, headless == 'True'))
+    launch_processes.extend(mbzirc_ign.launch.simulation(world_name, headless))
     launch_processes.extend(mbzirc_ign.launch.spawn(sim_mode, world_name, models, robot))
 
-    if sim_mode == 'bridge' and bridge_competition_topics == 'True':
+    if sim_mode == 'bridge' and bridge_competition_topics:
         launch_processes.extend(mbzirc_ign.launch.competition_bridges())
 
     return launch_processes
