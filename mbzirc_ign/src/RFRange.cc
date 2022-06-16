@@ -119,7 +119,6 @@ struct RFPower
 //////////////////////////////////////////////////
 RFRangeSensor::RFRangeSensor()
 {
-  ignerr << "RFRangeSensor constructor" << std::endl;
 }
 
 //////////////////////////////////////////////////
@@ -287,10 +286,10 @@ void RFRangePrivate::Load(std::shared_ptr<const sdf::Element> _sdf)
         this->radioConfig.noiseFloor).first;
   }
 
-  ignerr << "RFRange sensor range configuration:" << std::endl
+  igndbg << "RFRange sensor range configuration:" << std::endl
          << this->rangeConfig << std::endl;
 
-  ignerr << "RFRange sensor radio configuration:" << std::endl
+  igndbg << "RFRange sensor radio configuration:" << std::endl
          << this->radioConfig << std::endl;
 }
 
