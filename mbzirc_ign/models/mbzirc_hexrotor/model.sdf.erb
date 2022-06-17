@@ -11,12 +11,14 @@ end
 
 $attitude_gain = '4 4 2'
 $motor_constant = '1.269e-05'
-if $gripper_model.include?('mbzirc_oberon7_gripper')
-  $attitude_gain = '25 25 2'
-  $motor_constant = '1.98e-05'
-elsif $gripper_model.include?('mbzirc_suction_gripper')
-  $attitude_gain = '25 25 2'
-  $motor_constant = '1.40e-05'
+if defined?($gripper_model)
+  if $gripper_model.include?('mbzirc_oberon7_gripper')
+    $attitude_gain = '25 25 2'
+    $motor_constant = '1.98e-05'
+  elsif $gripper_model.include?('mbzirc_suction_gripper')
+    $attitude_gain = '25 25 2'
+    $motor_constant = '1.40e-05'
+  end
 end
 
 $slot0_payload = nil
