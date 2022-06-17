@@ -402,10 +402,22 @@ class Model:
                 topic_prefix += '/arm'
             gripper_command.append(f'topic_prefix={topic_prefix}')
             gripper_command.append(gripper_model_file)
+
+            # create unique gripper model in mbzic_ign/models/tmp
+            # and symlink original model contents to new dir
             output_dir = os.path.dirname(gripper_model_output_file)
+            if not os.path.exists(model_tmp_dir):
+                pathlib.Path(model_tmp_dir).mkdir(parents=True, exist_ok=True)
+            if os.path.exists(output_dir):
+                shutil.rmtree(output_dir)
             pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(os.path.join(os.path.dirname(gripper_model_file), 'model.config'),
-                            os.path.join(output_dir, 'model.config'))
+            meshes_dir = os.path.join(model_dir, self.gripper, 'meshes')
+            if os.path.exists(meshes_dir):
+                os.symlink(meshes_dir, os.path.join(output_dir, 'meshes'))
+            model_config = os.path.join(model_dir, self.gripper, 'model.config')
+            os.symlink(model_config, os.path.join(output_dir, 'model.config'))
+
+            # Ru erb to generate new model.sdf file
             process = subprocess.Popen(gripper_command, stdout=subprocess.PIPE)
             stdout = process.communicate()[0]
             str_output = codecs.getdecoder('unicode_escape')(stdout)[0]
