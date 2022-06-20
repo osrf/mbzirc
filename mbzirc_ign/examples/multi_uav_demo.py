@@ -22,12 +22,15 @@ from geometry_msgs.msg import Twist, Vector3
 
 def parse_args():
     parser = argparse.ArgumentParser('Set UAV command velocity.')
-    parser.add_argument('-x', dest='x', type=float, nargs='?', const=0.0,
+    parser.add_argument('-x', dest='x', type=float, default=0.0,
                         help='Set the x velocity of the UAVs')
-    parser.add_argument('-y', dest='y', type=float, nargs='?', const=0.0,
+    parser.add_argument('-y', dest='y', type=float, default=0.0,
                         help='Set the y velocity of the UAVs')
-    parser.add_argument('-z', dest='z', type=float, nargs='?', const=0.0,
+    parser.add_argument('-z', dest='z', type=float, default=0.0,
                         help='Set the z velocity of the UAVs')
+    parser.add_argument('-d', '--detach', dest='detach', action='store_true',
+                        help='Turns off suction gripper')
+    parser.set_defaults(detach=False)
     args = parser.parse_args()
     return args
 
@@ -49,8 +52,8 @@ def main():
     quadrotor_cmd2 = node.create_publisher(Twist, '/quadrotor_2/cmd_vel', 10)
 
     # Enable the grippers
-    quadrotor_gripper1.publish(Bool(data=True))
-    quadrotor_gripper2.publish(Bool(data=True))
+    quadrotor_gripper1.publish(Bool(data=not args.detach))
+    quadrotor_gripper2.publish(Bool(data=not args.detach))
 
     # liftoff
     quadrotor_cmd1.publish(Twist(linear=Vector3(x=args.x, y=args.y, z=args.z)))

@@ -1,10 +1,13 @@
 <?xml version="1.0" ?>
 <!--
 # In another terminal run:
-ros2 launch mbzirc_ign multi_uav_lift_demo.launch.py
+ros2 launch mbzirc_ign multi_uav_drag_demo.launch.py
 
-# You should see the drones spawn. After that run the simulators and let the robots fall onto the block. When the robots are resting on the block run:
-ros2 run mbzirc_ign multi_uav_demo.py
+# You should see the drones spawn. After that run the simulators and let the robots fall onto the model 'large_crate_handles'. When the robots are resting on the model run:
+ros2 run mbzirc_ign multi_uav_demo.py -z 3 -x 1 -y 4
+
+# The drones should start lifting and dragging the model. To detach,
+ros2 run mbzirc_ign multi_uav_demo.py -d
 -->
 <sdf version="1.6">
   <world name="empty_platform">
