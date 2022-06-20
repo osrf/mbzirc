@@ -1,6 +1,7 @@
 #include "MaritimeRadar.hh"
 
 #include <ignition/gazebo/Model.hh>
+#include <ignition/gazebo/Util.hh>
 #include <ignition/gazebo/components/JointPosition.hh>
 #include <ignition/plugin/Register.hh>
 
@@ -96,6 +97,12 @@ void MaritimeRadar::Configure(const ignition::gazebo::Entity &_entity,
   if (_sdf->HasElement("radar_spoke_topic"))
   {
     this->radarSpokeTopic = _sdf->Get<std::string>("radar_spoke_topic");
+  }
+  else
+  {
+    // set topic to publish sensor data to
+    std::string topic = ignition::gazebo::scopedName(_entity, _ecm) + "/radar/scan";
+    this->radarSpokeTopic = ignition::transport::TopicUtils::AsValidTopic(topic);
   }
   this->linePub  = this->node.Advertise<msgs::Float_V>(this->radarSpokeTopic);
 }

@@ -51,6 +51,7 @@ target_link_libraries(maritime_radar_bridge PUBLIC
 # Uncomment the install call below to install the example naive spinning radar
 # model
 install(DIRECTORY
+  launch
   models
   DESTINATION share/${PROJECT_NAME})
 install(
