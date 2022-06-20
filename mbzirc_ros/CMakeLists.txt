@@ -5,6 +5,8 @@ project(mbzirc_ros)
 find_package(ament_cmake REQUIRED)
 
 find_package(geometry_msgs REQUIRED)
+find_package(ignition-math6 REQUIRED)
+set(IGN_MATH_VER ${ignition-math6_VERSION_MAJOR})
 find_package(ignition-msgs8 REQUIRED)
 find_package(ignition-transport11 REQUIRED)
 set(IGN_TRANSPORT_VER ${ignition-transport11_VERSION_MAJOR})
@@ -60,11 +62,22 @@ ament_target_dependencies(video_stream_publisher
   sensor_msgs
 )
 
+add_executable(usv_bridge src/usv_bridge.cc)
+ament_target_dependencies(usv_bridge
+  PUBLIC
+  rclcpp
+  std_msgs
+)
+target_link_libraries(usv_bridge PUBLIC
+  ignition-math${IGN_MATH_VER}::ignition-math${IGN_MATH_VER}
+)
+
 # Resources
 install(TARGETS
   fixed_wing_bridge
   optical_frame_publisher
   pose_tf_broadcaster
+  usv_bridge
   video_target_relay
   video_stream_publisher
   DESTINATION lib/${PROJECT_NAME})
@@ -102,7 +115,7 @@ if(BUILD_TESTING)
   )
 
   add_launch_test(test/launch/test_ros_api.launch.py
-    TIMEOUT 280
+    TIMEOUT 300
   )
 endif()
 

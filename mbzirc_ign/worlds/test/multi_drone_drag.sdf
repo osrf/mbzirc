@@ -1,0 +1,142 @@
+<?xml version="1.0" ?>
+<!--
+# In another terminal run:
+ros2 launch mbzirc_ign multi_uav_drag_demo.launch.py
+
+# You should see the drones spawn. After that run the simulators and let the robots fall onto the model 'large_crate_handles'. When the robots are resting on the model run:
+ros2 run mbzirc_ign multi_uav_demo.py -z 3 -x 1 -y 4
+
+# The drones should start lifting and dragging the model. To detach,
+ros2 run mbzirc_ign multi_uav_demo.py -d
+-->
+<sdf version="1.6">
+  <world name="empty_platform">
+
+    <physics name="4ms" type="dart">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+
+    <plugin
+      filename="ignition-gazebo-physics-system"
+      name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-user-commands-system"
+      name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-sensors-system"
+      name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-air-pressure-system"
+      name="ignition::gazebo::systems::AirPressure">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-altimeter-system"
+      name="ignition::gazebo::systems::Altimeter">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-imu-system"
+      name="ignition::gazebo::systems::Imu">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-magnetometer-system"
+      name="ignition::gazebo::systems::Magnetometer">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-forcetorque-system"
+      name="ignition::gazebo::systems::ForceTorque">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-particle-emitter2-system"
+      name="ignition::gazebo::systems::ParticleEmitter2">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-scene-broadcaster-system"
+      name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-contact-system"
+      name="ignition::gazebo::systems::Contact">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-rf-comms-system"
+      name="ignition::gazebo::systems::RFComms">
+      <range_config>
+        <max_range>500000.0</max_range>
+        <fading_exponent>2.6</fading_exponent>
+        <l0>40</l0>
+        <sigma>10.0</sigma>
+      </range_config>
+      <radio_config>
+        <capacity>1000000</capacity>
+        <tx_power>20</tx_power>
+        <noise_floor>-90</noise_floor>
+        <modulation>QPSK</modulation>
+      </radio_config>
+    </plugin>
+
+    <scene>
+      <grid>false</grid>
+      <ambient>1.0 1.0 1.0</ambient>
+      <background>0.8 0.8 0.8</background>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <include>
+      <static>true</static>
+      <name>Vessel F</name>
+      <pose>0 0 0 0 0 0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel F</uri>
+    </include>
+
+    <include>
+      <name>large_crate_handles</name>
+      <pose relative_to="Vessel F">3.5 0 1.55 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
+      </uri>
+    </include>
+
+    <include>
+      <name>large_ammo_can_handles</name>
+      <pose relative_to="Vessel F">-5.37 0.6 1.8 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
+      </uri>
+    </include>
+
+    <include>
+      <name>large_grey_box_handles</name>
+      <pose relative_to="Vessel F">-5.37 -0.54 1.8 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box Handles
+      </uri>
+    </include>
+
+    <include>
+      <name>large_dry_box_handles_flat</name>
+      <pose relative_to="Vessel F">-0.46 0 3.8 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
+      </uri>
+    </include>
+  </world>
+</sdf>

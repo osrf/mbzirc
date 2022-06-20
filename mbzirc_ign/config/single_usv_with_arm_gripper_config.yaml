@@ -7,3 +7,14 @@ position:
 arm: mbzirc_oberon7_arm
 gripper: mbzirc_oberon7_gripper
 arm_slot: '0'
+payload:
+  slot0:
+    sensor: 'mbzirc_vga_camera'
+    rpy: [0, 0, 0]
+  slot1:
+    sensor: 'mbzirc_hd_camera'
+    rpy: [0, 0, 0]
+arm_payload:
+  slot0:
+    sensor: 'mbzirc_hd_camera'
+    rpy: [0, 0, 0]

@@ -12,12 +12,46 @@ else
 end
 
 $camera_sensor_local_pose = "0.19 0.075 0.0 -1.570796326794896 0 0"
+
+$slot0_payload = nil
+$slot0_rpy = '0 0 0'
+
+if defined?(arm_slot0)
+  $arm_slot0_payload = arm_slot0
+end
+if defined?(arm_slot0_pos)
+  $arm_slot0_rpy = arm_slot0_pos
+end
+
 %>
 
 <?xml version="1.0" ?>
 <sdf version='1.9'>
   <model name="oberon7_arm">
-    <link name='base'>
+
+    <!-- arm wrist payload slot -->
+    <frame name="slot_0">
+      <pose relative_to='wrist_link'><%= $camera_sensor_local_pose %></pose>
+    </frame>
+
+    <% if $arm_slot0_payload != nil%>
+    <!-- Payload slot0 -->
+    <include>
+      <name>sensor_0</name>
+      <uri>model://sensors/<%= $arm_slot0_payload%></uri>
+      <placement_frame>mount_point</placement_frame>
+      <pose relative_to="slot_0" degrees="true">
+        0 0 0 <%= $arm_slot0_rpy%>
+      </pose>
+    </include>
+
+    <joint name="slot_0_joint" type="fixed">
+      <parent>wrist_link</parent>
+      <child>sensor_0::mount_point</child>
+    </joint>
+    <% end %>
+
+     <link name='base'>
       <inertial>
         <pose>-0.101581 -0.001371 -0.009781 0 0 0</pose>
         <mass>9.674677170178402</mass>
@@ -397,28 +431,6 @@ $camera_sensor_local_pose = "0.19 0.075 0.0 -1.570796326794896 0 0"
           <diffuse>0.2 0.2 0.2</diffuse>
         </material>
       </visual>
-      <sensor name="camera" type="camera">
-        <pose><%= $camera_sensor_local_pose %></pose>
-        <always_on>1</always_on>
-        <update_rate>30</update_rate>
-        <camera name="camera">
-          <horizontal_fov>1.0472</horizontal_fov>
-          <image>
-            <width>640</width>
-            <height>480</height>
-            <format>R8G8B8</format>
-          </image>
-          <clip>
-            <near>0.01</near>
-            <far>300</far>
-          </clip>
-          <noise>
-            <type>gaussian</type>
-            <mean>0</mean>
-            <stddev>0.007</stddev>
-          </noise>
-        </camera>
-      </sensor>
       <self_collide>false</self_collide>
     </link>
 

@@ -25,6 +25,8 @@ from launch_ros.actions import Node
 
 import mbzirc_ign.bridges
 import mbzirc_ign.payload_bridges
+import pathlib
+import shutil
 
 import yaml
 
@@ -63,26 +65,28 @@ class Model:
         self.battery_capacity = 0
         self.wavefield_size = 0
         self.payload = {}
+        self.arm_payload = {}
         self.arm = ''
         self.gripper = ''
         self.arm_slot = '0'
 
-    def isUAV(self):
+    def is_UAV(self):
         return self.model_type in UAVS
 
-    def isFixedWingUAV(self):
+    def is_fixed_wing_UAV(self):
         return self.model_type in FIXED_WING_UAVS
 
-    def isUSV(self):
+    def is_USV(self):
         return self.model_type in USVS
 
-    def hasValidArm(self):
+    def has_valid_arm(self):
         return self.arm in ARMS
 
-    def hasValidGripper(self):
+    def has_valid_gripper(self):
         return self.gripper in GRIPPERS
 
     def bridges(self, world_name):
+        custom_launches = []
         nodes = []
         bridges = [
             # IMU
@@ -96,19 +100,19 @@ class Model:
             # comms rx
             mbzirc_ign.bridges.comms_rx(self.model_name),
         ]
-        if self.isUAV():
+        if self.is_UAV():
             bridges.extend([
                 # Magnetometer
                 mbzirc_ign.bridges.magnetometer(world_name, self.model_name),
                 # Air Pressure
                 mbzirc_ign.bridges.air_pressure(world_name, self.model_name),
             ])
-            if not self.isFixedWingUAV():
+            if not self.is_fixed_wing_UAV():
                 bridges.extend([
                     # twist
                     mbzirc_ign.bridges.cmd_vel(self.model_name)
                 ])
-        elif self.isUSV():
+        elif self.is_USV():
             bridges.extend([
                 # thrust cmd
                 mbzirc_ign.bridges.thrust(self.model_name, 'left'),
@@ -117,8 +121,12 @@ class Model:
                 mbzirc_ign.bridges.thrust_joint_pos(self.model_name, 'left'),
                 mbzirc_ign.bridges.thrust_joint_pos(self.model_name, 'right'),
             ])
+            nodes.append(Node(
+                package='mbzirc_ros',
+                executable='usv_bridge',
+            ))
 
-        if self.hasValidArm():
+        if self.has_valid_arm():
             # arm joint states
             bridges.append(
                 mbzirc_ign.bridges.arm_joint_states(world_name, self.model_name)
@@ -132,37 +140,24 @@ class Model:
                         mbzirc_ign.bridges.arm_joint_pos(self.model_name, joint)
                     )
 
-                camera_link = 'wrist_link'
-                camera_link_no_suffix = camera_link.rstrip('_link')
-                bridges.append(
-                    mbzirc_ign.bridges.arm_image(world_name, self.model_name, camera_link)
-                )
-                bridges.append(
-                    mbzirc_ign.bridges.arm_camera_info(
-                        world_name, self.model_name, camera_link
-                    )
-                )
                 bridges.append(
                     mbzirc_ign.bridges.wrist_joint_force_torque(self.model_name),
                 )
-                nodes.append(Node(
-                    package='mbzirc_ros',
-                    executable='optical_frame_publisher',
-                    arguments=['1'],
-                    remappings=[('input/image', f'arm/{camera_link_no_suffix}/image_raw'),
-                                ('output/image',
-                                f'arm/{camera_link_no_suffix}/optical/image_raw'),
-                                ('input/camera_info',
-                                f'arm/{camera_link_no_suffix}/camera_info'),
-                                ('output/camera_info',
-                                    f'arm/{camera_link_no_suffix}/optical/camera_info')]))
-
                 # default to oberon7 gripper if not specified.
                 if not self.gripper:
                     self.gripper = 'mbzirc_oberon7_gripper'
+        elif self.is_custom_model(self.arm):
+            custom_launch = self.custom_model_launch(world_name, self.model_name,
+                                                     self.arm)
+            if custom_launch is not None:
+                custom_launches.append(custom_launch)
 
-        if self.hasValidGripper():
-            isAttachedToArm = self.isUSV()
+            # default to oberon7 gripper if not specified.
+            if not self.gripper:
+                self.gripper = 'mbzirc_oberon7_gripper'
+
+        if self.has_valid_gripper():
+            isAttachedToArm = self.is_USV()
             # gripper joint pos cmd
             if self.gripper == 'mbzirc_oberon7_gripper':
                 # gripper_joint states
@@ -192,22 +187,33 @@ class Model:
                     mbzirc_ign.bridges.gripper_contact(self.model_name, isAttachedToArm, 'bottom')
                 ])
 
-        return [bridges, nodes]
+        return [bridges, nodes, custom_launches]
 
     def payload_bridges(self, world_name, payloads=None):
+        # payloads on usv and uav
+        if not payloads:
+            payloads = self.payload
+        bridges, nodes, payload_launches = self.payload_bridges_impl(world_name, payloads)
+
+        # payloads on arm
+        b_out, n_out, l_out = self.payload_bridges_impl(world_name, self.arm_payload, True)
+        bridges.extend(b_out)
+        nodes.extend(n_out)
+        payload_launches.extend(l_out)
+
+        return [bridges, nodes, payload_launches]
+
+    def payload_bridges_impl(self, world_name, payloads, is_arm=False):
         bridges = []
         nodes = []
         payload_launches = []
-
-        if not payloads:
-            payloads = self.payload
         for (idx, k) in enumerate(sorted(payloads.keys())):
             p = payloads[k]
             if not p['sensor'] or p['sensor'] == 'None' or p['sensor'] == '':
                 continue
 
             # check if it is a custom payload
-            if self.is_custom_payload(p['sensor']):
+            if self.is_custom_model(p['sensor']):
                 payload_launch = self.custom_payload_launch(world_name, self.model_name,
                                                             p['sensor'], idx)
                 if payload_launch is not None:
@@ -215,42 +221,62 @@ class Model:
 
             # if not custom payload, add our own bridges and nodes
             else:
+                model_prefix = ''
+                ros_slot_prefix = f'slot{idx}'
+                if is_arm:
+                    model_prefix = 'arm'
+                    ros_slot_prefix = 'arm/' + ros_slot_prefix
                 bridges.extend(
                     mbzirc_ign.payload_bridges.payload_bridges(
-                        world_name, self.model_name, p['sensor'], idx))
+                        world_name, self.model_name, p['sensor'], idx, model_prefix))
 
                 if p['sensor'] in mbzirc_ign.payload_bridges.camera_models():
                     nodes.append(Node(
                         package='mbzirc_ros',
                         executable='optical_frame_publisher',
                         arguments=['1'],
-                        remappings=[('input/image', f'slot{idx}/image_raw'),
-                                    ('output/image', f'slot{idx}/optical/image_raw'),
-                                    ('input/camera_info', f'slot{idx}/camera_info'),
-                                    ('output/camera_info', f'slot{idx}/optical/camera_info')]))
+                        remappings=[('input/image', f'{ros_slot_prefix}/image_raw'),
+                                    ('output/image', f'{ros_slot_prefix}/optical/image_raw'),
+                                    ('input/camera_info', f'{ros_slot_prefix}/camera_info'),
+                                    ('output/camera_info',
+                                     f'{ros_slot_prefix}/optical/camera_info')]))
                 elif p['sensor'] in mbzirc_ign.payload_bridges.rgbd_models():
                     nodes.append(Node(
                         package='mbzirc_ros',
                         executable='optical_frame_publisher',
                         arguments=['1'],
-                        remappings=[('input/image', f'slot{idx}/image_raw'),
-                                    ('output/image', f'slot{idx}/optical/image_raw'),
-                                    ('input/camera_info', f'slot{idx}/camera_info'),
-                                    ('output/camera_info', f'slot{idx}/optical/camera_info')]))
+                        remappings=[('input/image', f'{ros_slot_prefix}/image_raw'),
+                                    ('output/image', f'{ros_slot_prefix}/optical/image_raw'),
+                                    ('input/camera_info', f'{ros_slot_prefix}/camera_info'),
+                                    ('output/camera_info',
+                                     f'{ros_slot_prefix}/optical/camera_info')]))
                     nodes.append(Node(
                         package='mbzirc_ros',
                         executable='optical_frame_publisher',
                         arguments=['1'],
-                        remappings=[('input/image', f'slot{idx}/depth'),
-                                    ('output/image', f'slot{idx}/optical/depth')]))
+                        remappings=[('input/image', f'{ros_slot_prefix}/depth'),
+                                    ('output/image', f'{ros_slot_prefix}/optical/depth')]))
         return [bridges, nodes, payload_launches]
 
-    def is_custom_payload(self, payload):
+    def is_custom_model(self, model):
+        if not model:
+            return False
         try:
-            get_package_share_directory(payload)
+            get_package_share_directory(model)
         except PackageNotFoundError:
             return False
         return True
+
+    def custom_model_launch(self, world_name, model_name, model):
+        custom_launch = None
+        path = os.path.join(
+            get_package_share_directory(model), 'launch')
+        if os.path.exists(path):
+            custom_launch = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([path, '/bridge.launch.py']),
+                launch_arguments={'world_name': world_name,
+                                  'model_name': model_name}.items())
+        return custom_launch
 
     def custom_payload_launch(self, world_name, model_name, payload, idx):
         payload_launch = None
@@ -276,6 +302,9 @@ class Model:
         # UAV specific
         self.payload = payload
 
+    def set_arm_payload(self, arm_payload):
+        self.arm_payload = arm_payload
+
     def set_wavefield(self, world_name):
         if world_name not in WAVEFIELD_SIZE:
             print(f'Wavefield size not found for {world_name}')
@@ -297,6 +326,9 @@ class Model:
             get_package_share_directory('mbzirc_ign'),
             'models', self.model_type, 'model.sdf.erb')
 
+        model_dir = os.path.join(get_package_share_directory('mbzirc_ign'), 'models')
+        model_tmp_dir = os.path.join(model_dir, 'tmp')
+
         command = ['erb']
         command.append(f'name={self.model_name}')
 
@@ -314,27 +346,42 @@ class Model:
             if self.battery_capacity == 0:
                 raise RuntimeError('Battery Capacity is zero, was flight_time set?')
             command.append(f'capacity={self.battery_capacity}')
-            if self.hasValidGripper():
-                command.append(f'gripper={self.gripper}')
+            if self.has_valid_gripper():
+                command.append(f'gripper={self.gripper}_{self.model_name}')
 
         if self.model_type in USVS or self.model_type == 'static_arm':
             command.append(f'wavefieldSize={self.wavefield_size}')
 
             # run erb for arm to attach the user specified gripper
             # and also for arm and gripper to generate unique topic names
-            if self.hasValidArm():
+            if self.has_valid_arm() or self.is_custom_model(self.arm):
                 command.append(f'arm={self.arm}')
                 command.append(f'arm_slot={self.arm_slot}')
+                arm_package = 'mbzirc_ign'
+                if self.is_custom_model(self.arm):
+                    arm_package = self.arm
                 arm_model_file = os.path.join(
-                    get_package_share_directory('mbzirc_ign'), 'models',
+                    get_package_share_directory(arm_package), 'models',
                     self.arm, 'model.sdf.erb')
                 arm_model_output_file = os.path.join(
-                    get_package_share_directory('mbzirc_ign'), 'models',
+                    get_package_share_directory(arm_package), 'models',
                     self.arm, 'model.sdf')
                 arm_command = ['erb']
 
                 if self.gripper:
-                    arm_command.append(f'gripper={self.gripper}')
+                    arm_command.append(f'gripper={self.gripper}_{self.model_name}')
+
+                # arm payloads
+                for (slot, payload) in self.arm_payload.items():
+                    if payload['sensor'] and payload['sensor'] != 'None':
+                        arm_command.append(f"arm_{slot}={payload['sensor']}")
+                    if 'rpy' in payload:
+                        if type(payload['rpy']) is str:
+                            r, p, y = payload['rpy'].split(' ')
+                        else:
+                            r, p, y = payload['rpy']
+                        arm_command.append(f'arm_{slot}_pos={r} {p} {y}')
+
                 arm_command.append(f'topic_prefix={self.model_name}')
                 arm_command.append(arm_model_file)
                 process = subprocess.Popen(arm_command, stdout=subprocess.PIPE)
@@ -344,19 +391,33 @@ class Model:
                     f.write(str_output)
                 # print(arm_command, str_output)
 
-        if self.hasValidGripper():
-            gripper_model_file = os.path.join(
-                get_package_share_directory('mbzirc_ign'), 'models',
-                self.gripper, 'model.sdf.erb')
-            gripper_model_output_file = os.path.join(
-                get_package_share_directory('mbzirc_ign'), 'models',
-                self.gripper, 'model.sdf')
+        if self.has_valid_gripper():
+            gripper_model_file = os.path.join(model_dir, self.gripper, 'model.sdf.erb')
+            gripper_model_output_file = os.path.join(model_tmp_dir,
+                                                     self.gripper + "_" + self.model_name,
+                                                     'model.sdf')
             gripper_command = ['erb']
             topic_prefix = f'{self.model_name}'
-            if (self.isUSV()):
+            if (self.is_USV()):
                 topic_prefix += '/arm'
             gripper_command.append(f'topic_prefix={topic_prefix}')
             gripper_command.append(gripper_model_file)
+
+            # create unique gripper model in mbzic_ign/models/tmp
+            # and symlink original model contents to new dir
+            output_dir = os.path.dirname(gripper_model_output_file)
+            if not os.path.exists(model_tmp_dir):
+                pathlib.Path(model_tmp_dir).mkdir(parents=True, exist_ok=True)
+            if os.path.exists(output_dir):
+                shutil.rmtree(output_dir)
+            pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+            meshes_dir = os.path.join(model_dir, self.gripper, 'meshes')
+            if os.path.exists(meshes_dir):
+                os.symlink(meshes_dir, os.path.join(output_dir, 'meshes'))
+            model_config = os.path.join(model_dir, self.gripper, 'model.config')
+            os.symlink(model_config, os.path.join(output_dir, 'model.config'))
+
+            # Ru erb to generate new model.sdf file
             process = subprocess.Popen(gripper_command, stdout=subprocess.PIPE)
             stdout = process.communicate()[0]
             str_output = codecs.getdecoder('unicode_escape')(stdout)[0]
@@ -440,6 +501,9 @@ class Model:
 
         if 'payload' in config:
             model.set_payload(config['payload'])
+
+        if 'arm_payload' in config:
+            model.set_arm_payload(config['arm_payload'])
 
         if 'arm' in config:
             model.set_arm(config['arm'])

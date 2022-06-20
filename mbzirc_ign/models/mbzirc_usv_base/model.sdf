@@ -627,6 +627,26 @@
     <pose>0.0 -1.7 0.14 0 0 -1.570796</pose>
   </frame>
 
+  <!-- Front left payload slot -->
+  <frame name="slot_4">
+    <pose>2.5 1.7 0.14 0 0 1.570796</pose>
+  </frame>
+
+  <!-- Rear left payload slot -->
+  <frame name="slot_5">
+    <pose>-2.5 1.7 0.14 0 0 1.570796</pose>
+  </frame>
+
+  <!-- Front right payload slot -->
+  <frame name="slot_6">
+    <pose>2.5 -1.7 0.14 0 0 -1.570796</pose>
+  </frame>
+
+  <!-- Rear right payload slot -->
+  <frame name="slot_7">
+    <pose>-2.5 -1.7 0.14 0 0 -1.570796</pose>
+  </frame>
+
   <!-- uncomment to debug sensor slot frames -->
   <!--
   <link name="debug_link">
@@ -665,6 +685,50 @@
     </visual>
     <visual name="sensor_slot3">
       <pose relative_to="slot_3">0 0 0 0 0 0</pose>
+      <geometry>
+        <box>
+          <size>0.025 0.025 0.025</size>
+        </box>
+      </geometry>
+      <material>
+        <diffuse>0.0 1 0 1</diffuse>
+      </material>
+    </visual>
+    <visual name="sensor_slot4">
+      <pose relative_to="slot_4">0 0 0 0 0 0</pose>
+      <geometry>
+        <box>
+          <size>0.025 0.025 0.025</size>
+        </box>
+      </geometry>
+      <material>
+        <diffuse>0.0 1 0 1</diffuse>
+      </material>
+    </visual>
+    <visual name="sensor_slot5">
+      <pose relative_to="slot_5">0 0 0 0 0 0</pose>
+      <geometry>
+        <box>
+          <size>0.025 0.025 0.025</size>
+        </box>
+      </geometry>
+      <material>
+        <diffuse>0.0 1 0 1</diffuse>
+      </material>
+    </visual>
+    <visual name="sensor_slot6">
+      <pose relative_to="slot_6">0 0 0 0 0 0</pose>
+      <geometry>
+        <box>
+          <size>0.025 0.025 0.025</size>
+        </box>
+      </geometry>
+      <material>
+        <diffuse>0.0 1 0 1</diffuse>
+      </material>
+    </visual>
+    <visual name="sensor_slot7">
+      <pose relative_to="slot_7">0 0 0 0 0 0</pose>
       <geometry>
         <box>
           <size>0.025 0.025 0.025</size>

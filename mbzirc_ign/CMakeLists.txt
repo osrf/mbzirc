@@ -90,6 +90,13 @@ ament_python_install_package(
 )
 
 #============================================================================
+# Scripts
+install(PROGRAMS
+  examples/multi_uav_demo.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+#============================================================================
 # Resources
 install(DIRECTORY
   config
