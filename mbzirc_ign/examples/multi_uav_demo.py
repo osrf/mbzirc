@@ -15,12 +15,27 @@
 # limitations under the License.
 
 import rclpy
+import argparse
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist, Vector3
 
 
-def main(args=None):
-    rclpy.init(args=args)
+def parse_args():
+    parser = argparse.ArgumentParser('Set UAV command velocity.')
+    parser.add_argument('-x', dest='x', type=float, nargs='?', const=0.0,
+                        help='Set the x velocity of the UAVs')
+    parser.add_argument('-y', dest='y', type=float, nargs='?', const=0.0,
+                        help='Set the y velocity of the UAVs')
+    parser.add_argument('-z', dest='z', type=float, nargs='?', const=0.0,
+                        help='Set the z velocity of the UAVs')
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = parse_args()
+
+    rclpy.init()
     node = rclpy.create_node('multiuav_demo')
 
     # Create a publisher for the two suction grippers
@@ -38,8 +53,8 @@ def main(args=None):
     quadrotor_gripper2.publish(Bool(data=True))
 
     # liftoff
-    quadrotor_cmd1.publish(Twist(linear=Vector3(x=0.0, y=0.0, z=5.0)))
-    quadrotor_cmd2.publish(Twist(linear=Vector3(x=0.0, y=0.0, z=5.0)))
+    quadrotor_cmd1.publish(Twist(linear=Vector3(x=args.x, y=args.y, z=args.z)))
+    quadrotor_cmd2.publish(Twist(linear=Vector3(x=args.x, y=args.y, z=args.z)))
 
     node.destroy_node()
     rclpy.shutdown()
