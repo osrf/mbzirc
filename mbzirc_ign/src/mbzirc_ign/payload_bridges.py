@@ -18,6 +18,11 @@ def lidar_models():
               ]
     return models
 
+def rfranger_models():
+    models = ['mbzirc_rf_range',
+              'mbzirc_rf_long_range']
+    return models
+
 
 def slot_prefix(world_name, model_name, slot_idx, model_prefix=''):
     s = f'/world/{world_name}/model/{model_name}/model/'
@@ -100,6 +105,16 @@ def camera_points(world_name, model_name, slot_idx, model_prefix=''):
         ros_type='sensor_msgs/msg/PointCloud2',
         direction=BridgeDirection.IGN_TO_ROS)
 
+def rfranger(world_name, model_name, slot_idx, model_prefix=''):
+    prefix = f'/world/{world_name}/model/{model_name}/model/sensor_{slot_idx}'
+    ros_prefix = ros_slot_prefix(slot_idx, model_prefix)
+    return Bridge(
+        ign_topic=f'{prefix}/rfsensor',
+        ros_topic=f'{ros_prefix}/rfsensor',
+        ign_type='ignition.msgs.Param_V',
+        ros_type='ros_ign_interfaces/msg/ParamVec',
+        direction=BridgeDirection.IGN_TO_ROS)
+
 
 def payload_bridges(world_name, model_name, payload, idx, model_prefix=''):
     bridges = []
@@ -120,4 +135,9 @@ def payload_bridges(world_name, model_name, payload, idx, model_prefix=''):
             depth_image(world_name, model_name, idx, model_prefix),
             camera_points(world_name, model_name, idx, model_prefix),
         ]
+    elif payload in rfranger_models():
+        bridges = [
+            rfranger(world_name, model_name, idx, model_prefix),
+        ]
     return bridges
+
