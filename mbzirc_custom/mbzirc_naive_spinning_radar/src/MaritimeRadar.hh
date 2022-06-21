@@ -122,6 +122,12 @@ namespace mbzirc
     /// \brief stores radar scan data for each beam.
     public: std::vector<std::vector<double>> radarBin;
 
+    /// \brief Laser scan topic name
+    public: std::string laserTopic{"scan"};
+
+    /// \brief Laser scan initialized
+    public: bool laserInitialized{false};
+
     /// \brief Noise to be applied to radar data
     ///public: ignition::sensors::NoisePtr noise;
 

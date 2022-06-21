@@ -2,6 +2,8 @@
 
 #include <ignition/gazebo/Model.hh>
 #include <ignition/gazebo/Util.hh>
+#include <ignition/gazebo/components/Name.hh>
+#include <ignition/gazebo/components/World.hh>
 #include <ignition/gazebo/components/JointPosition.hh>
 #include <ignition/plugin/Register.hh>
 
@@ -29,15 +31,22 @@ void MaritimeRadar::Configure(const ignition::gazebo::Entity &_entity,
 {
   gazebo::Model model(_entity);
 
-  // TODO(arjo): This is a hack to get the laser
-  std::string laserTopic =
-    "/world/coast/model/usv/model/sensor_0/link/sensor_link/sensor/lidar/scan";
+  // Get world name
+  const auto worldEntity = _ecm.EntityByComponents(components::World());
+  const std::string worldName =
+    _ecm.Component<components::Name>(worldEntity)->Data();
+
+  // Get the entity name
+  const std::string entityName = ignition::gazebo::scopedName(_entity, _ecm);
+
+  // Get the laser topic
+  this->laserTopic =
+    "/world/" + worldName + "/" + entityName + "/link/sensor_link/sensor/lidar/scan";
+  ignerr << "laser topic is [" << this->laserTopic << "].\n";
   if (_sdf->HasElement("laser_topic"))
   {
-    laserTopic = _sdf->Get<std::string>("laser_topic");
+    this->laserTopic = _sdf->Get<std::string>("laser_topic");
   }
-  node.Subscribe(laserTopic,
-    &MaritimeRadar::OnRadarScan, this);
 
   // Get the joint name
   auto jointName = _sdf->Get<std::string>("joint_name");
@@ -101,7 +110,7 @@ void MaritimeRadar::Configure(const ignition::gazebo::Entity &_entity,
   else
   {
     // set topic to publish sensor data to
-    std::string topic = ignition::gazebo::scopedName(_entity, _ecm) + "/radar/scan";
+    std::string topic = entityName + "/radar/scan";
     this->radarSpokeTopic = ignition::transport::TopicUtils::AsValidTopic(topic);
   }
   this->linePub  = this->node.Advertise<msgs::Float_V>(this->radarSpokeTopic);
@@ -131,6 +140,21 @@ void MaritimeRadar::PostUpdate(
   // Sanity check: Make sure that the joint has an index
   if (jointPosComp->Data().size() == 0)
   {
+    return;
+  }
+
+  if (!this->laserInitialized && !this->linePub.HasConnections())
+  {
+    // No subscription for scan yet.
+    return;
+  }
+  else if (!this->laserInitialized && this->linePub.HasConnections())
+  {
+    this->node.Subscribe(this->laserTopic, &MaritimeRadar::OnRadarScan, this);
+    this->laserInitialized = true;
+
+    // We just started subscribing to the laser scan, give one iteration for the
+    // scan to come in.
     return;
   }
 
@@ -193,6 +217,9 @@ void MaritimeRadar::PublishScan()
 
   // The code below this point is for publishing debug images with a polar plot
   // of radar hits/misses
+  if (!this->debugPub.HasConnections())
+    return;
+
   // Convert to a message and publish
   if(this->radarBinIndex == 0)
   {
