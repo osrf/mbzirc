@@ -376,7 +376,6 @@ RFPower RFRangePrivate::LogNormalReceivedPower(
   const double kPL = this->rangeConfig.l0 +
     10 * this->rangeConfig.fadingExponent * log10(kRange);
 
-   std::cerr << "range sigma " << rangeConfig.sigma << std::endl;
   return {_txPower - kPL, this->rangeConfig.sigma};
 }
 
