@@ -58,8 +58,9 @@ void ReadRfRange::onTimer()
 
     }
   }
-  if (!ss.str().empty()) {
-    RCLCPP_INFO_STREAM(this->get_logger(), ss.str());
+  std::string log = ss.str();
+  if (!log.empty()) {
+    RCLCPP_INFO_STREAM(this->get_logger(), log);
   }
 }
 
