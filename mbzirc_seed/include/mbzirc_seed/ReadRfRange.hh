@@ -27,14 +27,20 @@
 namespace mbzirc_seed
 {
 
+/// \brief Structure to represent an observation from the RF range sensor
 struct RangeInfo
 {
+  /// \brief Platform name of the observation
   std::string platform;
+  /// \brief Range to the platform
   double range;
+  /// \brief RSSI of the measurement
   double rssi;
+  /// \brief Time of the last update
   rclcpp::Time last_seen;
 };
 
+/// \brief Node to read RF ranging measurements from the MBZIRC simulation
 class ReadRfRange : public rclcpp::Node
 {
 public:

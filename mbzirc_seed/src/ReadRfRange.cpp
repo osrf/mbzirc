@@ -65,32 +65,47 @@ void ReadRfRange::onTimer()
 
 void ReadRfRange::onRangeMessage(const ros_ign_interfaces::msg::ParamVec & msg)
 {
+  // Temporary location of parameter information.
   struct Entry
   {
+    // Platform name
     std::string platform;
+    // Range to platform
     double range;
+    // RSSI
     double rssi;
   };
 
   std::unordered_map<int, Entry> entries;
 
+  // Since we are looking for (model, rssi, range) tuples, 
+  // it is expected that the number of entries is a multiple of 3.
   auto nEntries = msg.params.size() / 3;
 
-  for (auto param: msg.params) {
+  // The parameters coming from the simulator are stored in a nested map.
+  // The bridge from the simulator to ROS 2 flattens this map by appending
+  // a prefix to each group of parameters "param_<NUM>".
+  // The logic below un-flattens this into one entry per competitor platform.
+  // 
+  // Since we are trying to update an entire model at once, we temporarily store
+  // the values in the "Entry" structure, to then be copied over once all parameters are parsed.
+  for (auto param: msg.params) et
    int curIdx = 0;
     for (int ii = 0; ii < nEntries; ++ii) {
+      // Find the index of this parameter entry.
       if(param.name.find(std::string("param_" + std::to_string(ii))) != std::string::npos) {
         curIdx = ii;
         break;
       }
     }
-    std::string entryName = "param_" + std::to_string(curIdx);
 
-    if (entries.count(curIdx) == 0)
-    {
+    // Add entry to the map if it wasn't already found
+    if (entries.count(curIdx) == 0) {
       entries[curIdx] = Entry();
     }
 
+    // Locate the three entries that come from the simulated sensor
+    // (model, rssi, range)
     if (param.name.find("model") != std::string::npos) {
       entries[curIdx].platform = param.value.string_value;
     } else if (param.name.find("rssi") != std::string::npos) {
@@ -100,6 +115,7 @@ void ReadRfRange::onRangeMessage(const ros_ign_interfaces::msg::ParamVec & msg)
     }
   }
 
+  // Copy the temporary entries into the final location.
   std::lock_guard<std::mutex> lock(ranges_mutex_);
   for (auto entry: entries)
   {
