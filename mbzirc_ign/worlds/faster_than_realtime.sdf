@@ -344,6 +344,10 @@
       </target>
     </plugin>
 
+    <plugin filename="libCompetitorPlatformDetector.so"
+            name="mbzirc::CompetitorPlatformDetector">
+    </plugin>
+
     <model name="ocean_entity_detector">
       <static>true</static>
       <!-- This plugin detects when target objects are dropped into the ocean

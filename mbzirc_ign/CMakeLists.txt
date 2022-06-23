@@ -47,6 +47,7 @@ install(
 # Plugins
 list(APPEND MBZIRC_IGN_PLUGINS
   BaseStation
+  CompetitorPlatformDetector
   FixedWingController
   GameLogicPlugin
   EntityDetector
@@ -119,6 +120,7 @@ if(BUILD_TESTING)
   configure_file(test/helper/TestConstants.hh.in TestConstants.hh @ONLY)
 
   foreach(TEST_TARGET
+    test_competitor_detector
     test_spawn_uav_battery
     test_game_logic
     test_spawn_usv_maxspeed
@@ -131,7 +133,8 @@ if(BUILD_TESTING)
       test/${TEST_TARGET}.cc
     )
     target_include_directories(${TEST_TARGET}
-      PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto)
+      PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/proto
+      ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(${TEST_TARGET} ignition-gazebo${IGN_GAZEBO_VER}::ignition-gazebo${IGN_GAZEBO_VER})
     set_tests_properties(${TEST_TARGET} PROPERTIES TIMEOUT 300)
   endforeach()

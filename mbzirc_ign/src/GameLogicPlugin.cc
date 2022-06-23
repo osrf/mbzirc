@@ -57,6 +57,7 @@
 
 #include <sdf/sdf.hh>
 
+#include "Components.hh"
 #include "GameLogicPlugin.hh"
 
 IGNITION_ADD_PLUGIN(
@@ -602,7 +603,7 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
                            ignition::gazebo::EventManager & _eventMgr)
 {
   this->dataPtr->creator = std::make_unique<SdfEntityCreator>(_ecm, _eventMgr);
-  this->dataPtr->worldEntity = _ecm.EntityByComponents(components::World());
+  this->dataPtr->worldEntity = _ecm.EntityByComponents(gazebo::components::World());
   this->dataPtr->eventManager = &_eventMgr;
 
   // Check if the game logic plugin has a <logging> element.
@@ -863,66 +864,24 @@ void GameLogicPlugin::PostUpdate(
   // triggers the start signal.
   if (!this->dataPtr->started)
   {
-    _ecm.Each<gazebo::components::Sensor,
-              gazebo::components::ParentEntity>(
+    _ecm.Each<mbzirc::components::CompetitorPlatform>(
         [&](const gazebo::Entity &_entity,
-            const gazebo::components::Sensor *,
-            const gazebo::components::ParentEntity *_parent) -> bool
+            const mbzirc::components::CompetitorPlatform *_info) -> bool
         {
-          // Get the model. We are assuming that a sensor is attached to
-          // a link.
-          auto parent = _ecm.Component<gazebo::components::ParentEntity>(
-              _parent->Data());
-          auto model = parent;
-
-          // find top level model
-          while (parent && _ecm.Component<gazebo::components::Model>(
-                 parent->Data()))
+          if (this->dataPtr->robotNames.find(_entity) ==
+              this->dataPtr->robotNames.end())
           {
-            model = parent;
-            parent = _ecm.Component<gazebo::components::ParentEntity>(
-                parent->Data());
-          }
+            this->dataPtr->robotNames[_entity] = _info->Data().robotName;
+            this->dataPtr->robotInitialPos[_entity] = _info->Data().initialPos;
 
-          if (model)
-          {
-            // \todo(anyone)
-            // Check if the robot has beyond the staging area.
-            // we need to trigger the /mbzirc/start.
-
-            // Get the model name
-            Entity entity = model->Data();
-            auto mName =
-              _ecm.Component<gazebo::components::Name>(entity);
-            if (this->dataPtr->robotNames.find(entity) ==
-                this->dataPtr->robotNames.end())
-            {
-              this->dataPtr->robotNames[entity] = mName->Data();
-              this->dataPtr->robotInitialPos[entity] =
-                  _ecm.Component<components::Pose>(entity)->Data().Pos();
-
-              // Subscribe to battery state in order to log battery events.
-              std::string batteryTopic = std::string("/model/") +
-                mName->Data() + "/battery/linear_battery/state";
-              this->dataPtr->node.Subscribe(batteryTopic,
-                  &GameLogicPluginPrivate::OnBatteryMsg, this->dataPtr.get());
-            }
-
-            // store camera / rgbd camera sensor
-            // later user for target confirmation in image stream
-            auto camComp = _ecm.Component<gazebo::components::Camera>(_entity);
-            if (camComp)
-            {
-              this->dataPtr->cameraSensors.insert(_entity);
-            }
-            auto rgbdComp = _ecm.Component<gazebo::components::RgbdCamera>(_entity);
-            if (rgbdComp)
-            {
-              this->dataPtr->cameraSensors.insert(_entity);
-            }
+            std::string batteryTopic = std::string("/model/") +
+                _info->Data().robotName + "/battery/linear_battery/state";
+            this->dataPtr->node.Subscribe(batteryTopic,
+              &GameLogicPluginPrivate::OnBatteryMsg, this->dataPtr.get());
           }
           return true;
-        });
+        }
+    );
 
     // Start automatically if setup time has elapsed.
     if (this->dataPtr->simTime.sec() >= this->dataPtr->setupTimeSec)
@@ -938,7 +897,7 @@ void GameLogicPlugin::PostUpdate(
         Entity robotEnt = it.first;
         math::Vector3d robotInitPos = it.second;
 
-        auto poseComp = _ecm.Component<components::Pose>(robotEnt);
+        auto poseComp = _ecm.Component<gazebo::components::Pose>(robotEnt);
         if (poseComp)
         {
           double distance = poseComp->Data().Pos().Distance(robotInitPos);
@@ -1144,34 +1103,36 @@ bool GameLogicPluginPrivate::MakeStatic(Entity _entity,
     this->staticModelToSpawn.Load(staticModelSDF);
   }
 
-  auto poseComp = _ecm.Component<components::Pose>(_entity);
+  auto poseComp = _ecm.Component<gazebo::components::Pose>(_entity);
   if (!poseComp)
     return false;
   math::Pose3d p = poseComp->Data();
   this->staticModelToSpawn.SetRawPose(p);
 
-  auto nameComp = _ecm.Component<components::Name>(_entity);
+  auto nameComp = _ecm.Component<gazebo::components::Name>(_entity);
   this->staticModelToSpawn.SetName(nameComp->Data() + "__static__");
 
   Entity staticEntity = this->creator->CreateEntities(&staticModelToSpawn);
   this->creator->SetParent(staticEntity, this->worldEntity);
 
   Entity parentLinkEntity = _ecm.EntityByComponents(
-      components::Link(), components::ParentEntity(staticEntity),
-      components::Name("static_link"));
+      gazebo::components::Link(),
+      gazebo::components::ParentEntity(staticEntity),
+      gazebo::components::Name("static_link"));
 
   if (parentLinkEntity == kNullEntity)
     return false;
 
   Entity childLinkEntity = _ecm.EntityByComponents(
-      components::CanonicalLink(), components::ParentEntity(_entity));
+      gazebo::components::CanonicalLink(),
+      gazebo::components::ParentEntity(_entity));
 
   if (childLinkEntity == kNullEntity)
     return false;
 
   Entity detachableJointEntity = _ecm.CreateEntity();
   _ecm.CreateComponent(detachableJointEntity,
-      components::DetachableJoint(
+      gazebo::components::DetachableJoint(
       {parentLinkEntity, childLinkEntity, "fixed"}));
 
   return true;
@@ -1182,7 +1143,7 @@ bool GameLogicPluginPrivate::CheckEntityInBoundary(
     const EntityComponentManager &_ecm, Entity _entity,
     const math::AxisAlignedBox &_boundary)
 {
-  auto poseComp = _ecm.Component<components::Pose>(_entity);
+  auto poseComp = _ecm.Component<gazebo::components::Pose>(_entity);
   if (!poseComp)
   {
     ignerr << "Pose component not found for Entity: " << _entity
@@ -1937,7 +1898,7 @@ void GameLogicPluginPrivate::DisableDroppedObjects(
 {
   for (const auto &objName : this->objectsToDisable)
   {
-    auto entity = _ecm.EntityByComponents(components::Name(objName));
+    auto entity = _ecm.EntityByComponents(gazebo::components::Name(objName));
     if (entity != kNullEntity)
       this->MakeStatic(entity, _ecm);
   }
