@@ -1396,6 +1396,10 @@
         <center>0 0 10.96</center>
         <size>3162.28 3162.28 221.92</size>
       </geofence>
+      <start_area>
+        <center>-1487.5 0 5</center>
+        <size>75 50 10</size>
+      </start_area>
       <target>
         <vessel>Vessel B</vessel>
         <small_object>small_case_b</small_object>
@@ -1404,6 +1408,27 @@
         <large_object>large_grey_box_b_duplicate</large_object>
       </target>
     </plugin>
+
+    <!-- uncomment to see visualization of the start area -->
+    <!--
+    <model name="start_area">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 0 0 0 0</pose>
+        <visual name="visual">
+          <pose>-1487.5 0 5 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>75 50 10</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0 0.5</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    -->
 
     <!-- uncomment to see visualization of the competition area -->
     <!--
