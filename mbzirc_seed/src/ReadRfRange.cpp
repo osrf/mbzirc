@@ -90,7 +90,8 @@ void ReadRfRange::onRangeMessage(const ros_ign_interfaces::msg::ParamVec & msg)
   // 
   // Since we are trying to update an entire model at once, we temporarily store
   // the values in the "Entry" structure, to then be copied over once all parameters are parsed.
-  for (auto param: msg.params) et
+  for (auto param: msg.params)
+  {
    int curIdx = 0;
     for (int ii = 0; ii < nEntries; ++ii) {
       // Find the index of this parameter entry.
