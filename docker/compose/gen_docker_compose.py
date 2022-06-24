@@ -29,7 +29,7 @@ def parse_args():
                         help='Set config file')
     parser.add_argument('--image', dest='image', type=str,
                         help='Set team solution image')
-    parser.add_argument('--out', dest='out_file', type=str,
+    parser.add_argument('--out', dest='out_file', type=str, default='mbzirc_compose.yaml',
                         help='Set output docker compose yaml file')
     parser.add_argument('--world', dest='world', type=str, default='coast',
                         help='Name of world')
@@ -144,9 +144,7 @@ def run_main():
              "world": args.world}
     j2_template = Template(template)
     out = j2_template.render(data)
-    out_name = 'mbzirc_compose.yaml'
-    if args.out_file:
-        out_name = args.out_file
+    out_name = getattr(args, 'out_file')
     f = open(out_name, 'w')
     f.write(out)
     f.close()
