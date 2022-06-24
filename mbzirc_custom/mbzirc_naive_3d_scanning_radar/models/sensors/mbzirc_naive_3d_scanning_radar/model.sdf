@@ -13,20 +13,6 @@
           <izz>8.33e-06</izz>
         </inertia>
       </inertial>
-    </link>
-
-    <link name="sensor_link">
-      <inertial>
-        <mass>0.005</mass>
-        <inertia>
-          <ixx>8.33e-06</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>8.33e-06</iyy>
-          <iyz>0</iyz>
-          <izz>8.33e-06</izz>
-        </inertia>
-      </inertial>
       <sensor name='gpu_lidar' type='gpu_lidar'>
         <pose relative_to='sensor_link'>0 0 0 0 0 0</pose>
         <update_rate>1</update_rate>
@@ -35,8 +21,8 @@
             <horizontal>
               <samples>250</samples>
               <resolution>1</resolution>
-              <min_angle>-1.570796</min_angle>
-              <max_angle>1.570796</max_angle>
+              <min_angle>-3.14159</min_angle>
+              <max_angle>3.14159</max_angle>
             </horizontal>
             <vertical>
               <samples>32</samples>
@@ -53,19 +39,14 @@
           <noise>
             <type>gaussian</type>
             <mean>0</mean>
-            <stddev>2</stddev>
+            <stddev>0.75</stddev>
           </noise>
+          <visibility_mask>55</visibility_mask>
         </lidar>
         <alwaysOn>1</alwaysOn>
         <visualize>true</visualize>
       </sensor>
     </link>
-
-    <joint name="sensor_joint" type="fixed">
-      <pose>0 0 0 0 0 0</pose>
-      <parent>base_link</parent>
-      <child>sensor_link</child>
-    </joint>
 
     <plugin
       filename="libNaive3dScanningRadar.so"
