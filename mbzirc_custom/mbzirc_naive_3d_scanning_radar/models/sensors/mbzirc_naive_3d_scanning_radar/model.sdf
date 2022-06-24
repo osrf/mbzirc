@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <sdf version="1.9">
-  <model name="mbzirc_naive_spinning_radar">
+  <model name="mbzirc_naive_3d_scanning_radar">
     <link name="base_link">
       <inertial>
         <mass>0.005</mass>
@@ -14,6 +14,7 @@
         </inertia>
       </inertial>
     </link>
+
     <link name="sensor_link">
       <inertial>
         <mass>0.005</mass>
@@ -26,12 +27,8 @@
           <izz>8.33e-06</izz>
         </inertia>
       </inertial>
-
       <sensor name='gpu_lidar' type='gpu_lidar'>
         <pose relative_to='sensor_link'>0 0 0 0 0 0</pose>
-        <!--
-        <topic>lidar</topic>
-        -->
         <update_rate>1</update_rate>
         <lidar>
           <scan>
@@ -51,27 +48,29 @@
           <range>
             <min>1</min>
             <max>1500</max>
-            <resolution>0.075</resolution>
+            <resolution>0.75</resolution>
           </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>2</stddev>
+          </noise>
         </lidar>
         <alwaysOn>1</alwaysOn>
         <visualize>true</visualize>
-        <!--
-        <plugin
-          filename="libRosIgnPointCloud.so"
-          name="ros_ign_point_cloud::PointCloud">
-          <namespace>custom_params</namespace>
-          <topic>pc2</topic>
-          <frame_id>custom_params/link</frame_id>
-        </plugin>
-        -->
       </sensor>
     </link>
+
     <joint name="sensor_joint" type="fixed">
       <pose>0 0 0 0 0 0</pose>
       <parent>base_link</parent>
       <child>sensor_link</child>
     </joint>
+
+    <plugin
+      filename="libNaive3dScanningRadar.so"
+      name="mbzirc::Naive3dScanningRadar">
+    </plugin>
 
     <frame name="mount_point"/>
   </model>

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>mbzirc_naive_spinning_radar</name>
+  <name>mbzirc_naive_3d_scanning_radar</name>
   <version>0.0.0</version>
-  <description>Custom MBZIRC Naive Spinning Radar Model</description>
+  <description>Custom MBZIRC Naive 3d scanning Radar Model</description>
 
   <maintainer email="ichen@openrobotics.org">Ian Chen</maintainer>
 

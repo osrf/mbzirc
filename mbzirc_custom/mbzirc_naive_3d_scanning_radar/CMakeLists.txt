@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 
-project(mbzirc_naive_spinning_radar)
+project(mbzirc_naive_3d_scanning_radar)
 
 find_package(ament_cmake REQUIRED)
 find_package(ignition-math6 REQUIRED)
@@ -24,10 +24,10 @@ ament_environment_hooks("hooks/resource_paths.dsv.in")
 ament_environment_hooks("hooks/resource_paths.sh")
 
 # build the ign-gazebo system
-add_library(MaritimeRadar SHARED
-    src/MaritimeRadar.cc
+add_library(Naive3dScanningRadar SHARED
+    src/Naive3dScanningRadar.cc
 )
-target_link_libraries(MaritimeRadar PUBLIC
+target_link_libraries(Naive3dScanningRadar PUBLIC
   ignition-gazebo${IGN_GAZEBO_VER}::core
   ignition-msgs${IGN_MSGS_VER}::ignition-msgs${IGN_MSGS_VER}
   ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
@@ -36,19 +36,6 @@ target_link_libraries(MaritimeRadar PUBLIC
   ignition-math${IGN_MATH_VER}::ignition-math${IGN_MATH_VER}
 )
 
-# build the bridge process
-# add_executable(maritime_radar_bridge src/maritime_radar_bridge.cc)
-# ament_target_dependencies(maritime_radar_bridge
-#   PUBLIC
-#   rclcpp
-#   radar_msgs
-#   ros_ign_bridge
-# )
-# target_link_libraries(maritime_radar_bridge PUBLIC
-#   #ignition-msgs${IGN_MSGS_VER}::ignition-msgs${IGN_MSGS_VER}
-#   ignition-transport${IGN_TRANSPORT_VER}::ignition-transport${IGN_TRANSPORT_VER}
-# )
-
 # Uncomment the install call below to install the example naive spinning radar
 # model
 install(DIRECTORY
@@ -56,10 +43,7 @@ install(DIRECTORY
   models
   DESTINATION share/${PROJECT_NAME})
 install(
-  TARGETS MaritimeRadar
+  TARGETS Naive3dScanningRadar
   DESTINATION lib)
-# install(TARGETS
-#   maritime_radar_bridge
-#   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
