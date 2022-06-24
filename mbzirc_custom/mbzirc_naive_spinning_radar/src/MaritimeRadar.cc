@@ -41,7 +41,7 @@ void MaritimeRadar::Configure(const ignition::gazebo::Entity &_entity,
 
   // Get the laser topic
   this->laserTopic =
-    "/world/" + worldName + "/" + entityName + "/link/sensor_link/sensor/lidar/scan";
+    "/world/" + worldName + "/" + entityName + "/link/sensor_link/sensor/gpu_lidar/scan";
   ignerr << "laser topic is [" << this->laserTopic << "].\n";
   if (_sdf->HasElement("laser_topic"))
   {

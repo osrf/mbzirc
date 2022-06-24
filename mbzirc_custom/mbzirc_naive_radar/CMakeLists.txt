@@ -49,15 +49,15 @@ target_link_libraries(naive_radar_bridge PUBLIC
 )
 
 # Uncomment the install calls below to install the example naive radar model
-# install(
-#   TARGETS NaiveRadar
-#   DESTINATION lib)
-# install(DIRECTORY
-#   models
-#   launch
-#   DESTINATION share/${PROJECT_NAME})
-# install(TARGETS
-#   naive_radar_bridge
-#   DESTINATION lib/${PROJECT_NAME})
+install(
+  TARGETS NaiveRadar
+  DESTINATION lib)
+install(DIRECTORY
+  models
+  launch
+  DESTINATION share/${PROJECT_NAME})
+install(TARGETS
+  naive_radar_bridge
+  DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

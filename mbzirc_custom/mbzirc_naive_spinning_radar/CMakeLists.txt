@@ -37,17 +37,18 @@ target_link_libraries(MaritimeRadar PUBLIC
 )
 
 # build the bridge process
-add_executable(maritime_radar_bridge src/maritime_radar_bridge.cc)
-ament_target_dependencies(maritime_radar_bridge
-  PUBLIC
-  rclcpp
-  radar_msgs
-  ros_ign_bridge
-)
-target_link_libraries(maritime_radar_bridge PUBLIC
-  #ignition-msgs${IGN_MSGS_VER}::ignition-msgs${IGN_MSGS_VER}
-  ignition-transport${IGN_TRANSPORT_VER}::ignition-transport${IGN_TRANSPORT_VER}
-)
+# add_executable(maritime_radar_bridge src/maritime_radar_bridge.cc)
+# ament_target_dependencies(maritime_radar_bridge
+#   PUBLIC
+#   rclcpp
+#   radar_msgs
+#   ros_ign_bridge
+# )
+# target_link_libraries(maritime_radar_bridge PUBLIC
+#   #ignition-msgs${IGN_MSGS_VER}::ignition-msgs${IGN_MSGS_VER}
+#   ignition-transport${IGN_TRANSPORT_VER}::ignition-transport${IGN_TRANSPORT_VER}
+# )
+
 # Uncomment the install call below to install the example naive spinning radar
 # model
 install(DIRECTORY
@@ -57,8 +58,8 @@ install(DIRECTORY
 install(
   TARGETS MaritimeRadar
   DESTINATION lib)
-install(TARGETS
-  maritime_radar_bridge
-  DESTINATION lib/${PROJECT_NAME})
+# install(TARGETS
+#   maritime_radar_bridge
+#   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
