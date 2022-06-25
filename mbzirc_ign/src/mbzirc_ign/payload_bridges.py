@@ -18,6 +18,7 @@ def lidar_models():
               ]
     return models
 
+
 def rfranger_models():
     models = ['mbzirc_rf_range',
               'mbzirc_rf_long_range']
@@ -105,6 +106,7 @@ def camera_points(world_name, model_name, slot_idx, model_prefix=''):
         ros_type='sensor_msgs/msg/PointCloud2',
         direction=BridgeDirection.IGN_TO_ROS)
 
+
 def rfranger(world_name, model_name, slot_idx, model_prefix=''):
     prefix = f'/world/{world_name}/model/{model_name}/model/sensor_{slot_idx}'
     ros_prefix = ros_slot_prefix(slot_idx, model_prefix)
@@ -140,4 +142,3 @@ def payload_bridges(world_name, model_name, payload, idx, model_prefix=''):
             rfranger(world_name, model_name, idx, model_prefix),
         ]
     return bridges
-
