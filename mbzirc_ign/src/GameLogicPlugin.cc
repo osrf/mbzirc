@@ -61,6 +61,7 @@
 
 #include "GameLogicPlugin.hh"
 #include "Components.hh"
+#include "MbzircTypes.hh"
 
 IGNITION_ADD_PLUGIN(
     mbzirc::GameLogicPlugin,
@@ -76,132 +77,23 @@ using namespace mbzirc;
 
 class mbzirc::GameLogicPluginPrivate
 {
-
-  public: class SensorInfo
-  {
-    /// \brief Entity that the sensor is attached to
-    public: ignition::gazebo::Entity sensorEntity;
-
-    /// \brief Name of the platform slot the sensor is attached to
-    public: std::string slotName;
-
-    /// \brief Sensor type in (camera, rgbd_camera, gpu_lidar)
-    public: std::string sensorType;
-  };
-
-  /// \brief Structure to hold information about competitor platforms
-  public: class PlatformInfo
-  {
-    /// \brief Entity of tAhe platform
-    public: ignition::gazebo::Entity modelEntity;
-
-    /// \brief Name of the platform
-    public: std::string robotName;
-
-    /// \brief Spawn position of the platform
-    public: ignition::math::Vector3d initialPos;
-
-    /// \brief Is the platform inside the competition boundary
-    public: bool inCompetitionBoundary = {true};
-        
-    /// \brief Is the platform inside the starting area 
-    public: bool inStartingArea = {true};
-
-    /// \brief Is the platform disabled 
-    public: bool isDisabled = {false};
-
-    /// \brief Sensors attached to the platform
-    std::vector<SensorInfo> sensors;
-  };
-
-  /// \brief Target vessel, objects, and report status
-  public: class Target
-  {
-    /// \brief Name of target vessel
-    public: std::string vessel;
-
-    /// \brief List of small target objects
-    public: std::unordered_set<std::string> smallObjects;
-
-    /// \brief List of large target objects
-    public: std::unordered_set<std::string> largeObjects;
-
-    /// \brief Indicates if vessel has been reported
-    public: bool vesselReported = false;
-
-    /// \brief Set of small objects that have been reported.
-    public: std::unordered_set<std::string> smallObjectsReported;
-
-    /// \brief Set of large objects that have been reported.
-    public: std::unordered_set<std::string> largeObjectsReported;
-
-    /// \brief Set of small objects that have been retrieved.
-    public: std::unordered_set<std::string> smallObjectsRetrieved;
-
-    /// \brief Set of large objects that have been retrieved.
-    public: std::unordered_set<std::string> largeObjectsRetrieved;
-  };
-
-  /// \brief Information of target in stream
-  public: class TargetInStream
-  {
-    /// \brief Type of target: vessel, small, large
-    public: std::string type;
-
-    /// \brief Image x position
-    public: unsigned int x = 0;
-
-    /// \brief Image y position
-    public: unsigned int y = 0;
-  };
-
-  public: enum PenaltyType
-          {
-            /// \brief Failure to ID target vessel
-            TARGET_VESSEL_ID_1 = 0,
-            TARGET_VESSEL_ID_2 = 1,
-            TARGET_VESSEL_ID_3 = 2,
-
-            /// \brief Failure to ID small object
-            SMALL_OBJECT_ID_1 = 3,
-            SMALL_OBJECT_ID_2 = 4,
-            SMALL_OBJECT_ID_3 = 5,
-
-            /// \brief Failure to ID large object
-            LARGE_OBJECT_ID_1 = 6,
-            LARGE_OBJECT_ID_2 = 7,
-            LARGE_OBJECT_ID_3 = 8,
-
-            /// \brief Failure to retrieve / place small object
-            SMALL_OBJECT_RETRIEVE_1 = 9,
-            SMALL_OBJECT_RETRIEVE_2 = 10,
-
-            /// \brief Failure to retrieve / place large object
-            LARGE_OBJECT_RETRIEVE_1 = 11,
-            LARGE_OBJECT_RETRIEVE_2 = 12,
-
-            /// \brief Failure to remain in demonstration area boundary
-            BOUNDARY_1 = 13,
-            BOUNDARY_2 = 14,
-          };
-
   /// \brief A map of penalty type and time penalties.
   public: const std::unordered_map<PenaltyType, int> kTimePenalties = {
-          {TARGET_VESSEL_ID_1, 180},
-          {TARGET_VESSEL_ID_2, 240},
-          {TARGET_VESSEL_ID_3, ignition::math::MAX_I32},
-          {SMALL_OBJECT_ID_1, 180},
-          {SMALL_OBJECT_ID_2, 240},
-          {SMALL_OBJECT_ID_3, ignition::math::MAX_I32},
-          {LARGE_OBJECT_ID_1, 180},
-          {LARGE_OBJECT_ID_2, 240},
-          {LARGE_OBJECT_ID_3, ignition::math::MAX_I32},
-          {SMALL_OBJECT_RETRIEVE_1, 120},
-          {SMALL_OBJECT_RETRIEVE_2, ignition::math::MAX_I32},
-          {LARGE_OBJECT_RETRIEVE_1, 120},
-          {LARGE_OBJECT_RETRIEVE_2, ignition::math::MAX_I32},
-          {BOUNDARY_1, 300},
-          {BOUNDARY_2, ignition::math::MAX_I32}};
+          {PenaltyType::TARGET_VESSEL_ID_1, 180},
+          {PenaltyType::TARGET_VESSEL_ID_2, 240},
+          {PenaltyType::TARGET_VESSEL_ID_3, ignition::math::MAX_I32},
+          {PenaltyType::SMALL_OBJECT_ID_1, 180},
+          {PenaltyType::SMALL_OBJECT_ID_2, 240},
+          {PenaltyType::SMALL_OBJECT_ID_3, ignition::math::MAX_I32},
+          {PenaltyType::LARGE_OBJECT_ID_1, 180},
+          {PenaltyType::LARGE_OBJECT_ID_2, 240},
+          {PenaltyType::LARGE_OBJECT_ID_3, ignition::math::MAX_I32},
+          {PenaltyType::SMALL_OBJECT_RETRIEVE_1, 120},
+          {PenaltyType::SMALL_OBJECT_RETRIEVE_2, ignition::math::MAX_I32},
+          {PenaltyType::LARGE_OBJECT_RETRIEVE_1, 120},
+          {PenaltyType::LARGE_OBJECT_RETRIEVE_2, ignition::math::MAX_I32},
+          {PenaltyType::BOUNDARY_1, 300},
+          {PenaltyType::BOUNDARY_2, ignition::math::MAX_I32}};
 
   /// \brief Write a simulation timestamp to a logfile.
   /// \param[in] _simTime Current sim time.
@@ -398,9 +290,8 @@ class mbzirc::GameLogicPluginPrivate
   public: rendering::VisualPtr VisualAt(
       unsigned int _x, unsigned int _y, const std::string &_type) const;
 
-
-  /// \brief Publish status message about stream requests / target reports
   /// \param[in] _status Status string to publish
+    /// \brief Publish status message about stream requests / target reports
   public: void PublishStreamStatus(const std::string &_status);
 
   /// \brief Set the competition phase
@@ -628,7 +519,7 @@ class mbzirc::GameLogicPluginPrivate
   public: const double kTargetObjInImageTol = 0.008;
 
   /// \brief Compeition phase.
-  public: std::string phase{"setup"};
+  public: std::string phase{kPhaseSetup};
 };
 
 //////////////////////////////////////////////////
@@ -783,7 +674,7 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
     {
       if (targetElem->HasElement("vessel"))
       {
-        GameLogicPluginPrivate::Target target;
+        mbzirc::Target target;
 
         // get target vessel name
         auto vesselTargetElem = targetElem->GetElement("vessel");
@@ -972,8 +863,6 @@ void GameLogicPlugin::PostUpdate(
     }
   }
 
-  auto valid = this->dataPtr->AuditCompetitorConfiguration(_ecm);
-
   if (this->dataPtr->started && !this->dataPtr->audited)
   {
     auto valid = this->dataPtr->AuditCompetitorConfiguration(_ecm);
@@ -1012,20 +901,20 @@ void GameLogicPlugin::PostUpdate(
   std::string phaseStr = this->dataPtr->Phase();
 
   // validate target reports - inspection task
-  if (phaseStr == "started" ||
-      phaseStr == "vessel_id_success" ||
-      phaseStr == "small_object_id_success" ||
+  if (phaseStr == kPhaseStarted ||
+      phaseStr == kPhaseVesselIdSuccess ||
+      phaseStr == kPhaseSmallObjectIdSuccess ||
       // if there are more than 1 target vessels, we will starting validating
       // target reports again.
-      phaseStr == "large_object_retrieve_success")
+      phaseStr == kPhaseLargeObjectRetrieveSuccess)
   {
     // validate target reports
     this->dataPtr->ValidateTargetReports();
   }
 
   // validate target object retrieval - intervention task
-  if (phaseStr == "large_object_id_success" ||
-      phaseStr == "small_object_retrieve_success")
+  if (phaseStr == kPhaseLargeObjectIdSuccess ||
+      phaseStr == kPhaseSmallObjectRetrieveSuccess)
   {
     this->dataPtr->ValidateTargetObjectRetrieval();
   }
@@ -1062,7 +951,7 @@ void GameLogicPlugin::PostUpdate(
     ignition::msgs::StringMsg phaseMsg;
     std::string p = this->dataPtr->Phase();
     phaseMsg.set_data(p);
-    if (p == "setup")
+    if (p == kPhaseSetup)
     {
       competitionClockMsg.mutable_sim()->set_sec(
           this->dataPtr->setupTimeSec - this->dataPtr->simTime.sec());
@@ -1133,16 +1022,14 @@ void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
         if (this->geofenceBoundaryPenaltyCount == 1)
         {
           this->timePenalty +=
-              this->kTimePenalties.at(
-              GameLogicPluginPrivate::BOUNDARY_1);
+              this->kTimePenalties.at(PenaltyType::BOUNDARY_1);
           this->LogEvent("exceed_boundary_1", robot.robotName);
           this->UpdateScoreFiles(this->simTime);
         }
         else if (this->geofenceBoundaryPenaltyCount >= 2)
         {
           this->timePenalty =
-              this->kTimePenalties.at(
-              GameLogicPluginPrivate::BOUNDARY_2);
+              this->kTimePenalties.at(PenaltyType::BOUNDARY_2);
           this->LogEvent("exceed_boundary_2", robot.robotName);
           // terminate run
           this->Finish(this->simTime);
@@ -1293,7 +1180,7 @@ bool GameLogicPluginPrivate::Start(const ignition::msgs::Time &_simTime)
     ignmsg << "Scoring has Started" << std::endl;
     this->Log(_simTime) << "scoring_started" << std::endl;
     this->LogEvent("started");
-    this->SetPhase("started");
+    this->SetPhase(kPhaseStarted);
   }
 
   // Update files when scoring has started.
@@ -1351,7 +1238,7 @@ void GameLogicPluginPrivate::Finish(const ignition::msgs::Time &_simTime)
     this->logStream.flush();
 
     this->LogEvent("finished");
-    this->SetPhase("finished");
+    this->SetPhase(kPhaseFinished);
   }
 
   this->finished = true;
@@ -1553,7 +1440,7 @@ bool GameLogicPluginPrivate::OnSkipToPhase(
     ignition::msgs::Boolean &_res)
 {
   std::string p = _req.data();
-  if (p != "setup")
+  if (p != kPhaseSetup)
   {
     auto simT = this->SimTime();
     this->Start(simT);
@@ -1600,14 +1487,14 @@ void GameLogicPluginPrivate::ValidateTargetReports()
   {
     if (req.data_size() <= 0)
     {
-      this->LogEvent("target_reported", "empty_report");
+      this->LogEvent(kTargetReported, "empty_report");
       continue;
     }
 
     std::string vessel = req.data(0);
     if (vessel.empty())
     {
-      this->LogEvent("target_reported", "target_vessel_missing");
+      this->LogEvent(kTargetReported, "target_vessel_missing");
       continue;
     }
 
@@ -1623,9 +1510,9 @@ void GameLogicPluginPrivate::ValidateTargetReports()
       {
         target.vesselReported = true;
         this->targets[vessel] = target;
-        this->LogEvent("target_reported", "vessel_id_success");
+        this->LogEvent(kTargetReported, "vessel_id_success");
         this->currentTargetVessel = vessel;
-        this->SetPhase("vessel_id_success");
+        this->SetPhase(kPhaseVesselIdSuccess);
         this->PublishStreamStatus("vessel_id_success");
 
         ignmsg << "Target vessel identified: " << vessel << ". "
@@ -1653,14 +1540,14 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             {
               target.smallObjectsReported.insert(smallObj);
               this->targets[vessel] = target;
-              this->LogEvent("target_reported", "small_object_id_success");
-              this->SetPhase("small_object_id_success");
-              this->PublishStreamStatus("small_object_id_success");
+              this->LogEvent(kTargetReported, kPhaseSmallObjectIdSuccess);
+              this->SetPhase(kPhaseSmallObjectIdSuccess);
+              this->PublishStreamStatus(kPhaseSmallObjectIdSuccess);
               continue;
             }
             else
             {
-              this->LogEvent("target_reported", "small_object_id_duplicate");
+              this->LogEvent(kTargetReported, "small_object_id_duplicate");
             }
           }
           else
@@ -1677,25 +1564,25 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             if (count == 1u)
             {
               this->timePenalty +=
-                  this->kTimePenalties.at(LARGE_OBJECT_ID_1);
+                  this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_1);
               this->UpdateScoreFiles(simT);
               logData += "_1";
-              this->LogEvent("target_reported", logData);
+              this->LogEvent(kTargetReported, logData);
             }
             else if (count == 2u)
             {
               this->timePenalty +=
-                  this->kTimePenalties.at(LARGE_OBJECT_ID_2);
+                  this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_2);
               this->UpdateScoreFiles(simT);
               logData += "_2";
-              this->LogEvent("target_reported", logData);
+              this->LogEvent(kTargetReported, logData);
             }
             else
             {
               this->timePenalty +=
-                  this->kTimePenalties.at(LARGE_OBJECT_ID_3);
+                  this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_3);
               logData += "_3";
-              this->LogEvent("target_reported", logData);
+              this->LogEvent(kTargetReported, logData);
               // terminate run
               this->Finish(simT);
               break;
@@ -1717,14 +1604,14 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               {
                 target.largeObjectsReported.insert(largeObj);
                 this->targets[vessel] = target;
-                this->LogEvent("target_reported", "large_object_id_success");
-                this->SetPhase("large_object_id_success");
-                this->PublishStreamStatus("large_object_id_success");
+                this->LogEvent(kTargetReported, kPhaseLargeObjectIdSuccess);
+                this->SetPhase(kPhaseLargeObjectIdSuccess);
+                this->PublishStreamStatus(kPhaseLargeObjectIdSuccess);
                 continue;
               }
               else
               {
-                this->LogEvent("target_reported", "large_object_id_duplicate");
+                this->LogEvent(kTargetReported, "large_object_id_duplicate");
               }
             }
             else
@@ -1741,22 +1628,22 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               if (count == 1u)
               {
                 this->timePenalty +=
-                    this->kTimePenalties.at(LARGE_OBJECT_ID_1);
+                    this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_1);
                 this->UpdateScoreFiles(simT);
-                this->LogEvent("target_reported", logData + "_1");
+                this->LogEvent(kTargetReported, logData + "_1");
               }
               else if (count == 2u)
               {
                 this->timePenalty +=
-                    this->kTimePenalties.at(LARGE_OBJECT_ID_2);
+                    this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_2);
                 this->UpdateScoreFiles(simT);
-                this->LogEvent("target_reported", logData + "_2");
+                this->LogEvent(kTargetReported, logData + "_2");
               }
               else
               {
                 this->timePenalty +=
-                    this->kTimePenalties.at(LARGE_OBJECT_ID_3);
-                this->LogEvent("target_reported", logData + "_3");
+                    this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_3);
+                this->LogEvent(kTargetReported, logData + "_3");
                 // terminate run
                 this->Finish(simT);
                 break;
@@ -1767,7 +1654,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
       }
       else
       {
-        this->LogEvent("target_reported", "vessel_id_duplicate");
+        this->LogEvent(kTargetReported, "vessel_id_duplicate");
       }
     }
     else
@@ -1779,22 +1666,22 @@ void GameLogicPluginPrivate::ValidateTargetReports()
       if (this->vesselPenaltyCount == 1u)
       {
         this->timePenalty +=
-            this->kTimePenalties.at(TARGET_VESSEL_ID_1);
+            this->kTimePenalties.at(PenaltyType::TARGET_VESSEL_ID_1);
         this->UpdateScoreFiles(simT);
-        this->LogEvent("target_reported", logData + "_1");
+        this->LogEvent(kTargetReported, logData + "_1");
       }
       else if (this->vesselPenaltyCount == 2u)
       {
         this->timePenalty +=
-            this->kTimePenalties.at(TARGET_VESSEL_ID_2);
+            this->kTimePenalties.at(PenaltyType::TARGET_VESSEL_ID_2);
         this->UpdateScoreFiles(simT);
-        this->LogEvent("target_reported", logData + "_2");
+        this->LogEvent(kTargetReported, logData + "_2");
       }
       else
       {
         this->timePenalty +=
-            this->kTimePenalties.at(TARGET_VESSEL_ID_3);
-        this->LogEvent("target_reported", logData + "_3");
+            this->kTimePenalties.at(PenaltyType::TARGET_VESSEL_ID_3);
+        this->LogEvent(kTargetReported, logData + "_3");
         // terminate run
         this->Finish(simT);
         break;
@@ -1845,17 +1732,17 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
           if (count == 1u)
           {
             this->timePenalty +=
-                this->kTimePenalties.at(SMALL_OBJECT_RETRIEVE_1);
+                this->kTimePenalties.at(PenaltyType::SMALL_OBJECT_RETRIEVE_1);
             this->UpdateScoreFiles(simT);
             logData += "_1";
-            this->LogEvent("target_retrieval", logData);
+            this->LogEvent(kTargetRetrieval, logData);
           }
           else if (count == 2u)
           {
             this->timePenalty +=
-                this->kTimePenalties.at(SMALL_OBJECT_RETRIEVE_2);
+                this->kTimePenalties.at(PenaltyType::SMALL_OBJECT_RETRIEVE_2);
             logData += "_2";
-            this->LogEvent("target_retrieval", logData);
+            this->LogEvent(kTargetRetrieval, logData);
             // terminate run
             this->Finish(simT);
           }
@@ -1882,17 +1769,17 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
           if (count == 1u)
           {
             this->timePenalty +=
-                this->kTimePenalties.at(LARGE_OBJECT_RETRIEVE_1);
+                this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_RETRIEVE_1);
             this->UpdateScoreFiles(simT);
             logData += "_1";
-            this->LogEvent("target_retrieval", logData);
+            this->LogEvent(kTargetRetrieval, logData);
           }
           else if (count == 2u)
           {
             this->timePenalty +=
-                this->kTimePenalties.at(LARGE_OBJECT_RETRIEVE_2);
+                this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_RETRIEVE_2);
             logData += "_2";
-            this->LogEvent("target_retrieval", logData);
+            this->LogEvent(kTargetRetrieval, logData);
             // terminate run
             this->Finish(simT);
           }
@@ -1917,7 +1804,7 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
     // phase is currently large_object_id_success, that means
     // the inspection phase is done and we are now in the intervention phase.
     // The next task is grabbing the small target object
-    if (phaseStr == "large_object_id_success")
+    if (phaseStr == kPhaseLargeObjectIdSuccess)
     {
       for (auto &targetIt : this->targets)
       {
@@ -1928,8 +1815,8 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
               target.smallObjectsRetrieved.find(objName) ==
               target.smallObjectsRetrieved.end())
           {
-            this->LogEvent("target_retrieval", "small_object_retrieve_success");
-            this->SetPhase("small_object_retrieve_success");
+            this->LogEvent(kTargetRetrieval, kPhaseSmallObjectRetrieveSuccess);
+            this->SetPhase(kPhaseSmallObjectRetrieveSuccess);
             target.smallObjectsRetrieved.insert(objName);
             break;
           }
@@ -1938,7 +1825,7 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
     }
     // phase is currently small_object_id_success, that means
     // the next task is grabbing the large target object
-    else if (phaseStr == "small_object_retrieve_success")
+    else if (phaseStr == kPhaseSmallObjectRetrieveSuccess)
     {
       for (auto &targetIt : this->targets)
       {
@@ -1950,8 +1837,8 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
               target.largeObjectsRetrieved.end())
           {
             target.largeObjectsRetrieved.insert(objName);
-            this->LogEvent("target_retrieval", "large_object_retrieve_success");
-            this->SetPhase("large_object_retrieve_success");
+            this->LogEvent(kTargetRetrieval, kPhaseLargeObjectRetrieveSuccess);
+            this->SetPhase(kPhaseLargeObjectRetrieveSuccess);
             this->CheckTaskCompletion();
           }
         }

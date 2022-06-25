@@ -28,8 +28,8 @@ namespace components
 {
   using NoData = ignition::gazebo::components::NoData;
 
-  /// \brief A component that identifies an entity as being a spawned platform.
-  using Usv = ignition::gazebo::components::Component<NoData, class CompetitorPlatformTag>;
+  /// \brief A component that identifies an entity as being a Usv 
+  using Usv = ignition::gazebo::components::Component<NoData, class UsvTag>;
   IGN_GAZEBO_REGISTER_COMPONENT("mbzirc_components.Usv", Usv)
 
 }  // namespace components
