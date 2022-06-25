@@ -14,7 +14,6 @@
         </inertia>
       </inertial>
       <sensor name='gpu_lidar' type='gpu_lidar'>
-        <pose relative_to='sensor_link'>0 0 0 0 0 0</pose>
         <update_rate>1</update_rate>
         <lidar>
           <scan>
