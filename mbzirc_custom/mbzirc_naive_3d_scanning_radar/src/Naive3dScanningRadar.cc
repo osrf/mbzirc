@@ -43,7 +43,7 @@ void Naive3dScanningRadar::Configure(const ignition::gazebo::Entity &_entity,
   // Get the laser topic
   this->laserTopic =
     "/world/" + worldName + "/" + entityName +
-    "/link/sensor_link/sensor/gpu_lidar/scan";
+    "/link/base_link/sensor/gpu_lidar/scan";
   if (_sdf->HasElement("laser_topic"))
   {
     this->laserTopic = _sdf->Get<std::string>("laser_topic");
