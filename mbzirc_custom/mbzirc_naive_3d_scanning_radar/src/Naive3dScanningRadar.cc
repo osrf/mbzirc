@@ -71,15 +71,17 @@ void Naive3dScanningRadar::PostUpdate(
 {
   if (_info.paused)
     return;
-  
-  if (this->laserInitialized)
-    return;
 
-  if (!this->laserInitialized && this->radarScanPub.HasConnections())
+  if (!this->laserSubscribed && this->radarScanPub.HasConnections())
   {
     this->node.Subscribe(
       this->laserTopic, &Naive3dScanningRadar::OnRadarScan, this);
-    this->laserInitialized = true;
+    this->laserSubscribed = true;
+  }
+  else if (this->laserSubscribed && !this->radarScanPub.HasConnections())
+  {
+    this->node.Unsubscribe(this->laserTopic);
+    this->laserSubscribed = false;
   }
 }
 

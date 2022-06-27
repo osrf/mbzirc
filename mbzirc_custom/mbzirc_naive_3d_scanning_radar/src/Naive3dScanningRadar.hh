@@ -72,8 +72,8 @@ namespace mbzirc
     /// \brief Laser scan topic name
     public: std::string laserTopic{"scan"};
 
-    /// \brief Laser scan initialized
-    public: bool laserInitialized{false};
+    /// \brief Laser scan subscribed
+    public: bool laserSubscribed{false};
 
     /// \brief Radar scan topic name
     public: std::string radarScanTopic{"/radar/scan"};
