@@ -70,6 +70,22 @@
         <modulation>QPSK</modulation>
       </radio_config>
     </plugin>
+    <plugin
+      filename="libRFRange.so"
+      name="ignition::gazebo::systems::RFRange">
+      <update_rate>1</update_rate>
+      <range_config>
+        <max_range>500000.0</max_range>
+        <fading_exponent>2.6</fading_exponent>
+        <l0>40</l0>
+        <sigma>0.005</sigma>
+        <rssi_1>-15</rssi_1>
+      </range_config>
+      <radio_config>
+        <tx_power>25</tx_power>
+        <noise_floor>-90</noise_floor>
+      </radio_config>
+    </plugin>
 
     <scene>
       <grid>false</grid>

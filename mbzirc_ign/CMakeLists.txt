@@ -50,6 +50,7 @@ list(APPEND MBZIRC_IGN_PLUGINS
   FixedWingController
   GameLogicPlugin
   EntityDetector
+  RFRange
   SimpleHydrodynamics
   SuctionGripper
   Surface
