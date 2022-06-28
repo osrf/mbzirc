@@ -144,22 +144,9 @@ void MaritimeRadar::OnRadarScan(const ignition::msgs::LaserScan &_msg)
   frame->set_key("frame_id");
   frame->add_value(this->frameId);
 
-  auto wrapAngles = [](double input)
-  {
-    if (input < -IGN_PI)
-    {
-      return 2 * IGN_PI + input;
-    }
-    else if (input > IGN_PI)
-    {
-      return -2 * IGN_PI - input;
-    }
-    return input;
-  };
-
   // Start with -1 x vertical angle step so we just need additions onwards
   double curr_elevation =
-    wrapAngles(_msg.vertical_angle_min() - _msg.vertical_angle_step());
+    _msg.vertical_angle_min() - _msg.vertical_angle_step();
   for (uint32_t i = 0; i < _msg.vertical_count(); ++i)
   {
     int ranges_before_channel = i * _msg.count();
@@ -170,7 +157,7 @@ void MaritimeRadar::OnRadarScan(const ignition::msgs::LaserScan &_msg)
       _msg.angle_min() - _msg.angle_step() + currRadarSpokeAngle;
     for (uint32_t j = 0; j < _msg.count(); ++j)
     {
-      curr_azimuth = wrapAngles(curr_azimuth + _msg.angle_step());
+      curr_azimuth = fmod(curr_azimuth + _msg.angle_step(), 2 * IGN_PI);
       double curr_range = _msg.ranges(ranges_before_channel + j);
 
       if (curr_range < _msg.range_min() || curr_range > _msg.range_max())
