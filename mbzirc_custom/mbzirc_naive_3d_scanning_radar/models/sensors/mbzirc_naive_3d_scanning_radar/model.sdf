@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="mbzirc_naive_3d_scanning_radar">
+    <link name="base_link">
+      <inertial>
+        <mass>0.005</mass>
+        <inertia>
+          <ixx>8.33e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.33e-06</iyy>
+          <iyz>0</iyz>
+          <izz>8.33e-06</izz>
+        </inertia>
+      </inertial>
+      <sensor name='gpu_lidar' type='gpu_lidar'>
+        <update_rate>1</update_rate>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>250</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159</min_angle>
+              <max_angle>3.14159</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>32</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.698132</min_angle>
+              <max_angle>0.0872665</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>2</min>
+            <max>3000</max>
+            <resolution>1.5</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>1.5</stddev>
+          </noise>
+          <visibility_mask>55</visibility_mask>
+        </lidar>
+        <alwaysOn>1</alwaysOn>
+        <visualize>true</visualize>
+      </sensor>
+    </link>
+
+    <plugin
+      filename="libNaive3dScanningRadar.so"
+      name="mbzirc::Naive3dScanningRadar">
+    </plugin>
+
+    <frame name="mount_point"/>
+  </model>
+</sdf>
