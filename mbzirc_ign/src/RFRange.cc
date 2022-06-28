@@ -116,6 +116,19 @@ struct RFPower
   }
 };
 
+using RFRangeConfig =
+  ignition::gazebo::components::Component<
+    RangeConfiguration,
+    class RFRangeConfigTag>;
+IGN_GAZEBO_REGISTER_COMPONENT("mbzirc_components.RFRangeConfig", RFRangeConfig)
+
+using RFRadioConfig =
+  ignition::gazebo::components::Component<
+    RadioConfiguration,
+    class RFRadioConfigTag>;
+IGN_GAZEBO_REGISTER_COMPONENT("mbzirc_components.RFRadioConfig", RFRadioConfig)
+
+
 //////////////////////////////////////////////////
 RFRangeSensor::RFRangeSensor()
 {
@@ -134,6 +147,48 @@ void RFRangeSensor::Configure(const Entity &_entity,
 
   _ecm.SetParentEntity(entity, _entity);
   _ecm.CreateComponent(entity, RFRangeType());
+
+  if (_sdf->HasElement("range_config"))
+  {
+    sdf::ElementPtr elem = _sdf->Clone()->GetElement("range_config");
+
+    RangeConfiguration rangeConfig;
+    rangeConfig.maxRange =
+      elem->Get<double>("max_range", rangeConfig.maxRange).first;
+
+    rangeConfig.fadingExponent =
+      elem->Get<double>("fading_exponent",
+        rangeConfig.fadingExponent).first;
+
+    rangeConfig.l0 =
+      elem->Get<double>("l0", rangeConfig.l0).first;
+
+    rangeConfig.sigma =
+      elem->Get<double>("sigma", rangeConfig.sigma).first;
+
+    rangeConfig.rssi1 =
+      elem->Get<double>("rssi_1", rangeConfig.rssi1).first;
+    enableComponent<RFRangeConfig>(_ecm, entity, true);
+    auto rangeConfigComp = _ecm.Component<RFRangeConfig>(entity);
+    rangeConfigComp->Data() = rangeConfig;
+  }
+
+  if (_sdf->HasElement("radio_config"))
+  {
+    sdf::ElementPtr elem = _sdf->Clone()->GetElement("radio_config");
+
+    RadioConfiguration radioConfig;
+    radioConfig.txPower =
+      elem->Get<double>("tx_power", radioConfig.txPower).first;
+
+    radioConfig.noiseFloor =
+      elem->Get<double>("noise_floor",
+        radioConfig.noiseFloor).first;
+    enableComponent<RFRadioConfig>(_ecm, entity, true);
+    auto radioConfigComp = _ecm.Component<RFRadioConfig>(entity);
+    radioConfigComp->Data() = radioConfig;
+  }
+
 }
 
 /// \brief Private RFRange data class.
@@ -237,6 +292,9 @@ class gazebo::systems::RFRangePrivate
 
   /// \brief Random number generator.
   public: std::default_random_engine rndEngine{rd()};
+
+  /// \brief True if RF configurations has been overriden
+  public: bool rfConfigOverriden = false;
 
   /// \brief The size in bytes of the request sent between sensors.
   public: static constexpr uint64_t kPayloadSize = 100;
@@ -436,6 +494,32 @@ void RFRange::PreUpdate(
 
         // We store the ID of the robot model.
         this->dataPtr->entityMap[modelId] = rfRangeData;
+
+        // let sensor override default RF config params
+        // The same config must be used for all sensors so the first sensor with
+        // RF config params set will be used.
+        if (!this->dataPtr->rfConfigOverriden)
+        {
+          auto rangeConfigComp = _ecm.Component<RFRangeConfig>(_entity);
+          if (rangeConfigComp)
+          {
+            this->dataPtr->rangeConfig = rangeConfigComp->Data();
+            this->dataPtr->rfConfigOverriden = true;
+          }
+          auto radioConfigComp = _ecm.Component<RFRadioConfig>(_entity);
+          if (radioConfigComp)
+          {
+            this->dataPtr->radioConfig = radioConfigComp->Data();
+            this->dataPtr->rfConfigOverriden = true;
+          }
+          if (this->dataPtr->rfConfigOverriden)
+          {
+            igndbg << "RFRange sensor range configuration override:" << std::endl
+                   << this->dataPtr->rangeConfig << std::endl;
+            igndbg << "RFRange sensor radio configuration override:" << std::endl
+                   << this->dataPtr->radioConfig << std::endl;
+          }
+        }
 
         return true;
       });
