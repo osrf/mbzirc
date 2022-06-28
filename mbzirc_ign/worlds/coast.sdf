@@ -914,6 +914,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel A</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_blue_box_a_duplicate</name>
@@ -961,6 +967,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Case
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel B</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_B/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_case_b_duplicate</name>
@@ -1008,6 +1020,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel C</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_C/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_dry_bag_c_duplicate</name>
@@ -1055,6 +1073,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel D</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_D/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_blue_box_d_duplicate</name>
@@ -1102,6 +1126,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel E</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_E/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_dry_bag_e_duplicate</name>
@@ -1149,6 +1179,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Case
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel F</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_F/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_case_f_duplicate</name>
@@ -1196,6 +1232,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag Handle
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel G</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_G/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_dry_bag_handle_g_duplicate</name>
