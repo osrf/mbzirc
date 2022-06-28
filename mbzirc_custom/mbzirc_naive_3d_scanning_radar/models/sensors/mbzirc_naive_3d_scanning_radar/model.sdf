@@ -31,14 +31,14 @@
             </vertical>
           </scan>
           <range>
-            <min>1</min>
-            <max>1500</max>
-            <resolution>0.75</resolution>
+            <min>2</min>
+            <max>3000</max>
+            <resolution>1.5</resolution>
           </range>
           <noise>
             <type>gaussian</type>
             <mean>0</mean>
-            <stddev>0.75</stddev>
+            <stddev>1.5</stddev>
           </noise>
           <visibility_mask>55</visibility_mask>
         </lidar>

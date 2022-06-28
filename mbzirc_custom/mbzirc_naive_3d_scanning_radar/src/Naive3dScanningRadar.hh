@@ -37,7 +37,7 @@ namespace mbzirc
   ///   ignition::msgs::Float_V message with repeating sets of range, azimuth,
   ///   and elevation values.
   /// By default this system has been tuned to use the Wartsila RS24 radar
-  /// parameters.
+  /// parameters but modified to have a longer range than the original.
   class Naive3dScanningRadar:
         public ignition::gazebo::System,
         public ignition::gazebo::ISystemConfigure,
