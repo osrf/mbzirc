@@ -19,16 +19,15 @@
       filename="libRFRange.so"
       name="ignition::gazebo::systems::RFRangeSensor">
       <!-- this overrides default RF Range system settings in the world -->
-      <!-- todo(iche033) check if param values are reasonable -->
       <range_config>
         <max_range>500000.0</max_range>
         <fading_exponent>2.6</fading_exponent>
         <l0>40</l0>
-        <sigma>20.0</sigma>
-        <rssi_1>-15</rssi_1>
+        <sigma>0.02</sigma>
+        <rssi_1>-5</rssi_1>
       </range_config>
       <radio_config>
-        <tx_power>30</tx_power>
+        <tx_power>35</tx_power>
         <noise_floor>-90</noise_floor>
       </radio_config>
     </plugin>

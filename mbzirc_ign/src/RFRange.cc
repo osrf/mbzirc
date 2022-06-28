@@ -148,14 +148,6 @@ void RFRangeSensor::Configure(const Entity &_entity,
   _ecm.SetParentEntity(entity, _entity);
   _ecm.CreateComponent(entity, RFRangeType());
 
-  math::Pose3d pose;
-  if (_ecm.EntityHasComponentType(_entity, gazebo::components::Model::typeId))
-  {
-    auto modelPose = _ecm.Component<gazebo::components::Pose>(_entity);
-    pose += modelPose->Data();
-    _ecm.CreateComponent(entity, gazebo::components::WorldPose(pose));
-  }
-
   if (_sdf->HasElement("range_config"))
   {
     sdf::ElementPtr elem = _sdf->Clone()->GetElement("range_config");
@@ -481,11 +473,9 @@ void RFRange::PreUpdate(
 {
   IGN_PROFILE("RFRange::PreUpdate");
 
-  _ecm.EachNew<RFRangeType,
-               ignition::gazebo::components::WorldPose>(
+  _ecm.EachNew<RFRangeType>(
     [&](const ignition::gazebo::Entity &_entity,
-        const RFRangeType *_custom,
-        const ignition::gazebo::components::WorldPose *_pose)->bool
+        const RFRangeType *_custom)->bool
       {
         // This is the ID of the model containing the sensor.
         gazebo::Entity sensorId = _ecm.ParentEntity(_entity);
