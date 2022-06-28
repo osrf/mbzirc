@@ -96,12 +96,9 @@ RUN sudo apt-get update \
   && sudo rm -rf /var/lib/apt/lists/* \
   && sudo apt-get clean -qq
 
-# Be sure that mbzirc_ros is present in the compilation by calling info
+# build mbzirc_seed
 RUN /bin/bash -c 'source /opt/ros/galactic/setup.bash \
-  && colcon info mbzirc_ros \
-  && colcon build --merge-install'
-# TODO(jrivero): implement build arg to clean build/ log/ while releasing
-# && rm -fr build/ log/
+  && colcon build --merge-install --packages-select ros_ign_interfaces mbzirc_seed'
 
 RUN /bin/sh -c 'echo ". /opt/ros/galactic/setup.bash" >> ~/.bashrc' \
  && /bin/sh -c 'echo ". ~/mbzirc_ws/install/setup.sh" >> ~/.bashrc'
