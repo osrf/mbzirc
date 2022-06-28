@@ -101,7 +101,7 @@ ros2 run mbzirc_ign multi_uav_demo.py -d
     </light>
 
     <model name="box_to_be_lifted">
-      <static>true</static>
+      <static>false</static>
       <pose>0 0 -1.4 0 0 0</pose>
       <inertial>
         <mass>2</mass>
