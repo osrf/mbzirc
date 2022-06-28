@@ -28,31 +28,18 @@
 
 namespace mbzirc
 {
-  /// \brief An example class to simulate a radar that generates range
-  /// and bearing data. Essentially it takes a LiDAR and projects it
-  /// onto a polar plot. The range noise of the lidar should be tuned to be
-  /// within the limits of the radar's noise uncertainty.
+  /// \brief An example class to simulate a radar that generates range, azimuth 
+  /// and elevation data. Essentially it takes a 3D LiDAR, filters the data for
+  /// acceptable data points based on the specifications, and translates it into
+  /// radar scans depending on where the laser scan is facing.
   ///
   /// # Parameters
   /// * laser_topic - The topic of the associated LiDAR.
-  /// * angular_resolution - The angular resolution of each spoke. Normally
-  ///   marine radars publish their position and a sample image of returns along
-  ///   a given "spoke".
-  /// * linear_resolution - The linear resolution of each range bin. Marine
-  /// radars usually return a 1D array for range bins for a given angle.
-  /// * max_range - The maximum range of the radar.
-  /// * min_range - The minimum range of the radar.
-  /// * debug_image_topic - The topic to publish the debug image. This is a
-  ///   ignition::msgs::Image message with the full polarplot and scan line,
-  ///   Useful for debugging.
-  /// * radar_spoke_topic - The topic to publish the radar spoke. This is a
-  ///   ignition::msgs::Float_V message with the range bins for a given angle.
-  ///   The first number in this float_v message is the angle of the spoke.
-  ///   The second number is the angular resolution of the spoke. The third
-  ///   number is the linear resolution of the spoke. The rest of the numbers
-  ///   are the range bins for the spoke with measurements in DB.
-  /// By default this system has been tuned to us the Wartsila RS24 radar
-  /// parameters.
+  /// * radar_scan_topic - The topic to publish the radar output. This is an
+  ///   ignition::msgs::Float_V message with repeating sets of range, azimuth,
+  ///   and elevation values.
+  /// By default this system has been tuned to use the Wartsila RS24 radar
+  /// parameters but modified to have a longer range than the original.
   class MaritimeRadar:
         public ignition::gazebo::System,
         public ignition::gazebo::ISystemConfigure,
@@ -82,82 +69,38 @@ namespace mbzirc
                 ignition::gazebo::EntityComponentManager &_ecm) override;
 
     /// \brief Callback for laser scan messages
-    /// This turns the lidar sensor and plots the range data as individual bins.
+    /// This translates the lidar sensor data into radar data.
     public: void OnRadarScan(const ignition::msgs::LaserScan &_msg);
 
-    /// \brief Publishes a RADAR scan message. This function
-    public: void PublishScan();
-
-    /// \brief clear the current scan buffer
-    /// \param[in] index - Spoke to be cleared.
-    public: void ClearScanBuffer(std::size_t index);
-
-    /// \brief Minimum range (m)
-    public: double minRange{1.0};
-
-    /// \brief Maximum range (m)
-    public: double maxRange{1500.0};
-
-    /// \brief Resolution (in metres)
-    public: double resolution{0.75};
-
-    /// \brief Minimum vertical angle (rad)
-    public: double minVerticalAngle{-0.1745};
-
-    /// \brief Maximum vertical angle (rad)
-    public: double maxVerticalAngle{0.1745};
-
-    /// \brief Angular resolution (rad)
-    public: double angularResolution{IGN_DTOR(1.44)};
-
-    /// \brief Sensor update rate
-    public: double updateRate{1.0};
-
-    /// \brief Number of beams of the sampling GPURay
-    public: size_t numBeams{0};
+    /// \brief Mutex for radar spoke angle
+    public: std::mutex mtx;
 
     /// \brief Joint Position
-    public: std::size_t radarBinIndex;
-
-    /// \brief stores radar scan data for each beam.
-    public: std::vector<std::vector<double>> radarBin;
+    public: double radarSpokeAngle;
 
     /// \brief Laser scan topic name
     public: std::string laserTopic{"scan"};
 
     /// \brief Laser scan initialized
-    public: bool laserInitialized{false};
+    public: bool laserSubscribed{false};
 
-    /// \brief Noise to be applied to radar data
-    ///public: ignition::sensors::NoisePtr noise;
+    /// \brief Frame ID of this radar sensor
+    public: std::string frameId{"radar"};
 
     /// \brief Entity ID of the sensor
     public: ignition::gazebo::Entity entity{ignition::gazebo::kNullEntity};
 
-    /// \brief Entity ID of the rotary joint.
+    /// \brief Entity ID of the rotary joint
     public: ignition::gazebo::Entity jointEntity{ignition::gazebo::kNullEntity};
 
     /// \brief Ignition tranport node
     public: ignition::transport::Node node;
 
     /// \brief Ignition transport publisher for publishing sensor data
-    public: ignition::transport::Node::Publisher linePub;
+    public: ignition::transport::Node::Publisher radarScanPub;
 
-    /// \brief Ignition transport publisher for publishing sensor data
-    public: ignition::transport::Node::Publisher debugPub;
-
-    /// \brief Image used for debugging radar scan.
-    public: ignition::msgs::Image image;
-
-    public: ignition::msgs::Float_V lineBin;
-
-    public: const size_t debugImageWidth{640};
-
-    public: std::string debugImageTopic{"/radar/debug_image"};
-
-    public: std::string radarSpokeTopic{"/radar/scan"};
-
-    public: std::mutex mtx;
+    /// \brief Radar scan topic name
+    public: std::string radarScanTopic{"/radar/scan"};
   };
 }
 

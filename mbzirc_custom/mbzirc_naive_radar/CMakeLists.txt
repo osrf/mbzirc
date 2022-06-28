@@ -56,8 +56,8 @@ target_link_libraries(naive_radar_bridge PUBLIC
 #   models
 #   launch
 #   DESTINATION share/${PROJECT_NAME})
-# install(TARGETS
-#   naive_radar_bridge
-#   DESTINATION lib/${PROJECT_NAME})
+install(TARGETS
+  naive_radar_bridge
+  DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

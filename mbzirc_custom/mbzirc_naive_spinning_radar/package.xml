@@ -19,6 +19,8 @@
   <depend>ros_ign_gazebo</depend>
   <depend>radar_msgs</depend>
 
+  <exec_depend>mbzirc_naive_radar</exec_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

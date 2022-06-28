@@ -26,34 +26,40 @@
           <izz>8.33e-06</izz>
         </inertia>
       </inertial>
-      <sensor name="lidar" type="gpu_ray">
-        <pose>0 0 0 1.57079 0 0</pose>
-        <!-- Make sure lidar can fill every bin. For a 60RPM radar 1 rotation
-        takes 1 second. Since the radar has an angular resolution of 1.44degrees
-        in one second there need to be 250 scans :o-->
-        <update_rate>250</update_rate>
+      <sensor name="gpu_lidar" type="gpu_lidar">
+        <!-- Make sure lidar can fill every angle step. For a 60RPM radar
+        1 rotation per second for 250 steps, we split it up into 10 iterations,
+        with 25 scans each. -->
+        <update_rate>10</update_rate>
         <lidar>
           <scan>
             <horizontal>
-              <samples>256</samples>
+              <samples>25</samples>
               <resolution>1</resolution>
-              <min_angle>-0.34</min_angle>
-              <max_angle>0.08</max_angle>
+              <min_angle>-0.314159</min_angle>
+              <max_angle>0.314159</max_angle>
             </horizontal>
+            <vertical>
+              <samples>32</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.698132</min_angle>
+              <max_angle>0.0872665</max_angle>
+            </vertical>
           </scan>
           <range>
             <min>1</min>
-            <max>1500</max>
-            <resolution>1</resolution>
+            <max>3000</max>
+            <resolution>1.5</resolution>
           </range>
           <noise>
-            <!-- TODO: Tweak this the RS24 has  -->
             <type>gaussian</type>
             <mean>0</mean>
-            <stddev>2</stddev>
+            <stddev>1.5</stddev>
           </noise>
           <visibility_mask>55</visibility_mask>
         </lidar>
+        <alwaysOn>true</alwaysOn>
+        <visualize>true</visualize>
       </sensor>
     </link>
     <joint name="sensor_joint" type="revolute">

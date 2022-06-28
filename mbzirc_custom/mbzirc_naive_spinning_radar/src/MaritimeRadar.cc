@@ -38,11 +38,14 @@ void MaritimeRadar::Configure(const ignition::gazebo::Entity &_entity,
 
   // Get the entity name
   const std::string entityName = ignition::gazebo::scopedName(_entity, _ecm);
+  this->frameId =
+    ignition::gazebo::removeParentScope(
+      ignition::gazebo::scopedName(_entity, _ecm, "::", false), "::");
 
   // Get the laser topic
   this->laserTopic =
-    "/world/" + worldName + "/" + entityName + "/link/sensor_link/sensor/lidar/scan";
-  ignerr << "laser topic is [" << this->laserTopic << "].\n";
+    "/world/" + worldName + "/" + entityName +
+    "/link/sensor_link/sensor/gpu_lidar/scan";
   if (_sdf->HasElement("laser_topic"))
   {
     this->laserTopic = _sdf->Get<std::string>("laser_topic");
@@ -52,68 +55,19 @@ void MaritimeRadar::Configure(const ignition::gazebo::Entity &_entity,
   auto jointName = _sdf->Get<std::string>("joint_name");
   this->jointEntity = model.JointByName(_ecm, jointName);
 
-  // Get the angular resolution
-  if(_sdf->HasElement("angular_resolution"))
+  // Create radar scan publisher
+  if (_sdf->HasElement("radar_scan_topic"))
   {
-    this->angularResolution = _sdf->Get<double>("angular_resolution");
-  }
-
-  // Get the linear resolution
-  if(_sdf->HasElement("linear_resolution"))
-  {
-    this->resolution = _sdf->Get<double>("linear_resolution");
-  }
-
-  // Get the maximum range
-  if(_sdf->HasElement("max_range"))
-  {
-    this->angularResolution = _sdf->Get<double>("max_range");
-  }
-
-  // Get the minimum range
-  if(_sdf->HasElement("min_range"))
-  {
-    this->angularResolution = _sdf->Get<double>("min_range");
-  }
-
-  // Get range buckets
-  std::size_t numRangeBuckets = floor(maxRange/resolution) + 1;
-  std::size_t numAngularBuckets = ceil(2 * IGN_PI /angularResolution) + 1;
-  radarBin.resize(numAngularBuckets);
-
-  for (std::size_t i = 0; i < numAngularBuckets; ++i)
-  {
-    radarBin[i].resize(numRangeBuckets, 0);
-  }
-
-  // Create debug image
-  // TODO(arjo): Make this configuarable.
-  this->image.set_width(this->debugImageWidth);
-  this->image.set_height(this->debugImageWidth);
-  this->image.set_step(this->debugImageWidth);
-  this->image.set_pixel_format_type(msgs::PixelFormatType::L_INT8);
-  this->image.mutable_data()->resize(
-    this->debugImageWidth * this->debugImageWidth);
-
-  // Create debug publisher
-  if (_sdf->HasElement("debug_image_topic"))
-  {
-    this->debugImageTopic = _sdf->Get<std::string>("debug_image_topic");
-  }
-  this->debugPub  = this->node.Advertise<msgs::Image>(debugImageTopic);
-
-  // Create radar spoke publisher
-  if (_sdf->HasElement("radar_spoke_topic"))
-  {
-    this->radarSpokeTopic = _sdf->Get<std::string>("radar_spoke_topic");
+    this->radarScanTopic= _sdf->Get<std::string>("radar_scan_topic");
   }
   else
   {
     // set topic to publish sensor data to
     std::string topic = entityName + "/radar/scan";
-    this->radarSpokeTopic = ignition::transport::TopicUtils::AsValidTopic(topic);
+    this->radarScanTopic = ignition::transport::TopicUtils::AsValidTopic(topic);
   }
-  this->linePub  = this->node.Advertise<msgs::Float_V>(this->radarSpokeTopic);
+  this->radarScanPub =
+    this->node.Advertise<msgs::Float_V>(this->radarScanTopic);
 }
 
 ///////////////////////////////////////////////////
@@ -143,32 +97,19 @@ void MaritimeRadar::PostUpdate(
     return;
   }
 
-  if (!this->laserInitialized && !this->linePub.HasConnections())
-  {
-    // No subscription for scan yet.
-    return;
-  }
-  else if (!this->laserInitialized && this->linePub.HasConnections())
+  if (!this->laserSubscribed && this->radarScanPub.HasConnections())
   {
     this->node.Subscribe(this->laserTopic, &MaritimeRadar::OnRadarScan, this);
-    this->laserInitialized = true;
-
-    // We just started subscribing to the laser scan, give one iteration for the
-    // scan to come in.
-    return;
+    this->laserSubscribed = true;
   }
-
-  std::size_t index = floor(
-    fmod(jointPosComp->Data()[0], 2 * IGN_PI) /  angularResolution);
+  else if (this->laserSubscribed && !this->radarScanPub.HasConnections())
+  {
+    this->node.Unsubscribe(this->laserTopic);
+    this->laserSubscribed = false;
+  }
 
   std::lock_guard<std::mutex> lock(this->mtx);
-  if (index != this->radarBinIndex)
-  {
-    this->PublishScan();
-    this->ClearScanBuffer((index) % this->radarBin.size());
-    this->radarBinIndex = index;
-    this->numBeams = 0;
-  }
+  this->radarSpokeAngle = fmod(jointPosComp->Data()[0], 2 * IGN_PI);
 }
 
 ///////////////////////////////////////////////////
@@ -189,102 +130,58 @@ void MaritimeRadar::PreUpdate(
 }
 
 ///////////////////////////////////////////////////
-void MaritimeRadar::PublishScan()
-{
-  if(this->radarBin.size() < radarBinIndex +1)
-    return;
-  // Publish just a single radar bin
-  //
-  ignition::msgs::Float_V lineBin;
-  // First field of the float array is the angle
-  lineBin.add_data(this->radarBinIndex * this->angularResolution);
-  // Second field is the angular resolution
-  lineBin.add_data(this->angularResolution);
-  // Third field is the linear resolution
-  lineBin.add_data(this->resolution);
-  // Rest of the fields are the range bins
-  for (std::size_t i = 0; i < this->radarBin[radarBinIndex].size(); ++i)
-  {
-    // Convert to DB reflection
-    // Equation can be found here: https://en.wikipedia.org/wiki/Decibel
-    // TODO(arjo): Add some noise to this.
-    // Sea state vs radar noise model can be found here:
-    // https://www.mathworks.com/help/radar/ug/sea-clutter-simulation-for-maritime-radar-system.html
-    lineBin.add_data(
-      10 * log10(this->radarBin[radarBinIndex][i]/this->numBeams));
-  }
-  linePub.Publish(lineBin);
-
-  // The code below this point is for publishing debug images with a polar plot
-  // of radar hits/misses
-  if (!this->debugPub.HasConnections())
-    return;
-
-  // Convert to a message and publish
-  if(this->radarBinIndex == 0)
-  {
-    // Reset whenever we go back to 0
-    for (int i = 0; i < this->image.data().size(); i++)
-    {
-      (*this->image.mutable_data())[i] = 0;
-    }
-  }
-
-  // Plot current scan line
-  // TODO(arjo): plot using bressenham algorithm for cleaner lines
-  for (int j = 0; j  < this->radarBin[radarBinIndex].size(); j++)
-  {
-    double x =
-      cos(radarBinIndex * this->angularResolution)
-      * debugImageWidth/2 * (j * resolution / maxRange);
-    double y =
-      sin(radarBinIndex * this->angularResolution)
-      * debugImageWidth/2 * (j * resolution / maxRange);
-
-    std::size_t pixel_x = x + debugImageWidth/2;
-    std::size_t pixel_y = y + debugImageWidth/2;
-
-    std::size_t index = pixel_x * this->image.step() + pixel_y;
-    if (this->image.data().size() > index)
-    {
-      if(this->radarBin[radarBinIndex][j] > 0 || (*this->image.mutable_data())[index] > 0)
-        (*this->image.mutable_data())[index] = 255;
-    }
-  }
-  this->debugPub.Publish(this->image);
-}
-
-///////////////////////////////////////////////////
-void MaritimeRadar::ClearScanBuffer(std::size_t _index)
-{
-  // Clear the radar buffer for given index
-  for (std::size_t j = 0; j < radarBin[_index].size(); ++j)
-  {
-    radarBin[_index][j] = 0;
-  }
-}
-
-///////////////////////////////////////////////////
 void MaritimeRadar::OnRadarScan(const ignition::msgs::LaserScan &_msg)
 {
-  // We only want one radarbin
-  std::lock_guard<std::mutex> lock(this->mtx);
-
-  // Take the point cloud and project it onto a polar 2D plot.
-  auto minAngle = _msg.angle_min();
-  auto angle = minAngle;
-  this->numBeams += _msg.ranges_size();
-  for (int  i = 0; i < _msg.ranges_size(); ++i)
+  double currRadarSpokeAngle;
   {
-    double range = _msg.ranges(i);
-    angle+=this->angularResolution;
-    auto projectedRange = cos(angle)*range;
-    if (projectedRange > maxRange || projectedRange < minRange)
-      continue;
-
-    // Register the range in the radar bin
-    this->radarBin[this->radarBinIndex][floor(projectedRange/resolution)]++;
+    std::lock_guard<std::mutex> lock(this->mtx);
+    currRadarSpokeAngle = radarSpokeAngle;
   }
+
+  ignition::msgs::Float_V radarScanMsg;
+  *radarScanMsg.mutable_header()->mutable_stamp() = _msg.header().stamp();
+  auto frame = radarScanMsg.mutable_header()->add_data();
+  frame->set_key("frame_id");
+  frame->add_value(this->frameId);
+
+  auto wrapAngles = [](double input)
+  {
+    if (input < -IGN_PI)
+    {
+      return 2 * IGN_PI + input;
+    }
+    else if (input > IGN_PI)
+    {
+      return -2 * IGN_PI - input;
+    }
+    return input;
+  };
+
+  // Start with -1 x vertical angle step so we just need additions onwards
+  double curr_elevation =
+    wrapAngles(_msg.vertical_angle_min() - _msg.vertical_angle_step());
+  for (uint32_t i = 0; i < _msg.vertical_count(); ++i)
+  {
+    int ranges_before_channel = i * _msg.count();
+    curr_elevation += _msg.vertical_angle_step();
+
+    // Start with -1 x angle step so we just need additions onwards
+    double curr_azimuth =
+      _msg.angle_min() - _msg.angle_step() + currRadarSpokeAngle;
+    for (uint32_t j = 0; j < _msg.count(); ++j)
+    {
+      curr_azimuth = wrapAngles(curr_azimuth + _msg.angle_step());
+      double curr_range = _msg.ranges(ranges_before_channel + j);
+
+      if (curr_range < _msg.range_min() || curr_range > _msg.range_max())
+        continue;
+
+      radarScanMsg.add_data(curr_range);
+      radarScanMsg.add_data(curr_azimuth);
+      radarScanMsg.add_data(curr_elevation);
+    }
+  }
+  radarScanPub.Publish(radarScanMsg);
 }
 
 IGNITION_ADD_PLUGIN(mbzirc::MaritimeRadar,
