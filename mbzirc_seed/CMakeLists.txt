@@ -8,12 +8,14 @@ find_package(rclcpp_components REQUIRED)
 
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(ros_ign_interfaces REQUIRED)
 
 find_package(ignition-math6 REQUIRED)
 set(IGN_MATH_VER ${ignition-math6_VERSION_MAJOR})
 
 add_library(mbzirc_seed
   SHARED
+  src/ReadRfRange.cpp
   src/UavController.cpp
   src/UsvController.cpp
 )
@@ -23,6 +25,7 @@ ament_target_dependencies(mbzirc_seed
   rclcpp_components
   geometry_msgs
   sensor_msgs
+  ros_ign_interfaces
 )
 
 target_include_directories(mbzirc_seed
@@ -32,15 +35,19 @@ target_include_directories(mbzirc_seed
 target_link_libraries(mbzirc_seed
   ignition-math${IGN_MATH_VER}::ignition-math${IGN_MATH_VER})
 
-rclcpp_components_register_node(mbzirc_seed 
-  PLUGIN mbzirc_seed::UavController 
+rclcpp_components_register_node(mbzirc_seed
+  PLUGIN mbzirc_seed::UavController
   EXECUTABLE uav_controller)
 
-rclcpp_components_register_node(mbzirc_seed 
-  PLUGIN mbzirc_seed::UsvController 
+rclcpp_components_register_node(mbzirc_seed
+  PLUGIN mbzirc_seed::UsvController
   EXECUTABLE usv_controller)
 
-install(TARGETS mbzirc_seed 
+rclcpp_components_register_node(mbzirc_seed
+  PLUGIN mbzirc_seed::ReadRfRange
+  EXECUTABLE read_rf_range)
+
+install(TARGETS mbzirc_seed
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)
@@ -52,7 +59,7 @@ install(
 
 install(
   DIRECTORY config launch
-  DESTINATION share/${PROJECT_NAME} 
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_export_include_directories(include)
