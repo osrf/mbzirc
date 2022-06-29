@@ -108,8 +108,7 @@ void MaritimeRadar::PostUpdate(
     this->laserSubscribed = false;
   }
 
-  std::lock_guard<std::mutex> lock(this->mtx);
-  this->radarSpokeAngle = fmod(jointPosComp->Data()[0], 2 * IGN_PI);
+  this->radarSpokeAngle.store(fmod(jointPosComp->Data()[0], 2 * IGN_PI));
 }
 
 ///////////////////////////////////////////////////
@@ -132,11 +131,7 @@ void MaritimeRadar::PreUpdate(
 ///////////////////////////////////////////////////
 void MaritimeRadar::OnRadarScan(const ignition::msgs::LaserScan &_msg)
 {
-  double currRadarSpokeAngle;
-  {
-    std::lock_guard<std::mutex> lock(this->mtx);
-    currRadarSpokeAngle = radarSpokeAngle;
-  }
+  double currRadarSpokeAngle = this->radarSpokeAngle.load();
 
   ignition::msgs::Float_V radarScanMsg;
   *radarScanMsg.mutable_header()->mutable_stamp() = _msg.header().stamp();

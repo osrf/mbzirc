@@ -17,6 +17,7 @@
 #ifndef MBZIRC_CUSTOMIZATIONS_MARITIMERADAR_HH_
 #define MBZIRC_CUSTOMIZATIONS_MARITIMERADAR_HH_
 
+#include <atomic>
 #include <memory>
 
 #include <sdf/sdf.hh>
@@ -72,11 +73,8 @@ namespace mbzirc
     /// This translates the lidar sensor data into radar data.
     public: void OnRadarScan(const ignition::msgs::LaserScan &_msg);
 
-    /// \brief Mutex for radar spoke angle
-    public: std::mutex mtx;
-
     /// \brief Joint Position
-    public: double radarSpokeAngle;
+    public: std::atomic<double> radarSpokeAngle;
 
     /// \brief Laser scan topic name
     public: std::string laserTopic{"scan"};

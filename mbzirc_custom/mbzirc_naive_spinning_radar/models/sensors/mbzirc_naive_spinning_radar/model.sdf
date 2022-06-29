@@ -28,22 +28,24 @@
       </inertial>
       <sensor name="gpu_lidar" type="gpu_lidar">
         <!-- Make sure lidar can fill every angle step. For a 60RPM radar
-        1 rotation per second for 250 steps, we split it up into 10 iterations,
-        with 25 scans each. -->
+          1 rotation per second for 250 steps, with a spoke angle of 60 degrees,
+          a rate of 10 is more than capable of covering all steps. -->
         <update_rate>10</update_rate>
         <lidar>
           <scan>
+            <!-- Based on the manual the scan seems to be 60 degrees wide -->
             <horizontal>
-              <samples>25</samples>
+              <samples>42</samples>
               <resolution>1</resolution>
-              <min_angle>-0.314159</min_angle>
-              <max_angle>0.314159</max_angle>
+              <min_angle>-0.523599</min_angle>
+              <max_angle>0.523599</max_angle>
             </horizontal>
+            <!-- Vertical angles match the one in mbzirc_naive_radar -->
             <vertical>
-              <samples>32</samples>
+              <samples>14</samples>
               <resolution>1</resolution>
-              <min_angle>-0.698132</min_angle>
-              <max_angle>0.0872665</max_angle>
+              <min_angle>-0.1745</min_angle>
+              <max_angle>0.1745</max_angle>
             </vertical>
           </scan>
           <range>
