@@ -99,7 +99,8 @@ def parse_from_cli(context, world_name):
 def launch(context, *args, **kwargs):
     world_name = LaunchConfiguration('world').perform(context)
     sim_mode = LaunchConfiguration('sim_mode').perform(context)
-    bridge_competition_topics = LaunchConfiguration('bridge_competition_topics').perform(context)
+    bridge_competition_topics = LaunchConfiguration(
+        'bridge_competition_topics').perform(context).lower() == 'true'
 
     model = parse_from_cli(context, world_name)
 

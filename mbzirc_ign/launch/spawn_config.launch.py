@@ -26,7 +26,8 @@ def launch(context, *args, **kwargs):
     config_file = LaunchConfiguration('config_file').perform(context)
     world_name = LaunchConfiguration('world').perform(context)
     sim_mode = LaunchConfiguration('sim_mode').perform(context)
-    bridge_competition_topics = LaunchConfiguration('bridge_competition_topics').perform(context)
+    bridge_competition_topics = LaunchConfiguration(
+        'bridge_competition_topics').perform(context).lower() == 'true'
     robot = LaunchConfiguration('robot').perform(context)
 
     launch_processes = []

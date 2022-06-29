@@ -154,15 +154,15 @@ void SuctionGripperPlugin::Configure(const Entity &_entity,
     this->dataPtr->node.Subscribe(prefix + "/contact_sensor_12", callback_12);
 
 
-    this->dataPtr->contactPublisherCenter = 
+    this->dataPtr->contactPublisherCenter =
       this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/center");
-    this->dataPtr->contactPublisherLeft = 
+    this->dataPtr->contactPublisherLeft =
       this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/left");
-    this->dataPtr->contactPublisherRight = 
+    this->dataPtr->contactPublisherRight =
       this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/right");
-    this->dataPtr->contactPublisherTop = 
+    this->dataPtr->contactPublisherTop =
       this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/top");
-    this->dataPtr->contactPublisherBottom = 
+    this->dataPtr->contactPublisherBottom =
       this->dataPtr->node.Advertise<msgs::Boolean>(prefix + "/contacts/bottom");
   }
   else
@@ -205,7 +205,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
     this->dataPtr->contactPublisherRight.Publish(contact);
     this->dataPtr->contactPublisherTop.Publish(contact);
     this->dataPtr->contactPublisherBottom.Publish(contact);
-  } 
+  }
   else
   {
     contact.set_data(this->dataPtr->contacts[1][1] != kNullEntity);
@@ -228,13 +228,13 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
   if (!this->dataPtr->jointCreated && this->dataPtr->suctionOn)
   {
     // check that two sensors are making contact with the same object
-    auto checkContacts = 
+    auto checkContacts =
       [&](std::pair<int, int> idx0, std::pair<int, int> idx1) -> bool {
         auto contact0 = this->dataPtr->contacts[idx0.first][idx0.second];
         auto contact1 = this->dataPtr->contacts[idx1.first][idx1.second];
-        return  
-          (contact0 != kNullEntity && 
-           contact1 != kNullEntity && 
+        return
+          (contact0 != kNullEntity &&
+           contact1 != kNullEntity &&
            contact0 == contact1);
       };
 
@@ -243,7 +243,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
       (checkContacts({1, 1}, {1, 0}) ||  // Center + left
        checkContacts({1, 1}, {1, 2}) ||  // Center + right
        checkContacts({1, 1}, {0, 1}) ||  // Center + top
-       checkContacts({1, 1}, {2, 1}));   // Center + bottom 
+       checkContacts({1, 1}, {2, 1}));   // Center + bottom
 
     if (contactMade)
     {
@@ -255,7 +255,7 @@ void SuctionGripperPlugin::PreUpdate(const UpdateInfo &_info,
       this->dataPtr->pendingJointCreation = true;
       this->dataPtr->childItem = this->dataPtr->contacts[1][0];
     }
-    else if (checkContacts({0, 1}, {2, 1}))  // top + bottom 
+    else if (checkContacts({0, 1}, {2, 1}))  // top + bottom
     {
       this->dataPtr->pendingJointCreation = true;
       this->dataPtr->childItem = this->dataPtr->contacts[0][1];

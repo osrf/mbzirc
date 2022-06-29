@@ -50,6 +50,7 @@ list(APPEND MBZIRC_IGN_PLUGINS
   FixedWingController
   GameLogicPlugin
   EntityDetector
+  RFRange
   SimpleHydrodynamics
   SuctionGripper
   Surface
@@ -87,6 +88,13 @@ install(
 ament_python_install_package(
   mbzirc_ign
   PACKAGE_DIR src/mbzirc_ign
+)
+
+#============================================================================
+# Scripts
+install(PROGRAMS
+  examples/multi_uav_demo.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 #============================================================================

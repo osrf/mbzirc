@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mbzirc_naive_3d_scanning_radar</name>
+  <version>0.0.0</version>
+  <description>Custom MBZIRC Naive 3d scanning Radar Model</description>
+
+  <maintainer email="ichen@openrobotics.org">Ian Chen</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <author>Ian Chen</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>mbzirc_ros</depend>
+  <depend>mbzirc_ign</depend>
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
+  <depend>ros_ign_gazebo</depend>
+  <depend>radar_msgs</depend>
+
+  <exec_depend>mbzirc_naive_radar</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

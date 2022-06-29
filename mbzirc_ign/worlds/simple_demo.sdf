@@ -70,6 +70,22 @@
         <modulation>QPSK</modulation>
       </radio_config>
     </plugin>
+    <plugin
+      filename="libRFRange.so"
+      name="ignition::gazebo::systems::RFRange">
+      <update_rate>1</update_rate>
+      <range_config>
+        <max_range>500000.0</max_range>
+        <fading_exponent>2.6</fading_exponent>
+        <l0>40</l0>
+        <sigma>0.005</sigma>
+        <rssi_1>-15</rssi_1>
+      </range_config>
+      <radio_config>
+        <tx_power>25</tx_power>
+        <noise_floor>-90</noise_floor>
+      </radio_config>
+    </plugin>
 
     <scene>
       <sky></sky>
@@ -268,6 +284,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel A</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
     </include>
 
     <include>
@@ -286,9 +308,9 @@
 
     <include>
       <name>large_dry_box_a</name>
-      <pose relative_to="Vessel A">0.08 -0.57 0.05 0 0 -0.3</pose>
+      <pose relative_to="Vessel A">-1.9 -0.0 0.05 0 0 -1.466</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -300,9 +322,9 @@
 
     <include>
       <name>large_dry_box_a_duplicate</name>
-      <pose relative_to="Vessel A">0.7 0.23 0.05 0 0 0.2</pose>
+      <pose relative_to="Vessel A">0.9 -0.12 0.05 0 0 0.2</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>

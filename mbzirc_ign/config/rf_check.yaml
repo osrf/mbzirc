@@ -1,0 +1,44 @@
+---
+- model_name: 'quadrotor_1'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-9.5, 2, 1.05]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_rf_range'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_2'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [9.5, 2, 1.05]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_rf_range'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_3'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [-9.5, 4, 1.05]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_rf_range'
+      rpy: [0, 0, 0]
+
+- model_name: 'quadrotor_4'
+  model_type: 'mbzirc_quadrotor'
+  flight_time: 20
+  position:
+    xyz: [9.5, 4, 1.05]
+    rpy: [0, 0, 0]
+  payload:
+    slot0:
+      sensor: 'mbzirc_rf_range'
+      rpy: [0, 0, 0]

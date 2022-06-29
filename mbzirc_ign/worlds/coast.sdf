@@ -329,6 +329,22 @@
         <modulation>QPSK</modulation>
       </radio_config>
     </plugin>
+    <plugin
+      filename="libRFRange.so"
+      name="ignition::gazebo::systems::RFRange">
+      <update_rate>1</update_rate>
+      <range_config>
+        <max_range>500000.0</max_range>
+        <fading_exponent>2.6</fading_exponent>
+        <l0>40</l0>
+        <sigma>0.005</sigma>
+        <rssi_1>-15</rssi_1>
+      </range_config>
+      <radio_config>
+        <tx_power>25</tx_power>
+        <noise_floor>-90</noise_floor>
+      </radio_config>
+    </plugin>
 
     <scene>
       <sky></sky>
@@ -914,6 +930,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel A</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_blue_box_a_duplicate</name>
@@ -930,9 +952,9 @@
     </include>
     <include>
       <name>large_dry_box_a</name>
-      <pose relative_to="Vessel A">0.08 -0.57 0.05 0 0 -0.3</pose>
+      <pose relative_to="Vessel A">-1.9 -0.0 0.05 0 0 -1.466</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -943,9 +965,9 @@
     </include>
     <include>
       <name>large_dry_box_a_duplicate</name>
-      <pose relative_to="Vessel A">0.7 0.23 0.05 0 0 0.2</pose>
+      <pose relative_to="Vessel A">0.9 -0.12 0.05 0 0 0.2</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -957,14 +979,20 @@
 
     <include>
       <name>small_case_b</name>
-      <pose relative_to="Vessel B">-0.35 1.6 0.80768 1.57079632679 0 0.2</pose>
+      <pose relative_to="Vessel B">-0.35 1.6 0.73768 1.57079632679 0 0.2</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Case
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel B</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_B/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_case_b_duplicate</name>
-      <pose relative_to="Vessel B">-2.28 -1.0 0.80768 1.57079632679 0 1</pose>
+      <pose relative_to="Vessel B">-2.28 -1.0 0.73768 1.57079632679 0 1</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Case
       </uri>
@@ -977,9 +1005,9 @@
     </include>
     <include>
       <name>large_grey_box_b</name>
-      <pose relative_to="Vessel B">0.25 -0.9 0.792 0 0 -0.3</pose>
+      <pose relative_to="Vessel B">0.25 -0.9 0.722 0 0 -0.3</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -990,9 +1018,9 @@
     </include>
     <include>
       <name>large_grey_box_b_duplicate</name>
-      <pose relative_to="Vessel B">3.07 0.1 1.07 0 0 1.2</pose>
+      <pose relative_to="Vessel B">3.07 0.1 1.0 0 0 1.2</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1004,14 +1032,20 @@
 
     <include>
       <name>small_dry_bag_c</name>
-      <pose relative_to="Vessel C">-2.5 0.167 0.792 0 0 0.0</pose>
+      <pose relative_to="Vessel C">-2.5 0.167 0.722 0 0 0.0</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel C</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_C/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_dry_bag_c_duplicate</name>
-      <pose relative_to="Vessel C">2.75 -1.078 1.0687 0 0 -0.8</pose>
+      <pose relative_to="Vessel C">2.75 -1.078 0.9987 0 0 -0.8</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag
       </uri>
@@ -1024,9 +1058,9 @@
     </include>
     <include>
       <name>large_ammo_can_c</name>
-      <pose relative_to="Vessel C">0.27 0.3 0.792 0 0 1.3</pose>
+      <pose relative_to="Vessel C">0.27 0.3 0.722 0 0 1.3</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1037,9 +1071,9 @@
     </include>
     <include>
       <name>large_ammo_can_c_duplicate</name>
-      <pose relative_to="Vessel C">3.17 1.58 1.0838 0 0 -0.6</pose>
+      <pose relative_to="Vessel C">3.17 1.58 1.0138 0 0 -0.6</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1051,14 +1085,20 @@
 
     <include>
       <name>small_blue_box_d</name>
-      <pose relative_to="Vessel D">-2.5 -1.9 0.7807 0 0 0.0</pose>
+      <pose relative_to="Vessel D">-2.5 -1.9 0.7107 0 0 0.0</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel D</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_D/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_blue_box_d_duplicate</name>
-      <pose relative_to="Vessel D">2.75 -1.078 1.0603 0 0 -0.8</pose>
+      <pose relative_to="Vessel D">2.75 -1.078 0.9903 0 0 -0.8</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
       </uri>
@@ -1071,9 +1111,9 @@
     </include>
     <include>
       <name>large_crate_d</name>
-      <pose relative_to="Vessel D">0.27 1.73 0.779 0 0 1.3</pose>
+      <pose relative_to="Vessel D">0.27 1.73 0.709 0 0 1.3</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1084,9 +1124,9 @@
     </include>
     <include>
       <name>large_crate_d_duplicate</name>
-      <pose relative_to="Vessel D">3.17 1.58 1.103 0 0 -0.6</pose>
+      <pose relative_to="Vessel D">3.17 1.58 1.033 0 0 -0.6</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1102,6 +1142,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel E</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_E/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_dry_bag_e_duplicate</name>
@@ -1118,9 +1164,9 @@
     </include>
     <include>
       <name>large_dry_box_e</name>
-      <pose relative_to="Vessel E">-1.9 -1.61 0.4229 0 0 0.3</pose>
+      <pose relative_to="Vessel E">-1.9 -1.0 0.4229 0 0 0.3</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1133,7 +1179,7 @@
       <name>large_dry_box_e_duplicate</name>
       <pose relative_to="Vessel E">-5.22 0.25 0.4229 0 0 0.6</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1149,6 +1195,12 @@
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Case
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel F</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_F/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_case_f_duplicate</name>
@@ -1167,7 +1219,7 @@
       <name>large_ammo_can_f</name>
       <pose relative_to="Vessel F">3.78 1.22 1.246 0 0 0.3</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1180,7 +1232,7 @@
       <name>large_ammo_can_f_duplicate</name>
       <pose relative_to="Vessel F">1.46 -1.25 1.186 0 0 0.6</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1192,14 +1244,20 @@
 
     <include>
       <name>small_dry_bag_handle_g</name>
-      <pose relative_to="Vessel G">-8.07 -1.07 1.6593 0 0 -0.5</pose>
+      <pose relative_to="Vessel G">-5.81 0.723 1.4355 0 0 -0.5</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag Handle
       </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel G</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_G/detach</topic>
+      </plugin>
     </include>
     <include>
       <name>small_dry_bag_handle_g_duplicate</name>
-      <pose relative_to="Vessel G">-7.31 0.5 1.61 0 0 1.1</pose>
+      <pose relative_to="Vessel G">-4.37 -0.9 1.1686 0 0 1.1</pose>
       <uri>
         https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag Handle
       </uri>
@@ -1212,9 +1270,9 @@
     </include>
     <include>
       <name>large_crate_g</name>
-      <pose relative_to="Vessel G">-4.75 0.81 1.4794 0 0 -1.3</pose>
+      <pose relative_to="Vessel G">-1.81 -0.37 1.07 0 0 0</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
@@ -1225,9 +1283,9 @@
     </include>
     <include>
       <name>large_crate_g_duplicate</name>
-      <pose relative_to="Vessel G">-3.48 -1.624 1.4305 0 0 0.0</pose>
+      <pose relative_to="Vessel G">-3.43 -0.72 1.1095 0 0 0.2</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
       </uri>
       <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
        <parent_link>link</parent_link>
