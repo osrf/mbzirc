@@ -124,7 +124,7 @@ void Naive3dScanningRadar::OnRadarScan(const ignition::msgs::LaserScan &_msg)
     for (uint32_t j = 0; j < _msg.count(); j += subsampleSize)
     {
       double azimuth = 0.0;
-      double range = IGN_DBL_INF;
+      double range = ignition::math::INF_D;
       unsigned int rangeSampleCount = 0u;
 
       // loop through cluster of points and get avg azimuth and range
