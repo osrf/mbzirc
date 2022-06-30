@@ -103,6 +103,14 @@ void Naive3dScanningRadar::OnRadarScan(const ignition::msgs::LaserScan &_msg)
   frame->set_key("frame_id");
   frame->add_value(this->frameId);
 
+  // \todo(anyone) make this configurable
+  int subsampleSize = 6;
+
+  // We use a lidar with  higher number of samples. We then downsample
+  // by computing an average of range values within a cluster of points
+  // (subsampleSize). This is done to simulate a radar "beam" that has a
+  // a beam width so that we are not just sampling using a ray.
+
   // Start with -1 x vertical angle step so we just need additions onwards
   double curr_elevation =
     _msg.vertical_angle_min() - _msg.vertical_angle_step();
@@ -113,16 +121,46 @@ void Naive3dScanningRadar::OnRadarScan(const ignition::msgs::LaserScan &_msg)
 
     // Start with -1 x angle step so we just need additions onwards
     double curr_azimuth = _msg.angle_min() - _msg.angle_step();
-    for (uint32_t j = 0; j < _msg.count(); ++j)
+    for (uint32_t j = 0; j < _msg.count(); j += subsampleSize)
     {
-      curr_azimuth += _msg.angle_step();
-      double curr_range = _msg.ranges(ranges_before_channel + j);
+      double azimuth = 0.0;
+      double range = ignition::math::INF_D;
+      unsigned int rangeSampleCount = 0u;
 
-      if (curr_range < _msg.range_min() || curr_range > _msg.range_max())
+      // loop through cluster of points and get avg azimuth and range
+      for (unsigned int k = 0; k < subsampleSize; ++k)
+      {
+        curr_azimuth += _msg.angle_step();
+        azimuth += curr_azimuth;
+        double r = _msg.ranges(ranges_before_channel + j + k);
+        // filter out inf range values so we compute avg range only from
+        // valid range values
+        if (r < _msg.range_min() || r > _msg.range_max())
+          continue;
+        if (rangeSampleCount == 0u)
+        {
+          range = r;
+        }
+        else
+        {
+          range += r;
+          rangeSampleCount++;
+        }
+      }
+
+      // compute avg range
+      if (rangeSampleCount > 0)
+        range = range / rangeSampleCount;
+
+      // don't publish inf range data
+      if (range < _msg.range_min() || range > _msg.range_max())
         continue;
 
-      radarScanMsg.add_data(curr_range);
-      radarScanMsg.add_data(curr_azimuth);
+      // compute current avg azimuth
+      azimuth = azimuth / subsampleSize;
+
+      radarScanMsg.add_data(range);
+      radarScanMsg.add_data(azimuth);
       radarScanMsg.add_data(curr_elevation);
     }
   }
