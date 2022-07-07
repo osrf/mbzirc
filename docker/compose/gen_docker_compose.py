@@ -65,7 +65,7 @@ def run_main():
     version: '2.4'
     services:
       sim:
-        image: cloudsim_sim
+        image: osrf/mbzirc:cloudsim_sim_latest
         command: world:={{ world }} config_file:=/home/developer/config/config.yaml sim_mode:=sim headless:={{ headless }}
         networks:
           sim_net:
@@ -90,7 +90,7 @@ def run_main():
           - "./:/home/developer/config/"
       {% for robot in config_dict -%}
       bridge{{ loop.index }}:
-        image: cloudsim_bridge
+        image: osrf/mbzirc:cloudsim_bridge_latest
         command: world:={{ world }} config_file:=/home/developer/config/config.yaml sim_mode:=bridge robot:={{ robot["model_name"] }}
         networks:
           relay_net{{ loop.index }}:
