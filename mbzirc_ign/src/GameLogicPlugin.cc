@@ -39,7 +39,7 @@
 #include <ignition/gazebo/components/Camera.hh>
 #include <ignition/gazebo/components/CanonicalLink.hh>
 #include <ignition/gazebo/components/DetachableJoint.hh>
-#include <ignition/gazebo/components/GpuLidar.hh> 
+#include <ignition/gazebo/components/GpuLidar.hh>
 #include <ignition/gazebo/components/Link.hh>
 #include <ignition/gazebo/components/Model.hh>
 #include <ignition/gazebo/components/Name.hh>
@@ -244,7 +244,7 @@ class mbzirc::GameLogicPluginPrivate
   /// \param[in] Immutable reference to Entity Component Manager
   public: void EnumerateCompetitorSensors(Entity _entity, const EntityComponentManager &_ecm);
 
-  /// \brief Evalutate all competitor platforms and sensors for compliance 
+  /// \brief Evalutate all competitor platforms and sensors for compliance
   public: bool AuditCompetitorConfiguration(const EntityComponentManager &_ecm);
 
   /// \brief Check if robots are inside geofence boundary. Time penalties are
@@ -1860,7 +1860,7 @@ void GameLogicPluginPrivate::DisableDroppedObjects(
   }
   this->objectsToDisable.clear();
 }
-  
+
 /////////////////////////////////////////////////
 void GameLogicPluginPrivate::EnumerateCompetitorPlatforms(
   const EntityComponentManager &_ecm)
@@ -1899,6 +1899,25 @@ void GameLogicPluginPrivate::EnumerateCompetitorPlatforms(
           this->robots[entity] = info;
           this->EnumerateCompetitorSensors(entity, _ecm);
           igndbg << "New Competitor Platform: " << info.robotName << " with " << info.sensors.size() << "sensors\n";
+
+
+          // Subscribe to battery state in order to log battery events.
+          std::string batteryTopic = std::string("/model/") +
+            info.robotName + "/battery/linear_battery/state";
+          this->node.Subscribe(batteryTopic,
+              &GameLogicPluginPrivate::OnBatteryMsg, this);
+        }
+        // store camera / rgbd camera sensor
+        // later used for target confirmation in image stream
+        auto camComp = _ecm.Component<gazebo::components::Camera>(_entity);
+        if (camComp)
+        {
+          this->cameraSensors.insert(_entity);
+        }
+        auto rgbdComp = _ecm.Component<gazebo::components::RgbdCamera>(_entity);
+        if (rgbdComp)
+        {
+          this->cameraSensors.insert(_entity);
         }
       }
       return true;
