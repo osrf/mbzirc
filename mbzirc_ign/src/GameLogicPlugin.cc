@@ -326,8 +326,11 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Whether the task has finished.
   public: bool finished = false;
 
-  /// \brief Start time used for scoring.
+  /// \brief Start time (real time) used for scoring.
   public: std::chrono::steady_clock::time_point startTime;
+
+  /// \brief Finish time (real time)
+  public: std::chrono::steady_clock::time_point finishTime;
 
   /// \brief Mutex to protect log stream.
   public: std::mutex logMutex;
@@ -974,6 +977,15 @@ void GameLogicPlugin::PostUpdate(
   {
     this->dataPtr->UpdateScoreFiles(this->dataPtr->simTime);
   }
+
+  if (this->dataPtr->finished)
+  {
+    if ((currentTime - this->dataPtr->finishTime) > std::chrono::seconds(10))
+    {
+      ignmsg << "Stopping simulation." << std::endl;
+      this->dataPtr->eventManager->Emit<events::Stop>();
+    }
+  }
 }
 
 /////////////////////////////////////////////////
@@ -1241,6 +1253,7 @@ void GameLogicPluginPrivate::Finish(const ignition::msgs::Time &_simTime)
     this->SetPhase(kPhaseFinished);
   }
 
+  this->finishTime = currTime;
   this->finished = true;
 }
 
@@ -2087,6 +2100,7 @@ std::chrono::steady_clock::time_point GameLogicPluginPrivate::UpdateScoreFiles(
   summary << "real_time_duration_sec: " << realElapsed << std::endl;
   summary << "model_count: " << this->robots.size() << std::endl;
   summary << "time_penalty: " << this->timePenalty << std::endl;
+  summary << "phase: " << this->Phase() << std::endl;
   summary.flush();
 
   // Output a score file with just the final score
@@ -2358,7 +2372,8 @@ bool GameLogicPluginPrivate::FindTargetVisual(
     math::Vector2i pos;
     if (this->VisualInView(_targetVis, pos))
     {
-      ignmsg << "Target is in view: " << _targetVis->Name() << std::endl;
+      ignmsg << "Target is in view: " << _targetVis->Name() << " at "
+             << pos << std::endl;
       // check image pos of target is within tolernace
       auto diff = pos - _imagePos;
 
