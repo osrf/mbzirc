@@ -1,0 +1,1531 @@
+<?xml version="1.0" ?>
+
+<sdf version="1.6">
+  <world name="coast_cloud">
+
+    <physics name="4ms" type="dart">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <gui fullscreen="0">
+
+      <!-- 3D scene -->
+      <plugin filename="MinimalScene" name="3D View">
+        <ignition-gui>
+          <title>3D View</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="string" key="state">docked</property>
+        </ignition-gui>
+
+        <engine>ogre2</engine>
+        <scene>scene</scene>
+        <ambient_light>0.4 0.4 0.4</ambient_light>
+        <background_color>0.8 0.8 0.8</background_color>
+        <camera_pose>-1510 0 6 0 0.5 0</camera_pose>
+        <camera_clip>
+          <near>0.25</near>
+          <far>10000</far>
+        </camera_clip>
+      </plugin>
+
+      <!-- Plugins that add functionality to the scene -->
+      <plugin filename="EntityContextMenuPlugin" name="Entity context menu">
+        <ignition-gui>
+          <property key="state" type="string">floating</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </ignition-gui>
+      </plugin>
+      <plugin filename="GzSceneManager" name="Scene Manager">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </ignition-gui>
+      </plugin>
+      <plugin filename="InteractiveViewControl" name="Interactive view control">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </ignition-gui>
+      </plugin>
+      <plugin filename="CameraTracking" name="Camera Tracking">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </ignition-gui>
+      </plugin>
+      <plugin filename="MarkerManager" name="Marker manager">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </ignition-gui>
+      </plugin>
+      <plugin filename="SelectEntities" name="Select Entities">
+        <ignition-gui>
+          <anchors target="Select entities">
+            <line own="right" target="right"/>
+            <line own="top" target="top"/>
+          </anchors>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </ignition-gui>
+      </plugin>
+      <plugin filename="VisualizationCapabilities" name="Visualization Capabilities">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </ignition-gui>
+      </plugin>
+
+      <plugin filename="Spawn" name="Spawn Entities">
+        <ignition-gui>
+          <anchors target="Select entities">
+            <line own="right" target="right"/>
+            <line own="top" target="top"/>
+          </anchors>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </ignition-gui>
+      </plugin>
+
+      <!-- World control -->
+      <plugin filename="WorldControl" name="World control">
+        <ignition-gui>
+          <title>World control</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property>
+          <property type="double" key="height">72</property>
+          <property type="double" key="width">121</property>
+          <property type="double" key="z">1</property>
+
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View">
+            <line own="left" target="left"/>
+            <line own="bottom" target="bottom"/>
+          </anchors>
+        </ignition-gui>
+
+        <play_pause>true</play_pause>
+        <step>true</step>
+        <start_paused>true</start_paused>
+        <use_event>true</use_event>
+
+      </plugin>
+
+      <!-- World statistics -->
+      <plugin filename="WorldStats" name="World stats">
+        <ignition-gui>
+          <title>World stats</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property>
+          <property type="double" key="height">110</property>
+          <property type="double" key="width">290</property>
+          <property type="double" key="z">1</property>
+
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View">
+            <line own="right" target="right"/>
+            <line own="bottom" target="bottom"/>
+          </anchors>
+        </ignition-gui>
+
+        <sim_time>true</sim_time>
+        <real_time>true</real_time>
+        <real_time_factor>true</real_time_factor>
+        <iterations>true</iterations>
+      </plugin>
+
+      <!-- Insert simple shapes -->
+      <plugin filename="Shapes" name="Shapes">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="x" type="double">0</property>
+          <property key="y" type="double">0</property>
+          <property key="width" type="double">250</property>
+          <property key="height" type="double">50</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+          <property key="cardBackground" type="string">#666666</property>
+        </ignition-gui>
+      </plugin>
+
+      <!-- Insert lights -->
+      <plugin filename="Lights" name="Lights">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="x" type="double">250</property>
+          <property key="y" type="double">0</property>
+          <property key="width" type="double">150</property>
+          <property key="height" type="double">50</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+          <property key="cardBackground" type="string">#666666</property>
+        </ignition-gui>
+      </plugin>
+
+      <!-- Translate / rotate -->
+      <plugin filename="TransformControl" name="Transform control">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="x" type="double">0</property>
+          <property key="y" type="double">50</property>
+          <property key="width" type="double">250</property>
+          <property key="height" type="double">50</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+          <property key="cardBackground" type="string">#777777</property>
+        </ignition-gui>
+
+        <!-- disable legacy features used to connect this plugin to GzScene3D -->
+        <legacy>false</legacy>
+      </plugin>
+
+      <!-- Screenshot -->
+      <plugin filename="Screenshot" name="Screenshot">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="x" type="double">250</property>
+          <property key="y" type="double">50</property>
+          <property key="width" type="double">50</property>
+          <property key="height" type="double">50</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+          <property key="cardBackground" type="string">#777777</property>
+        </ignition-gui>
+      </plugin>
+
+      <!-- Video recorder -->
+      <plugin filename="VideoRecorder" name="VideoRecorder">
+        <ignition-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="x" type="double">300</property>
+          <property key="y" type="double">50</property>
+          <property key="width" type="double">50</property>
+          <property key="height" type="double">50</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+          <property key="cardBackground" type="string">#777777</property>
+        </ignition-gui>
+
+        <record_video>
+          <use_sim_time>true</use_sim_time>
+          <lockstep>true</lockstep>
+          <bitrate>4000000</bitrate>
+        </record_video>
+
+        <!-- disable legacy features used to connect this plugin to GzScene3D -->
+        <legacy>false</legacy>
+      </plugin>
+
+      <!-- Inspector -->
+      <plugin filename="ComponentInspector" name="Component inspector">
+        <ignition-gui>
+          <property type="string" key="state">docked_collapsed</property>
+        </ignition-gui>
+      </plugin>
+
+      <!-- Entity tree -->
+      <plugin filename="EntityTree" name="Entity tree">
+        <ignition-gui>
+          <property type="string" key="state">docked_collapsed</property>
+        </ignition-gui>
+      </plugin>
+
+      <!-- View angle -->
+      <plugin filename="ViewAngle" name="View angle">
+        <ignition-gui>
+          <property type="string" key="state">docked_collapsed</property>
+        </ignition-gui>
+
+        <!-- disable legacy features used to connect this plugin to GzScene3D -->
+        <legacy>false</legacy>
+      </plugin>
+
+    </gui>
+
+
+    <plugin
+      filename="ignition-gazebo-physics-system"
+      name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-user-commands-system"
+      name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-sensors-system"
+      name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+      <disable_on_drained_battery>true</disable_on_drained_battery>
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-air-pressure-system"
+      name="ignition::gazebo::systems::AirPressure">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-altimeter-system"
+      name="ignition::gazebo::systems::Altimeter">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-imu-system"
+      name="ignition::gazebo::systems::Imu">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-magnetometer-system"
+      name="ignition::gazebo::systems::Magnetometer">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-forcetorque-system"
+      name="ignition::gazebo::systems::ForceTorque">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-particle-emitter2-system"
+      name="ignition::gazebo::systems::ParticleEmitter2">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-scene-broadcaster-system"
+      name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-contact-system"
+      name="ignition::gazebo::systems::Contact">
+    </plugin>
+    <plugin
+      filename="ignition-gazebo-rf-comms-system"
+      name="ignition::gazebo::systems::RFComms">
+      <range_config>
+        <max_range>500000.0</max_range>
+        <fading_exponent>2.6</fading_exponent>
+        <l0>40</l0>
+        <sigma>10.0</sigma>
+      </range_config>
+      <radio_config>
+        <capacity>1000000</capacity>
+        <tx_power>25</tx_power>
+        <noise_floor>-90</noise_floor>
+        <modulation>QPSK</modulation>
+      </radio_config>
+    </plugin>
+    <plugin
+      filename="libRFRange.so"
+      name="ignition::gazebo::systems::RFRange">
+      <update_rate>1</update_rate>
+      <range_config>
+        <max_range>500000.0</max_range>
+        <fading_exponent>2.6</fading_exponent>
+        <l0>40</l0>
+        <sigma>0.005</sigma>
+        <rssi_1>-15</rssi_1>
+      </range_config>
+      <radio_config>
+        <tx_power>25</tx_power>
+        <noise_floor>-90</noise_floor>
+      </radio_config>
+    </plugin>
+
+    <scene>
+      <sky></sky>
+      <grid>false</grid>
+      <ambient>1.0 1.0 1.0</ambient>
+      <background>0.8 0.8 0.8</background>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.1 0.5 -0.9</direction>
+    </light>
+
+    <include>
+      <pose>0 0 50 0 0 0</pose>
+      <uri>
+        dust_storm
+      </uri>
+    </include>
+
+    <include>
+      <pose>0 0 50 0 0 0</pose>
+      <uri>
+        fog
+      </uri>
+    </include>
+
+
+    <include>
+      <name>Coast Waves</name>
+      <pose>0 0 0 0 0 0</pose>
+      <uri>coast_waves</uri>
+    </include>
+
+    <include>
+      <name>Start Gate</name>
+      <pose>-1495 0 0 0 0 -1.570796</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Dock</uri>
+    </include>
+
+    <model name="fixed_wing_chock">
+      <static>true</static>
+      <pose>-1497.55 0 4.133 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.1 50 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.1 50 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0.05 0.05 0.05 1.0</diffuse>
+          </material>
+          <cast_shadows>0</cast_shadows>
+        </visual>
+      </link>
+    </model>
+
+    <include>
+      <name>Beach</name>
+      <pose>-1500 0 0 0 0 -1.570796</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Beach</uri>
+    </include>
+
+    <include>
+      <name>Vessel A</name>
+      <pose>-1400 20 0.3 0 0.0 -1.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel A</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>6</vehicle_length>
+        <vehicle_width>3.3</vehicle_width>
+        <hull_radius>1.9</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>510.3</xU>
+        <xUU>720.4</xUU>
+        <yV>400.0</yV>
+        <yVV>0.0</yVV>
+        <zW>5000.0</zW>
+        <kP>500.0</kP>
+        <mQ>500.0</mQ>
+        <nR>15000.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>-1350 20</waypoint>
+          <waypoint>-1400 20</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>453</force>
+        <torque>200</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+      </plugin>
+    </include>
+
+    <include>
+      <name>Vessel B</name>
+      <pose>0 0 0.4 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel B</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>22</vehicle_length>
+        <vehicle_width>7</vehicle_width>
+        <hull_radius>3.5</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>1020</xU>
+        <xUU>1450</xUU>
+        <yV>400.0</yV>
+        <yVV>0.0</yVV>
+        <zW>5000.0</zW>
+        <kP>500.0</kP>
+        <mQ>500.0</mQ>
+        <nR>15000.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>500 0</waypoint>
+          <waypoint>700 300</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>908</force>
+        <torque>200</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+      </plugin>
+    </include>
+
+    <include>
+      <name>Vessel C</name>
+      <pose>400 -1000 0.4 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel C</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>22</vehicle_length>
+        <vehicle_width>7</vehicle_width>
+        <hull_radius>3.5</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>1020</xU>
+        <xUU>1450</xUU>
+        <yV>400.0</yV>
+        <yVV>0.0</yVV>
+        <zW>5000.0</zW>
+        <kP>500.0</kP>
+        <mQ>500.0</mQ>
+        <nR>15000.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>400 -1100</waypoint>
+          <waypoint>450 -1000</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>908</force>
+        <torque>200</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+      </plugin>
+    </include>
+
+    <include>
+      <name>Vessel D</name>
+      <pose>1000 1200 0.4 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel D</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>22</vehicle_length>
+        <vehicle_width>7</vehicle_width>
+        <hull_radius>3.5</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>1020</xU>
+        <xUU>1450</xUU>
+        <yV>400.0</yV>
+        <yVV>0.0</yVV>
+        <zW>5000.0</zW>
+        <kP>500.0</kP>
+        <mQ>500.0</mQ>
+        <nR>15000.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>1100 0</waypoint>
+          <waypoint>1200 -300</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>908</force>
+        <torque>200</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+      </plugin>
+    </include>
+
+
+    <include>
+      <name>Vessel E</name>
+      <pose>-1000 -500 0.3 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel E</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>14</vehicle_length>
+        <vehicle_width>5</vehicle_width>
+        <hull_radius>2.5</hull_radius>
+        <fluid_level>0.35</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>770</xU>
+        <xUU>1086</xUU>
+        <yV>400.0</yV>
+        <yVV>0.0</yVV>
+        <zW>5000.0</zW>
+        <kP>500.0</kP>
+        <mQ>500.0</mQ>
+        <nR>15000.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>-1100 -300</waypoint>
+          <waypoint>-1200 -20</waypoint>
+        </waypoints>
+        <!-- 1~2 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>1000</force>
+        <torque>200</torque>
+        <bearing_tolerance>5</bearing_tolerance>
+        <range_tolerance>5</range_tolerance>
+      </plugin>
+    </include>
+
+    <include>
+      <name>Vessel F</name>
+      <pose>-100 600 0.3 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel F</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>14</vehicle_length>
+        <vehicle_width>5</vehicle_width>
+        <hull_radius>2.5</hull_radius>
+        <fluid_level>0.35</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.5</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>770</xU>
+        <xUU>1086</xUU>
+        <yV>400.0</yV>
+        <yVV>0.0</yVV>
+        <zW>5000.0</zW>
+        <kP>500.0</kP>
+        <mQ>500.0</mQ>
+        <nR>15000.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>-100 700</waypoint>
+          <waypoint>-200 800</waypoint>
+        </waypoints>
+        <!-- 1~2 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>1000</force>
+        <torque>200</torque>
+        <bearing_tolerance>5</bearing_tolerance>
+        <range_tolerance>5</range_tolerance>
+      </plugin>
+    </include>
+
+    <include>
+      <name>Vessel G</name>
+      <pose>-900 1000 0.4 0 0.0 0.0</pose>
+      <uri>https://fuel.ignitionrobotics.org/1.0/openrobotics/models/Vessel G</uri>
+      <plugin
+        filename="libSurface.so"
+        name="ignition::gazebo::systems::Surface">
+        <link_name>link</link_name>
+        <vehicle_length>22</vehicle_length>
+        <vehicle_width>7</vehicle_width>
+        <hull_radius>3.5</hull_radius>
+        <fluid_level>0.45</fluid_level>
+
+        <!-- Waves -->
+        <wavefield>
+          <size>6000 6000</size>
+          <cell_count>300 300</cell_count>
+          <wave>
+            <model>PMS</model>
+            <period>5</period>
+            <number>3</number>
+            <scale>1.1</scale>
+            <gain>0.3</gain>
+            <direction>1 0</direction>
+            <angle>0.4</angle>
+            <tau>2.0</tau>
+            <amplitude>0.0</amplitude>
+            <steepness>0.0</steepness>
+          </wave>
+        </wavefield>
+      </plugin>
+
+      <plugin
+        filename="libSimpleHydrodynamics.so"
+        name="ignition::gazebo::systems::SimpleHydrodynamics">
+        <link_name>link</link_name>
+        <!-- Added mass -->
+        <xDotU>0.0</xDotU>
+        <yDotV>0.0</yDotV>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>1020</xU>
+        <xUU>1450</xUU>
+        <yV>400.0</yV>
+        <yVV>0.0</yVV>
+        <zW>5000.0</zW>
+        <kP>500.0</kP>
+        <mQ>500.0</mQ>
+        <nR>15000.0</nR>
+        <nRR>0.0</nRR>
+      </plugin>
+
+      <plugin
+        filename="ignition-gazebo-trajectory-follower-system"
+        name="ignition::gazebo::systems::TrajectoryFollower">
+        <link_name>link</link_name>
+        <loop>true</loop>
+        <waypoints>
+          <waypoint>-1100 1000</waypoint>
+          <waypoint>-1000 1000</waypoint>
+        </waypoints>
+        <!-- ~1 knot -->
+        <!-- max_velocity_knots = 1 # Maximum velocity in knots -->
+        <!-- max_velocity_mps = max_velocity_knots * 0.5144 # Knots to m/s -->
+        <!-- (x_u + x_uu * max_velocity_mps) * max_velocity_mps -->
+        <force>908</force>
+        <torque>200</torque>
+        <range_tolerance>5</range_tolerance>
+        <bearing_tolerance>5</bearing_tolerance>
+      </plugin>
+    </include>
+
+    <include>
+      <name>small_blue_box_a</name>
+      <pose relative_to="Vessel A">-0.14 0.04 0.05 0 0 1.2</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel A</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>small_blue_box_a_duplicate</name>
+      <pose relative_to="Vessel A">-1.28 0.23 0.05 0 0 1</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_a</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_dry_box_a</name>
+      <pose relative_to="Vessel A">-1.9 -0.0 0.05 0 0 -1.466</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_a_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_dry_box_a_duplicate</name>
+      <pose relative_to="Vessel A">0.9 -0.12 0.05 0 0 0.2</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_dry_box_a</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_A/detach</topic>
+      </plugin>
+    </include>
+
+    <include>
+      <name>small_case_b</name>
+      <pose relative_to="Vessel B">-0.35 1.6 0.73768 1.57079632679 0 0.2</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Case
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel B</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_B/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>small_case_b_duplicate</name>
+      <pose relative_to="Vessel B">-2.28 -1.0 0.73768 1.57079632679 0 1</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Case
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_case_b</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_B/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_grey_box_b</name>
+      <pose relative_to="Vessel B">0.25 -0.9 0.722 0 0 -0.3</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_case_b_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_B/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_grey_box_b_duplicate</name>
+      <pose relative_to="Vessel B">3.07 0.1 1.0 0 0 1.2</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Grey Box Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_grey_box_b</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_B/detach</topic>
+      </plugin>
+    </include>
+
+    <include>
+      <name>small_dry_bag_c</name>
+      <pose relative_to="Vessel C">-2.5 0.167 0.722 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel C</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_C/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>small_dry_bag_c_duplicate</name>
+      <pose relative_to="Vessel C">2.75 -1.078 0.9987 0 0 -0.8</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_dry_bag_c</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_C/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_ammo_can_c</name>
+      <pose relative_to="Vessel C">0.27 0.3 0.722 0 0 1.3</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_dry_bag_c_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_C/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_ammo_can_c_duplicate</name>
+      <pose relative_to="Vessel C">3.17 1.58 1.0138 0 0 -0.6</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_ammo_can_c</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_C/detach</topic>
+      </plugin>
+    </include>
+
+    <include>
+      <name>small_blue_box_d</name>
+      <pose relative_to="Vessel D">-2.5 -1.9 0.7107 0 0 0.0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel D</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_D/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>small_blue_box_d_duplicate</name>
+      <pose relative_to="Vessel D">2.75 -1.078 0.9903 0 0 -0.8</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_d</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_D/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_crate_d</name>
+      <pose relative_to="Vessel D">0.27 1.73 0.709 0 0 1.3</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_blue_box_d_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_D/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_crate_d_duplicate</name>
+      <pose relative_to="Vessel D">3.17 1.58 1.033 0 0 -0.6</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_crate_d</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_D/detach</topic>
+      </plugin>
+    </include>
+
+    <include>
+      <name>small_dry_bag_e</name>
+      <pose relative_to="Vessel E">-3.27 0.214 0.4373 0 0 0.1</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel E</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_E/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>small_dry_bag_e_duplicate</name>
+      <pose relative_to="Vessel E">-4.94 1.26 0.4373 0 0 0.8</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_dry_bag_e</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_E/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_dry_box_e</name>
+      <pose relative_to="Vessel E">-1.9 -1.0 0.4229 0 0 0.3</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_dry_bag_e_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_E/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_dry_box_e_duplicate</name>
+      <pose relative_to="Vessel E">-5.22 0.25 0.4229 0 0 0.6</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Dry Box Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_dry_box_e</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_E/detach</topic>
+      </plugin>
+    </include>
+
+    <include>
+      <name>small_case_f</name>
+      <pose relative_to="Vessel F">2.74 0.21 1.24 -1.5707963 0 0.5</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Case
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel F</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_F/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>small_case_f_duplicate</name>
+      <pose relative_to="Vessel F">0.25 1.34 1.18619 -1.5707963 0 1.1</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Case
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_case_f</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_F/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_ammo_can_f</name>
+      <pose relative_to="Vessel F">3.78 1.22 1.246 0 0 0.3</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_case_f_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_F/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_ammo_can_f_duplicate</name>
+      <pose relative_to="Vessel F">1.46 -1.25 1.186 0 0 0.6</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Ammo Can Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_ammo_can_f</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_F/detach</topic>
+      </plugin>
+    </include>
+
+    <include>
+      <name>small_dry_bag_handle_g</name>
+      <pose relative_to="Vessel G">-5.81 0.723 1.4355 0 0 -0.5</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag Handle
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>Vessel G</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_G/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>small_dry_bag_handle_g_duplicate</name>
+      <pose relative_to="Vessel G">-4.37 -0.9 1.1686 0 0 1.1</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Dry Bag Handle
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_dry_bag_handle_g</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_G/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_crate_g</name>
+      <pose relative_to="Vessel G">-1.81 -0.37 1.07 0 0 0</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>small_dry_bag_handle_g_duplicate</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_G/detach</topic>
+      </plugin>
+    </include>
+    <include>
+      <name>large_crate_g_duplicate</name>
+      <pose relative_to="Vessel G">-3.43 -0.72 1.1095 0 0 0.2</pose>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate Handles
+      </uri>
+      <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+       <parent_link>link</parent_link>
+       <child_model>large_crate_g</child_model>
+       <child_link>link</child_link>
+       <topic>/Vessel_G/detach</topic>
+      </plugin>
+    </include>
+
+    <model name="max_bounds">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 0 0 0 0</pose>
+        <collision name="x">
+          <pose>3000 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1 6000 1000</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="y">
+          <pose>0 3000 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6000 1 1000</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="-x">
+          <pose>-3000 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1 6000 1000</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="-y">
+          <pose>0 -3000 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6000 1 1000</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="base">
+          <pose>0 0 -100 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6000 6000 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="ceiling">
+          <pose>0 0 500 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6000 6000 1</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="base_station">
+      <static>true</static>
+      <pose>-1501.25 -40 3.64 0 0 0</pose>
+      <link name="box_link">
+        <collision name="box_collision">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="box_visual">
+          <geometry>
+            <box>
+              <size>0.2 0.2 0.2</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.7 0.2 0.1 1</ambient>
+            <diffuse>0.7 0.2 0.1 1</diffuse>
+            <specular>0.7 0.2 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+
+      <plugin
+        filename="ignition-gazebo-comms-endpoint-system"
+        name="ignition::gazebo::systems::CommsEndpoint">
+        <address>base_station/target</address>
+        <topic>base_station/target</topic>
+      </plugin>
+      <plugin
+        filename="ignition-gazebo-comms-endpoint-system"
+        name="ignition::gazebo::systems::CommsEndpoint">
+        <address>base_station/video</address>
+        <topic>base_station/video</topic>
+      </plugin>
+      <plugin filename="libBaseStation.so"
+              name="mbzirc::BaseStation">
+        <target_topic>base_station/target</target_topic>
+        <video_topic>base_station/video</video_topic>
+      </plugin>
+    </model>
+
+    <wind>
+      <linear_velocity>0.3 0 0</linear_velocity>
+    </wind>
+
+    <!-- Load the plugin for the wind -->
+    <plugin
+      filename="ignition-gazebo-wind-effects-system"
+      name="ignition::gazebo::systems::WindEffects">
+      <force_approximation_scaling_factor>0.002</force_approximation_scaling_factor>
+      <horizontal>
+        <magnitude>
+          <time_for_rise>10</time_for_rise>
+          <sin>
+            <amplitude_percent>0.05</amplitude_percent>
+            <period>60</period>
+          </sin>
+          <noise type="gaussian">
+           <mean>0</mean>
+           <stddev>0.0002</stddev>
+          </noise>
+        </magnitude>
+        <direction>
+          <time_for_rise>30</time_for_rise>
+          <sin>
+            <amplitude>5</amplitude>
+            <period>20</period>
+          </sin>
+          <noise type="gaussian">
+           <mean>0</mean>
+           <stddev>0.03</stddev>
+          </noise>
+        </direction>
+      </horizontal>
+      <vertical>
+        <noise type="gaussian">
+         <mean>0</mean>
+         <stddev>0.03</stddev>
+        </noise>
+      </vertical>
+    </plugin>
+
+    <!-- The MBZIRC competition logic plugin -->
+    <plugin filename="libGameLogicPlugin.so"
+            name="mbzirc::GameLogicPlugin">
+      <run_duration_seconds>3600</run_duration_seconds>
+      <setup_duration_seconds>600</setup_duration_seconds>
+      <logging>
+        <!-- Use the <path> element to control where to record the log file.
+             The HOME path is used by default -->
+        <path>/tmp/ign/mbzirc/logs</path>
+      </logging>
+      <!-- competition area -->
+      <!-- w x h = 10km2
+           max flight height is 400 ft / 121.92m
+           allow 100m below water level -->
+      <geofence>
+        <center>0 0 10.96</center>
+        <size>3162.28 3162.28 221.92</size>
+      </geofence>
+      <start_area>
+        <center>-1487.5 0 5</center>
+        <size>75 50 10</size>
+      </start_area>
+      <target>
+        <vessel>Vessel B</vessel>
+        <small_object>small_case_b</small_object>
+        <small_object>small_case_b_duplicate</small_object>
+        <large_object>large_grey_box_b</large_object>
+        <large_object>large_grey_box_b_duplicate</large_object>
+      </target>
+      <exit_on_finish>true</exit_on_finish>
+    </plugin>
+
+    <!-- uncomment to see visualization of the start area -->
+    <!--
+    <model name="start_area">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 0 0 0 0</pose>
+        <visual name="visual">
+          <pose>-1487.5 0 5 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>75 50 10</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0 0.5</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    -->
+
+    <!-- uncomment to see visualization of the competition area -->
+    <!--
+    <model name="competition_area">
+      <static>true</static>
+      <link name="link">
+        <pose>0 0 0 0 0 0</pose>
+        <visual name="visual">
+          <pose>0 0 10.96 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>3162.28 3162.28 221.92</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 1 0 0.5</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    -->
+
+    <model name="ocean_entity_detector">
+      <static>true</static>
+      <!-- This plugin detects when target objects are dropped into the ocean
+           at the defined region. A message is published on the <topic> when
+           these events occur -->
+      <plugin filename="libEntityDetector.so"
+              name="mbzirc::EntityDetector">
+        <topic>/mbzirc/target_object_detector/dropped</topic>
+        <pose>0 0 -100 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>3162.28 3162.28 10</size>
+          </box>
+        </geometry>
+      </plugin>
+    </model>
+
+  </world>
+</sdf>

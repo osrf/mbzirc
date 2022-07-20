@@ -523,6 +523,9 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Compeition phase.
   public: std::string phase{kPhaseSetup};
+
+  /// \brief Exit simulation process when run has finished.
+  public: bool exitOnFinish{false};
 };
 
 //////////////////////////////////////////////////
@@ -721,6 +724,11 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
 
       targetElem = targetElem->GetNextElement("target");
     }
+  }
+
+  if (sdf->HasElement("exit_on_finish"))
+  {
+    this->dataPtr->exitOnFinish = sdf->Get<bool>("exit_on_finish");
   }
 
   this->dataPtr->node.Advertise("/mbzirc/start",
@@ -980,7 +988,8 @@ void GameLogicPlugin::PostUpdate(
 
   if (this->dataPtr->finished)
   {
-    if ((currentTime - this->dataPtr->finishTime) > std::chrono::seconds(10))
+    if (this->dataPtr->exitOnFinish &&
+        (currentTime - this->dataPtr->finishTime) > std::chrono::seconds(10))
     {
       ignmsg << "Stopping simulation." << std::endl;
       this->dataPtr->eventManager->Emit<events::Stop>();
@@ -1149,7 +1158,7 @@ bool GameLogicPluginPrivate::OnFinishCall(const ignition::msgs::Boolean &_req,
 {
   auto simT = this->SimTime();
   ignition::msgs::Time localSimTime(simT);
-  if (this->started && _req.data() && !this->finished)
+  if (_req.data() && !this->finished)
   {
     ignmsg << "User triggered OnFinishCall." << std::endl;
     this->Log(localSimTime) << "User triggered OnFinishCall." << std::endl;
