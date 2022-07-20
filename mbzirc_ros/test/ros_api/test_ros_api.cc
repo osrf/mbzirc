@@ -121,7 +121,7 @@ TEST(RosApiTest, SimTopics)
   // phase
   MyTestClass<std_msgs::msg::String> phase("/mbzirc/phase");
   waitUntilBoolVarAndSpin(
-    node, phase.callbackExecuted, 10ms, 500);
+    node, phase.callbackExecuted, 10ms, 3500);
   EXPECT_TRUE(phase.callbackExecuted);
 
   // run_clock
