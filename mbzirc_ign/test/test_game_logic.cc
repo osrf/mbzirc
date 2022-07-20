@@ -79,38 +79,6 @@ TEST_F(MBZIRCTestFixture, GameLogicTestStartStop)
 
   unsigned int timeout = 5000;
 
-  // publish finish event
-  {
-    ignition::msgs::Boolean rep;
-    ignition::msgs::Boolean req;
-    req.set_data(true);
-    bool result = false;
-    const unsigned int timeout = 5000;
-    bool executed = node.Request("/mbzirc/finish",
-          req, timeout, rep, result);
-    EXPECT_TRUE(result);
-    EXPECT_FALSE(rep.data());
-  }
-
-  // Verify that competition is not finished because it has not been
-  // started yet. Log content should be the same as initial state
-  {
-    std::ifstream eventsLog;
-    eventsLog.open(eventsLogPath);
-    std::stringstream eventsBuffer;
-    eventsBuffer << eventsLog.rdbuf();
-
-    // events log should be empty
-    EXPECT_TRUE(eventsBuffer.str().empty());
-
-    // summary log should say the competition has not started yet
-    std::ifstream summaryLog;
-    summaryLog.open(summaryLogPath);
-    std::stringstream summaryBuffer;
-    summaryBuffer << summaryLog.rdbuf();
-    EXPECT_NE(std::string::npos, summaryBuffer.str().find("was_started: 0"));
-  }
-
   // publish start event
   {
     ignition::msgs::Boolean rep;
