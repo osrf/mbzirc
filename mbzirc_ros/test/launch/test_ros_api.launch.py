@@ -56,7 +56,7 @@ def generate_test_description():
                'model' : 'mbzirc_quadrotor',
                'z'     : '0.08',}
     # add hd camera
-    arguments['slot0'] = 'mbzirc_hd_camera'
+    arguments['slot0'] = 'mbzirc_hd_long_range_camera'
     spawn_quadrotor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(

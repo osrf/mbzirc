@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <sdf version="1.6">
-  <world name="coast">
+  <world name="coast_cloud">
 
     <physics name="4ms" type="dart">
       <max_step_size>0.004</max_step_size>
@@ -1470,6 +1470,7 @@
         <large_object>large_grey_box_b</large_object>
         <large_object>large_grey_box_b_duplicate</large_object>
       </target>
+      <exit_on_finish>true</exit_on_finish>
     </plugin>
 
     <!-- uncomment to see visualization of the start area -->

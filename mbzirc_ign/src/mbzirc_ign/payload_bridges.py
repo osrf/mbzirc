@@ -3,7 +3,8 @@ from mbzirc_ign.bridge import Bridge, BridgeDirection
 
 def camera_models():
     models = ['mbzirc_vga_camera',
-              'mbzirc_hd_camera']
+              'mbzirc_hd_camera',
+              'mbzirc_hd_long_range_camera']
     return models
 
 
