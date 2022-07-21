@@ -144,8 +144,8 @@ void Naive3dScanningRadar::OnRadarScan(const ignition::msgs::LaserScan &_msg)
         else
         {
           range += r;
-          rangeSampleCount++;
         }
+        rangeSampleCount++;
       }
 
       // compute avg range
