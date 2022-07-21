@@ -345,6 +345,11 @@
         <noise_floor>-90</noise_floor>
       </radio_config>
     </plugin>
+    <plugin
+      filename="ignition-gazebo-log-system"
+      name="ignition::gazebo::systems::LogRecord">
+      <record_path>/tmp/ign/mbzirc/playback</record_path>
+    </plugin>
 
     <scene>
       <sky></sky>
