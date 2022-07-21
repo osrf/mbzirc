@@ -208,6 +208,7 @@ class Model:
         nodes = []
         payload_launches = []
         for (idx, k) in enumerate(sorted(payloads.keys())):
+            index = int(k[-1])
             p = payloads[k]
             if not p['sensor'] or p['sensor'] == 'None' or p['sensor'] == '':
                 continue
@@ -215,20 +216,20 @@ class Model:
             # check if it is a custom payload
             if self.is_custom_model(p['sensor']):
                 payload_launch = self.custom_payload_launch(world_name, self.model_name,
-                                                            p['sensor'], idx)
+                                                            p['sensor'], index)
                 if payload_launch is not None:
                     payload_launches.append(payload_launch)
 
             # if not custom payload, add our own bridges and nodes
             else:
                 model_prefix = ''
-                ros_slot_prefix = f'slot{idx}'
+                ros_slot_prefix = f'slot{index}'
                 if is_arm:
                     model_prefix = 'arm'
                     ros_slot_prefix = 'arm/' + ros_slot_prefix
                 bridges.extend(
                     mbzirc_ign.payload_bridges.payload_bridges(
-                        world_name, self.model_name, p['sensor'], idx, model_prefix))
+                        world_name, self.model_name, p['sensor'], index, model_prefix))
 
                 if p['sensor'] in mbzirc_ign.payload_bridges.camera_models():
                     nodes.append(Node(

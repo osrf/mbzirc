@@ -24,7 +24,7 @@
     xyz: [-1500, 2, 4.3]
     rpy: [0, 0, 0]
   payload:
-    slot0:
+    slot3:
       sensor: 'mbzirc_hd_camera'
       rpy: [0, 0, 0]
 
