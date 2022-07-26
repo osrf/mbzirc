@@ -50,7 +50,9 @@ ARMS = [
 
 GRIPPERS = [
     'mbzirc_oberon7_gripper',
-    'mbzirc_suction_gripper'
+    'mbzirc_suction_gripper',
+    'mbzirc_oberon7_gripper_light',
+    'mbzirc_suction_gripper_light',
 ]
 
 WAVEFIELD_SIZE = {'simple_demo': 1000, 'coast': 6000}
@@ -159,7 +161,7 @@ class Model:
         if self.has_valid_gripper():
             isAttachedToArm = self.is_USV()
             # gripper joint pos cmd
-            if self.gripper == 'mbzirc_oberon7_gripper':
+            if 'mbzirc_oberon7_gripper' in self.gripper:
                 # gripper_joint states
                 bridges.append(
                     mbzirc_ign.bridges.gripper_joint_states(world_name, self.model_name,
@@ -175,7 +177,7 @@ class Model:
                         mbzirc_ign.bridges.gripper_joint_force_torque(
                             self.model_name, joint, isAttachedToArm)
                     )
-            elif self.gripper == 'mbzirc_suction_gripper':
+            elif 'mbzirc_suction_gripper' in self.gripper:
                 bridges.append(
                     mbzirc_ign.bridges.gripper_suction_control(self.model_name, isAttachedToArm)
                 )
