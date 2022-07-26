@@ -290,8 +290,8 @@ class mbzirc::GameLogicPluginPrivate
   public: rendering::VisualPtr VisualAt(
       unsigned int _x, unsigned int _y, const std::string &_type) const;
 
+  /// \brief Publish status message about stream requests / target reports
   /// \param[in] _status Status string to publish
-    /// \brief Publish status message about stream requests / target reports
   public: void PublishStreamStatus(const std::string &_status);
 
   /// \brief Set the competition phase
