@@ -15,6 +15,7 @@
  *
 */
 
+#include <ignition/math/Helpers.hh>
 #include <ignition/msgs/boolean.pb.h>
 #include <ignition/msgs/float.pb.h>
 #include <ignition/msgs/stringmsg_v.pb.h>
@@ -38,6 +39,7 @@
 #include <ignition/gazebo/components/Camera.hh>
 #include <ignition/gazebo/components/CanonicalLink.hh>
 #include <ignition/gazebo/components/DetachableJoint.hh>
+#include <ignition/gazebo/components/GpuLidar.hh>
 #include <ignition/gazebo/components/Link.hh>
 #include <ignition/gazebo/components/Model.hh>
 #include <ignition/gazebo/components/Name.hh>
@@ -58,6 +60,8 @@
 #include <sdf/sdf.hh>
 
 #include "GameLogicPlugin.hh"
+#include "Components.hh"
+#include "MbzircTypes.hh"
 
 IGNITION_ADD_PLUGIN(
     mbzirc::GameLogicPlugin,
@@ -73,94 +77,23 @@ using namespace mbzirc;
 
 class mbzirc::GameLogicPluginPrivate
 {
-  /// \brief Target vessel, objects, and report status
-  public: class Target
-  {
-    /// \brief Name of target vessel
-    public: std::string vessel;
-
-    /// \brief List of small target objects
-    public: std::unordered_set<std::string> smallObjects;
-
-    /// \brief List of large target objects
-    public: std::unordered_set<std::string> largeObjects;
-
-    /// \brief Indicates if vessel has been reported
-    public: bool vesselReported = false;
-
-    /// \brief Set of small objects that have been reported.
-    public: std::unordered_set<std::string> smallObjectsReported;
-
-    /// \brief Set of large objects that have been reported.
-    public: std::unordered_set<std::string> largeObjectsReported;
-
-    /// \brief Set of small objects that have been retrieved.
-    public: std::unordered_set<std::string> smallObjectsRetrieved;
-
-    /// \brief Set of large objects that have been retrieved.
-    public: std::unordered_set<std::string> largeObjectsRetrieved;
-  };
-
-  /// \brief Information of target in stream
-  public: class TargetInStream
-  {
-    /// \brief Type of target: vessel, small, large
-    public: std::string type;
-
-    /// \brief Image x position
-    public: unsigned int x = 0;
-
-    /// \brief Image y position
-    public: unsigned int y = 0;
-  };
-
-  public: enum PenaltyType
-          {
-            /// \brief Failure to ID target vessel
-            TARGET_VESSEL_ID_1 = 0,
-            TARGET_VESSEL_ID_2 = 1,
-            TARGET_VESSEL_ID_3 = 2,
-
-            /// \brief Failure to ID small object
-            SMALL_OBJECT_ID_1 = 3,
-            SMALL_OBJECT_ID_2 = 4,
-            SMALL_OBJECT_ID_3 = 5,
-
-            /// \brief Failure to ID large object
-            LARGE_OBJECT_ID_1 = 6,
-            LARGE_OBJECT_ID_2 = 7,
-            LARGE_OBJECT_ID_3 = 8,
-
-            /// \brief Failure to retrieve / place small object
-            SMALL_OBJECT_RETRIEVE_1 = 9,
-            SMALL_OBJECT_RETRIEVE_2 = 10,
-
-            /// \brief Failure to retrieve / place large object
-            LARGE_OBJECT_RETRIEVE_1 = 11,
-            LARGE_OBJECT_RETRIEVE_2 = 12,
-
-            /// \brief Failure to remain in demonstration area boundary
-            BOUNDARY_1 = 13,
-            BOUNDARY_2 = 14,
-          };
-
   /// \brief A map of penalty type and time penalties.
   public: const std::unordered_map<PenaltyType, int> kTimePenalties = {
-          {TARGET_VESSEL_ID_1, 180},
-          {TARGET_VESSEL_ID_2, 240},
-          {TARGET_VESSEL_ID_3, IGN_INT32_MAX},
-          {SMALL_OBJECT_ID_1, 180},
-          {SMALL_OBJECT_ID_2, 240},
-          {SMALL_OBJECT_ID_3, IGN_INT32_MAX},
-          {LARGE_OBJECT_ID_1, 180},
-          {LARGE_OBJECT_ID_2, 240},
-          {LARGE_OBJECT_ID_3, IGN_INT32_MAX},
-          {SMALL_OBJECT_RETRIEVE_1, 120},
-          {SMALL_OBJECT_RETRIEVE_2, IGN_INT32_MAX},
-          {LARGE_OBJECT_RETRIEVE_1, 120},
-          {LARGE_OBJECT_RETRIEVE_2, IGN_INT32_MAX},
-          {BOUNDARY_1, 300},
-          {BOUNDARY_2, IGN_INT32_MAX}};
+          {PenaltyType::TARGET_VESSEL_ID_1, 180},
+          {PenaltyType::TARGET_VESSEL_ID_2, 240},
+          {PenaltyType::TARGET_VESSEL_ID_3, ignition::math::MAX_I32},
+          {PenaltyType::SMALL_OBJECT_ID_1, 180},
+          {PenaltyType::SMALL_OBJECT_ID_2, 240},
+          {PenaltyType::SMALL_OBJECT_ID_3, ignition::math::MAX_I32},
+          {PenaltyType::LARGE_OBJECT_ID_1, 180},
+          {PenaltyType::LARGE_OBJECT_ID_2, 240},
+          {PenaltyType::LARGE_OBJECT_ID_3, ignition::math::MAX_I32},
+          {PenaltyType::SMALL_OBJECT_RETRIEVE_1, 120},
+          {PenaltyType::SMALL_OBJECT_RETRIEVE_2, ignition::math::MAX_I32},
+          {PenaltyType::LARGE_OBJECT_RETRIEVE_1, 120},
+          {PenaltyType::LARGE_OBJECT_RETRIEVE_2, ignition::math::MAX_I32},
+          {PenaltyType::BOUNDARY_1, 300},
+          {PenaltyType::BOUNDARY_2, ignition::math::MAX_I32}};
 
   /// \brief Write a simulation timestamp to a logfile.
   /// \param[in] _simTime Current sim time.
@@ -302,6 +235,18 @@ class mbzirc::GameLogicPluginPrivate
   /// retrieved
   public: void CheckTaskCompletion();
 
+  /// \brief Find all competitor platforms and register them with game logic
+  /// \param[in] Immutable reference to Entity Component Manager
+  public: void EnumerateCompetitorPlatforms(const EntityComponentManager &_ecm);
+
+  /// \brief Find all competitor sensors and register them with game logic
+  /// \param[in] _entity model with sensors to enumerate
+  /// \param[in] Immutable reference to Entity Component Manager
+  public: void EnumerateCompetitorSensors(Entity _entity, const EntityComponentManager &_ecm);
+
+  /// \brief Evalutate all competitor platforms and sensors for compliance
+  public: bool AuditCompetitorConfiguration(const EntityComponentManager &_ecm);
+
   /// \brief Check if robots are inside geofence boundary. Time penalties are
   /// given if the robots exceed the first geofence two times, and the
   /// is terminated on the third occurence. If a robot moves outside of the
@@ -345,9 +290,8 @@ class mbzirc::GameLogicPluginPrivate
   public: rendering::VisualPtr VisualAt(
       unsigned int _x, unsigned int _y, const std::string &_type) const;
 
-
-  /// \brief Publish status message about stream requests / target reports
   /// \param[in] _status Status string to publish
+    /// \brief Publish status message about stream requests / target reports
   public: void PublishStreamStatus(const std::string &_status);
 
   /// \brief Set the competition phase
@@ -373,15 +317,20 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Thread on which scores are published
   public: std::unique_ptr<std::thread> scoreThread = nullptr;
 
-  /// \brief Thread on which scores are published
   /// \brief Whether the task has started.
   public: bool started = false;
+
+  /// \brief Whether the audit has been performed.
+  public: bool audited = false;
 
   /// \brief Whether the task has finished.
   public: bool finished = false;
 
-  /// \brief Start time used for scoring.
+  /// \brief Start time (real time) used for scoring.
   public: std::chrono::steady_clock::time_point startTime;
+
+  /// \brief Finish time (real time)
+  public: std::chrono::steady_clock::time_point finishTime;
 
   /// \brief Mutex to protect log stream.
   public: std::mutex logMutex;
@@ -432,10 +381,13 @@ class mbzirc::GameLogicPluginPrivate
   public: std::string logPath{"/dev/null"};
 
   /// \brief Names of the spawned robots.
-  public: std::unordered_map<Entity, std::string> robotNames;
+  public: std::unordered_map<Entity, PlatformInfo> robots;
 
-  /// \brief Initial pose of robots
-  public: std::unordered_map<Entity, math::Vector3d> robotInitialPos;
+  /// \brief Maximum number of rendering sensors across all platforms.
+  public: int maximumSensors = {30};
+
+  /// \brief Maximum number of usv platforms .
+  public: int maximumUsvs = {1};
 
  /// \brief Current state.
   public: std::string state = "init";
@@ -462,7 +414,7 @@ class mbzirc::GameLogicPluginPrivate
   public: int eventCounter = 0;
 
   /// \brief Total score.
-  public: double totalScore = IGN_DBL_INF;
+  public: double totalScore = ignition::math::INF_D;
 
   /// \brief boundary of competition area
   public: math::AxisAlignedBox geofenceBoundary;
@@ -482,9 +434,8 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Outer / hard boundary of competition area
   public: double geofenceBoundaryBufferOuter = 25.0;
 
-  /// \brief Map of robot entity id and bool var to indicate if they are inside
-  ///  the competition boundary
-  public: std::unordered_map<Entity, bool> robotsInBoundary;
+  /// \brief boundary of the starting area
+  public: math::AxisAlignedBox startingBoundary;
 
   /// \brief SDF DOM of a static model with empty link
   public: sdf::Model staticModelToSpawn;
@@ -494,9 +445,6 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief World entity
   public: Entity worldEntity{kNullEntity};
-
-  /// \brief A list of robots that have been disabled
-  public: std::unordered_set<Entity> disabledRobots;
 
   /// \brief Number of times robot moved beyond competition boundary
   public: unsigned int geofenceBoundaryPenaltyCount = 0u;
@@ -574,7 +522,7 @@ class mbzirc::GameLogicPluginPrivate
   public: const double kTargetObjInImageTol = 0.008;
 
   /// \brief Compeition phase.
-  public: std::string phase{"setup"};
+  public: std::string phase{kPhaseSetup};
 };
 
 //////////////////////////////////////////////////
@@ -602,7 +550,7 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
                            ignition::gazebo::EventManager & _eventMgr)
 {
   this->dataPtr->creator = std::make_unique<SdfEntityCreator>(_ecm, _eventMgr);
-  this->dataPtr->worldEntity = _ecm.EntityByComponents(components::World());
+  this->dataPtr->worldEntity = _ecm.EntityByComponents(gazebo::components::World());
   this->dataPtr->eventManager = &_eventMgr;
 
   // Check if the game logic plugin has a <logging> element.
@@ -690,6 +638,27 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
     }
   }
 
+  // Get competition geofence boundary.
+  if (_sdf->HasElement("start_area"))
+  {
+    auto boundsElem = sdf->GetElement("start_area");
+
+    if (boundsElem->HasElement("center") && boundsElem->HasElement("size"))
+    {
+      auto center = boundsElem->GetElement("center")->Get<math::Vector3d>();
+      auto size = boundsElem->GetElement("size")->Get<math::Vector3d>();
+      math::Vector3d max = center + size * 0.5;
+      math::Vector3d min = center - size * 0.5;
+      this->dataPtr->startingBoundary = math::AxisAlignedBox(min, max);
+      ignmsg << "Start area boundary min: " << min << ", max: " << max << std::endl;
+    }
+    else
+    {
+      ignerr << "<start_area> is missing <center> and <size> SDF elements."
+             << std::endl;
+    }
+  }
+
   // Get the setup duration seconds.
   if (_sdf->HasElement("setup_duration_seconds"))
   {
@@ -708,7 +677,7 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
     {
       if (targetElem->HasElement("vessel"))
       {
-        GameLogicPluginPrivate::Target target;
+        mbzirc::Target target;
 
         // get target vessel name
         auto vesselTargetElem = targetElem->GetElement("vessel");
@@ -863,66 +832,7 @@ void GameLogicPlugin::PostUpdate(
   // triggers the start signal.
   if (!this->dataPtr->started)
   {
-    _ecm.Each<gazebo::components::Sensor,
-              gazebo::components::ParentEntity>(
-        [&](const gazebo::Entity &_entity,
-            const gazebo::components::Sensor *,
-            const gazebo::components::ParentEntity *_parent) -> bool
-        {
-          // Get the model. We are assuming that a sensor is attached to
-          // a link.
-          auto parent = _ecm.Component<gazebo::components::ParentEntity>(
-              _parent->Data());
-          auto model = parent;
-
-          // find top level model
-          while (parent && _ecm.Component<gazebo::components::Model>(
-                 parent->Data()))
-          {
-            model = parent;
-            parent = _ecm.Component<gazebo::components::ParentEntity>(
-                parent->Data());
-          }
-
-          if (model)
-          {
-            // \todo(anyone)
-            // Check if the robot has beyond the staging area.
-            // we need to trigger the /mbzirc/start.
-
-            // Get the model name
-            Entity entity = model->Data();
-            auto mName =
-              _ecm.Component<gazebo::components::Name>(entity);
-            if (this->dataPtr->robotNames.find(entity) ==
-                this->dataPtr->robotNames.end())
-            {
-              this->dataPtr->robotNames[entity] = mName->Data();
-              this->dataPtr->robotInitialPos[entity] =
-                  _ecm.Component<components::Pose>(entity)->Data().Pos();
-
-              // Subscribe to battery state in order to log battery events.
-              std::string batteryTopic = std::string("/model/") +
-                mName->Data() + "/battery/linear_battery/state";
-              this->dataPtr->node.Subscribe(batteryTopic,
-                  &GameLogicPluginPrivate::OnBatteryMsg, this->dataPtr.get());
-            }
-
-            // store camera / rgbd camera sensor
-            // later user for target confirmation in image stream
-            auto camComp = _ecm.Component<gazebo::components::Camera>(_entity);
-            if (camComp)
-            {
-              this->dataPtr->cameraSensors.insert(_entity);
-            }
-            auto rgbdComp = _ecm.Component<gazebo::components::RgbdCamera>(_entity);
-            if (rgbdComp)
-            {
-              this->dataPtr->cameraSensors.insert(_entity);
-            }
-          }
-          return true;
-        });
+    this->dataPtr->EnumerateCompetitorPlatforms(_ecm);
 
     // Start automatically if setup time has elapsed.
     if (this->dataPtr->simTime.sec() >= this->dataPtr->setupTimeSec)
@@ -933,24 +843,44 @@ void GameLogicPlugin::PostUpdate(
     {
       // Start automatically if a robot moves for more than x meters
       // from initial position
-      for (const auto &it : this->dataPtr->robotInitialPos)
+      for (auto &it : this->dataPtr->robots)
       {
         Entity robotEnt = it.first;
-        math::Vector3d robotInitPos = it.second;
+        math::Vector3d robotInitPos = it.second.initialPos;
 
-        auto poseComp = _ecm.Component<components::Pose>(robotEnt);
+        it.second.inStartingArea = this->dataPtr->CheckEntityInBoundary(_ecm,
+          robotEnt, this->dataPtr->startingBoundary);
+
+        auto poseComp = _ecm.Component<gazebo::components::Pose>(robotEnt);
         if (poseComp)
         {
           double distance = poseComp->Data().Pos().Distance(robotInitPos);
           if (distance > 5.0)
           {
             this->dataPtr->Log(this->dataPtr->simTime)
-                << "Robot moved outside of start gate." << std::endl;
+                << "Robot moved 5 meters from starting location." << std::endl;
             this->dataPtr->Start(this->dataPtr->simTime);
           }
         }
       }
     }
+  }
+
+  if (this->dataPtr->started && !this->dataPtr->audited)
+  {
+    auto valid = this->dataPtr->AuditCompetitorConfiguration(_ecm);
+
+    if (!valid)
+    {
+      this->dataPtr->Log(this->dataPtr->simTime)
+        << "Competitor Configuration Invalid." << std::endl;
+    }
+    else
+    {
+      this->dataPtr->Log(this->dataPtr->simTime)
+        << "Competitor Configuration Valid." << std::endl;
+    }
+    this->dataPtr->audited = true;
   }
 
   // find the sensor associated with the input stream
@@ -971,24 +901,23 @@ void GameLogicPlugin::PostUpdate(
     this->dataPtr->targetStreamTopic.clear();
   }
 
-
   std::string phaseStr = this->dataPtr->Phase();
 
   // validate target reports - inspection task
-  if (phaseStr == "started" ||
-      phaseStr == "vessel_id_success" ||
-      phaseStr == "small_object_id_success" ||
+  if (phaseStr == kPhaseStarted ||
+      phaseStr == kPhaseVesselIdSuccess ||
+      phaseStr == kPhaseSmallObjectIdSuccess ||
       // if there are more than 1 target vessels, we will starting validating
       // target reports again.
-      phaseStr == "large_object_retrieve_success")
+      phaseStr == kPhaseLargeObjectRetrieveSuccess)
   {
     // validate target reports
     this->dataPtr->ValidateTargetReports();
   }
 
   // validate target object retrieval - intervention task
-  if (phaseStr == "large_object_id_success" ||
-      phaseStr == "small_object_retrieve_success")
+  if (phaseStr == kPhaseLargeObjectIdSuccess ||
+      phaseStr == kPhaseSmallObjectRetrieveSuccess)
   {
     this->dataPtr->ValidateTargetObjectRetrieval();
   }
@@ -1025,7 +954,7 @@ void GameLogicPlugin::PostUpdate(
     ignition::msgs::StringMsg phaseMsg;
     std::string p = this->dataPtr->Phase();
     phaseMsg.set_data(p);
-    if (p == "setup")
+    if (p == kPhaseSetup)
     {
       competitionClockMsg.mutable_sim()->set_sec(
           this->dataPtr->setupTimeSec - this->dataPtr->simTime.sec());
@@ -1048,6 +977,15 @@ void GameLogicPlugin::PostUpdate(
   {
     this->dataPtr->UpdateScoreFiles(this->dataPtr->simTime);
   }
+
+  if (this->dataPtr->finished)
+  {
+    if ((currentTime - this->dataPtr->finishTime) > std::chrono::seconds(10))
+    {
+      ignmsg << "Stopping simulation." << std::endl;
+      this->dataPtr->eventManager->Emit<events::Stop>();
+    }
+  }
 }
 
 /////////////////////////////////////////////////
@@ -1055,23 +993,15 @@ void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
     EntityComponentManager &_ecm)
 {
   // check if robots are inside the competition boundary
-  for (const auto &it : this->robotNames)
+  for (auto &[robotEnt, robot]: this->robots)
   {
-    Entity robotEnt = it.first;
-    std::string robotName = it.second;
-
-    if (this->disabledRobots.find(robotEnt) != this->disabledRobots.end())
+    if (robot.isDisabled)
     {
       continue;
     }
 
     // update list of robot and whether or not it is inside boundary
-    bool wasInBounds = true;
-    auto bIt = this->robotsInBoundary.find(robotEnt);
-    if (bIt == this->robotsInBoundary.end())
-      this->robotsInBoundary[robotEnt] = wasInBounds;
-    else
-      wasInBounds = bIt->second;
+    bool wasInBounds = robot.inCompetitionBoundary;
 
     // check if it exceeded the outer / hard boundary
     // if so, disable the robot
@@ -1079,9 +1009,8 @@ void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
           robotEnt, this->geofenceBoundaryOuter))
     {
       this->MakeStatic(robotEnt, _ecm);
-
-      this->disabledRobots.insert(robotEnt);
-      this->LogEvent("exceed_boundary_outer", robotName);
+      robot.isDisabled = true;
+      this->LogEvent("exceed_boundary_outer", robot.robotName);
       continue;
     }
 
@@ -1105,22 +1034,20 @@ void GameLogicPluginPrivate::CheckRobotsInGeofenceBoundary(
         if (this->geofenceBoundaryPenaltyCount == 1)
         {
           this->timePenalty +=
-              this->kTimePenalties.at(
-              GameLogicPluginPrivate::BOUNDARY_1);
-          this->LogEvent("exceed_boundary_1", robotName);
+              this->kTimePenalties.at(PenaltyType::BOUNDARY_1);
+          this->LogEvent("exceed_boundary_1", robot.robotName);
           this->UpdateScoreFiles(this->simTime);
         }
         else if (this->geofenceBoundaryPenaltyCount >= 2)
         {
           this->timePenalty =
-              this->kTimePenalties.at(
-              GameLogicPluginPrivate::BOUNDARY_2);
-          this->LogEvent("exceed_boundary_2", robotName);
+              this->kTimePenalties.at(PenaltyType::BOUNDARY_2);
+          this->LogEvent("exceed_boundary_2", robot.robotName);
           // terminate run
           this->Finish(this->simTime);
         }
       }
-      this->robotsInBoundary[robotEnt] = isInBounds;
+      robot.inCompetitionBoundary = isInBounds;
     }
   }
 }
@@ -1144,34 +1071,36 @@ bool GameLogicPluginPrivate::MakeStatic(Entity _entity,
     this->staticModelToSpawn.Load(staticModelSDF);
   }
 
-  auto poseComp = _ecm.Component<components::Pose>(_entity);
+  auto poseComp = _ecm.Component<gazebo::components::Pose>(_entity);
   if (!poseComp)
     return false;
   math::Pose3d p = poseComp->Data();
   this->staticModelToSpawn.SetRawPose(p);
 
-  auto nameComp = _ecm.Component<components::Name>(_entity);
+  auto nameComp = _ecm.Component<gazebo::components::Name>(_entity);
   this->staticModelToSpawn.SetName(nameComp->Data() + "__static__");
 
   Entity staticEntity = this->creator->CreateEntities(&staticModelToSpawn);
   this->creator->SetParent(staticEntity, this->worldEntity);
 
   Entity parentLinkEntity = _ecm.EntityByComponents(
-      components::Link(), components::ParentEntity(staticEntity),
-      components::Name("static_link"));
+      gazebo::components::Link(),
+      gazebo::components::ParentEntity(staticEntity),
+      gazebo::components::Name("static_link"));
 
   if (parentLinkEntity == kNullEntity)
     return false;
 
   Entity childLinkEntity = _ecm.EntityByComponents(
-      components::CanonicalLink(), components::ParentEntity(_entity));
+      gazebo::components::CanonicalLink(),
+      gazebo::components::ParentEntity(_entity));
 
   if (childLinkEntity == kNullEntity)
     return false;
 
   Entity detachableJointEntity = _ecm.CreateEntity();
   _ecm.CreateComponent(detachableJointEntity,
-      components::DetachableJoint(
+      gazebo::components::DetachableJoint(
       {parentLinkEntity, childLinkEntity, "fixed"}));
 
   return true;
@@ -1182,7 +1111,7 @@ bool GameLogicPluginPrivate::CheckEntityInBoundary(
     const EntityComponentManager &_ecm, Entity _entity,
     const math::AxisAlignedBox &_boundary)
 {
-  auto poseComp = _ecm.Component<components::Pose>(_entity);
+  auto poseComp = _ecm.Component<gazebo::components::Pose>(_entity);
   if (!poseComp)
   {
     ignerr << "Pose component not found for Entity: " << _entity
@@ -1263,7 +1192,7 @@ bool GameLogicPluginPrivate::Start(const ignition::msgs::Time &_simTime)
     ignmsg << "Scoring has Started" << std::endl;
     this->Log(_simTime) << "scoring_started" << std::endl;
     this->LogEvent("started");
-    this->SetPhase("started");
+    this->SetPhase(kPhaseStarted);
   }
 
   // Update files when scoring has started.
@@ -1321,9 +1250,10 @@ void GameLogicPluginPrivate::Finish(const ignition::msgs::Time &_simTime)
     this->logStream.flush();
 
     this->LogEvent("finished");
-    this->SetPhase("finished");
+    this->SetPhase(kPhaseFinished);
   }
 
+  this->finishTime = currTime;
   this->finished = true;
 }
 
@@ -1523,7 +1453,7 @@ bool GameLogicPluginPrivate::OnSkipToPhase(
     ignition::msgs::Boolean &_res)
 {
   std::string p = _req.data();
-  if (p != "setup")
+  if (p != kPhaseSetup)
   {
     auto simT = this->SimTime();
     this->Start(simT);
@@ -1570,14 +1500,14 @@ void GameLogicPluginPrivate::ValidateTargetReports()
   {
     if (req.data_size() <= 0)
     {
-      this->LogEvent("target_reported", "empty_report");
+      this->LogEvent(kTargetReported, "empty_report");
       continue;
     }
 
     std::string vessel = req.data(0);
     if (vessel.empty())
     {
-      this->LogEvent("target_reported", "target_vessel_missing");
+      this->LogEvent(kTargetReported, "target_vessel_missing");
       continue;
     }
 
@@ -1593,9 +1523,9 @@ void GameLogicPluginPrivate::ValidateTargetReports()
       {
         target.vesselReported = true;
         this->targets[vessel] = target;
-        this->LogEvent("target_reported", "vessel_id_success");
+        this->LogEvent(kTargetReported, "vessel_id_success");
         this->currentTargetVessel = vessel;
-        this->SetPhase("vessel_id_success");
+        this->SetPhase(kPhaseVesselIdSuccess);
         this->PublishStreamStatus("vessel_id_success");
 
         ignmsg << "Target vessel identified: " << vessel << ". "
@@ -1623,14 +1553,14 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             {
               target.smallObjectsReported.insert(smallObj);
               this->targets[vessel] = target;
-              this->LogEvent("target_reported", "small_object_id_success");
-              this->SetPhase("small_object_id_success");
-              this->PublishStreamStatus("small_object_id_success");
+              this->LogEvent(kTargetReported, kPhaseSmallObjectIdSuccess);
+              this->SetPhase(kPhaseSmallObjectIdSuccess);
+              this->PublishStreamStatus(kPhaseSmallObjectIdSuccess);
               continue;
             }
             else
             {
-              this->LogEvent("target_reported", "small_object_id_duplicate");
+              this->LogEvent(kTargetReported, "small_object_id_duplicate");
             }
           }
           else
@@ -1647,25 +1577,25 @@ void GameLogicPluginPrivate::ValidateTargetReports()
             if (count == 1u)
             {
               this->timePenalty +=
-                  this->kTimePenalties.at(LARGE_OBJECT_ID_1);
+                  this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_1);
               this->UpdateScoreFiles(simT);
               logData += "_1";
-              this->LogEvent("target_reported", logData);
+              this->LogEvent(kTargetReported, logData);
             }
             else if (count == 2u)
             {
               this->timePenalty +=
-                  this->kTimePenalties.at(LARGE_OBJECT_ID_2);
+                  this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_2);
               this->UpdateScoreFiles(simT);
               logData += "_2";
-              this->LogEvent("target_reported", logData);
+              this->LogEvent(kTargetReported, logData);
             }
             else
             {
               this->timePenalty +=
-                  this->kTimePenalties.at(LARGE_OBJECT_ID_3);
+                  this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_3);
               logData += "_3";
-              this->LogEvent("target_reported", logData);
+              this->LogEvent(kTargetReported, logData);
               // terminate run
               this->Finish(simT);
               break;
@@ -1687,14 +1617,14 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               {
                 target.largeObjectsReported.insert(largeObj);
                 this->targets[vessel] = target;
-                this->LogEvent("target_reported", "large_object_id_success");
-                this->SetPhase("large_object_id_success");
-                this->PublishStreamStatus("large_object_id_success");
+                this->LogEvent(kTargetReported, kPhaseLargeObjectIdSuccess);
+                this->SetPhase(kPhaseLargeObjectIdSuccess);
+                this->PublishStreamStatus(kPhaseLargeObjectIdSuccess);
                 continue;
               }
               else
               {
-                this->LogEvent("target_reported", "large_object_id_duplicate");
+                this->LogEvent(kTargetReported, "large_object_id_duplicate");
               }
             }
             else
@@ -1711,22 +1641,22 @@ void GameLogicPluginPrivate::ValidateTargetReports()
               if (count == 1u)
               {
                 this->timePenalty +=
-                    this->kTimePenalties.at(LARGE_OBJECT_ID_1);
+                    this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_1);
                 this->UpdateScoreFiles(simT);
-                this->LogEvent("target_reported", logData + "_1");
+                this->LogEvent(kTargetReported, logData + "_1");
               }
               else if (count == 2u)
               {
                 this->timePenalty +=
-                    this->kTimePenalties.at(LARGE_OBJECT_ID_2);
+                    this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_2);
                 this->UpdateScoreFiles(simT);
-                this->LogEvent("target_reported", logData + "_2");
+                this->LogEvent(kTargetReported, logData + "_2");
               }
               else
               {
                 this->timePenalty +=
-                    this->kTimePenalties.at(LARGE_OBJECT_ID_3);
-                this->LogEvent("target_reported", logData + "_3");
+                    this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_ID_3);
+                this->LogEvent(kTargetReported, logData + "_3");
                 // terminate run
                 this->Finish(simT);
                 break;
@@ -1737,7 +1667,7 @@ void GameLogicPluginPrivate::ValidateTargetReports()
       }
       else
       {
-        this->LogEvent("target_reported", "vessel_id_duplicate");
+        this->LogEvent(kTargetReported, "vessel_id_duplicate");
       }
     }
     else
@@ -1749,22 +1679,22 @@ void GameLogicPluginPrivate::ValidateTargetReports()
       if (this->vesselPenaltyCount == 1u)
       {
         this->timePenalty +=
-            this->kTimePenalties.at(TARGET_VESSEL_ID_1);
+            this->kTimePenalties.at(PenaltyType::TARGET_VESSEL_ID_1);
         this->UpdateScoreFiles(simT);
-        this->LogEvent("target_reported", logData + "_1");
+        this->LogEvent(kTargetReported, logData + "_1");
       }
       else if (this->vesselPenaltyCount == 2u)
       {
         this->timePenalty +=
-            this->kTimePenalties.at(TARGET_VESSEL_ID_2);
+            this->kTimePenalties.at(PenaltyType::TARGET_VESSEL_ID_2);
         this->UpdateScoreFiles(simT);
-        this->LogEvent("target_reported", logData + "_2");
+        this->LogEvent(kTargetReported, logData + "_2");
       }
       else
       {
         this->timePenalty +=
-            this->kTimePenalties.at(TARGET_VESSEL_ID_3);
-        this->LogEvent("target_reported", logData + "_3");
+            this->kTimePenalties.at(PenaltyType::TARGET_VESSEL_ID_3);
+        this->LogEvent(kTargetReported, logData + "_3");
         // terminate run
         this->Finish(simT);
         break;
@@ -1815,17 +1745,17 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
           if (count == 1u)
           {
             this->timePenalty +=
-                this->kTimePenalties.at(SMALL_OBJECT_RETRIEVE_1);
+                this->kTimePenalties.at(PenaltyType::SMALL_OBJECT_RETRIEVE_1);
             this->UpdateScoreFiles(simT);
             logData += "_1";
-            this->LogEvent("target_retrieval", logData);
+            this->LogEvent(kTargetRetrieval, logData);
           }
           else if (count == 2u)
           {
             this->timePenalty +=
-                this->kTimePenalties.at(SMALL_OBJECT_RETRIEVE_2);
+                this->kTimePenalties.at(PenaltyType::SMALL_OBJECT_RETRIEVE_2);
             logData += "_2";
-            this->LogEvent("target_retrieval", logData);
+            this->LogEvent(kTargetRetrieval, logData);
             // terminate run
             this->Finish(simT);
           }
@@ -1852,17 +1782,17 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
           if (count == 1u)
           {
             this->timePenalty +=
-                this->kTimePenalties.at(LARGE_OBJECT_RETRIEVE_1);
+                this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_RETRIEVE_1);
             this->UpdateScoreFiles(simT);
             logData += "_1";
-            this->LogEvent("target_retrieval", logData);
+            this->LogEvent(kTargetRetrieval, logData);
           }
           else if (count == 2u)
           {
             this->timePenalty +=
-                this->kTimePenalties.at(LARGE_OBJECT_RETRIEVE_2);
+                this->kTimePenalties.at(PenaltyType::LARGE_OBJECT_RETRIEVE_2);
             logData += "_2";
-            this->LogEvent("target_retrieval", logData);
+            this->LogEvent(kTargetRetrieval, logData);
             // terminate run
             this->Finish(simT);
           }
@@ -1887,7 +1817,7 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
     // phase is currently large_object_id_success, that means
     // the inspection phase is done and we are now in the intervention phase.
     // The next task is grabbing the small target object
-    if (phaseStr == "large_object_id_success")
+    if (phaseStr == kPhaseLargeObjectIdSuccess)
     {
       for (auto &targetIt : this->targets)
       {
@@ -1898,8 +1828,8 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
               target.smallObjectsRetrieved.find(objName) ==
               target.smallObjectsRetrieved.end())
           {
-            this->LogEvent("target_retrieval", "small_object_retrieve_success");
-            this->SetPhase("small_object_retrieve_success");
+            this->LogEvent(kTargetRetrieval, kPhaseSmallObjectRetrieveSuccess);
+            this->SetPhase(kPhaseSmallObjectRetrieveSuccess);
             target.smallObjectsRetrieved.insert(objName);
             break;
           }
@@ -1908,7 +1838,7 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
     }
     // phase is currently small_object_id_success, that means
     // the next task is grabbing the large target object
-    else if (phaseStr == "small_object_retrieve_success")
+    else if (phaseStr == kPhaseSmallObjectRetrieveSuccess)
     {
       for (auto &targetIt : this->targets)
       {
@@ -1920,8 +1850,8 @@ void GameLogicPluginPrivate::ValidateTargetObjectRetrieval()
               target.largeObjectsRetrieved.end())
           {
             target.largeObjectsRetrieved.insert(objName);
-            this->LogEvent("target_retrieval", "large_object_retrieve_success");
-            this->SetPhase("large_object_retrieve_success");
+            this->LogEvent(kTargetRetrieval, kPhaseLargeObjectRetrieveSuccess);
+            this->SetPhase(kPhaseLargeObjectRetrieveSuccess);
             this->CheckTaskCompletion();
           }
         }
@@ -1937,11 +1867,182 @@ void GameLogicPluginPrivate::DisableDroppedObjects(
 {
   for (const auto &objName : this->objectsToDisable)
   {
-    auto entity = _ecm.EntityByComponents(components::Name(objName));
+    auto entity = _ecm.EntityByComponents(gazebo::components::Name(objName));
     if (entity != kNullEntity)
       this->MakeStatic(entity, _ecm);
   }
   this->objectsToDisable.clear();
+}
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::EnumerateCompetitorPlatforms(
+  const EntityComponentManager &_ecm)
+{
+  _ecm.Each<gazebo::components::Sensor,
+            gazebo::components::ParentEntity>(
+    [&](const gazebo::Entity &_entity,
+        const gazebo::components::Sensor *,
+        const gazebo::components::ParentEntity *_parent) -> bool
+    {
+      // Get the model. We are assuming that a sensor is attached to
+      // a link.
+      auto parent = _ecm.Component<gazebo::components::ParentEntity>(
+          _parent->Data());
+      auto model = parent;
+
+      // find top level model
+      while (parent && _ecm.Component<gazebo::components::Model>(
+             parent->Data()))
+      {
+        model = parent;
+        parent = _ecm.Component<gazebo::components::ParentEntity>(
+            parent->Data());
+      }
+
+      if (model)
+      {
+        gazebo::Entity entity = model->Data();
+
+        if (!this->robots.count(entity))
+        {
+          PlatformInfo info;
+          info.modelEntity = entity;
+          info.robotName = _ecm.Component<gazebo::components::Name>(entity)->Data();
+          info.initialPos = _ecm.Component<gazebo::components::Pose>(entity)->Data().Pos();
+          this->robots[entity] = info;
+          this->EnumerateCompetitorSensors(entity, _ecm);
+          igndbg << "New Competitor Platform: " << info.robotName << " with " << info.sensors.size() << "sensors\n";
+
+
+          // Subscribe to battery state in order to log battery events.
+          std::string batteryTopic = std::string("/model/") +
+            info.robotName + "/battery/linear_battery/state";
+          this->node.Subscribe(batteryTopic,
+              &GameLogicPluginPrivate::OnBatteryMsg, this);
+        }
+        // store camera / rgbd camera sensor
+        // later used for target confirmation in image stream
+        auto camComp = _ecm.Component<gazebo::components::Camera>(_entity);
+        if (camComp)
+        {
+          this->cameraSensors.insert(_entity);
+        }
+        auto rgbdComp = _ecm.Component<gazebo::components::RgbdCamera>(_entity);
+        if (rgbdComp)
+        {
+          this->cameraSensors.insert(_entity);
+        }
+      }
+      return true;
+    }
+  );
+}
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::EnumerateCompetitorSensors(Entity _entity, const EntityComponentManager &_ecm)
+{
+  auto info = this->robots[_entity];
+
+  _ecm.Each<gazebo::components::Sensor,
+            gazebo::components::ParentEntity>(
+    [&](const gazebo::Entity &_sensorEntity,
+        const gazebo::components::Sensor *,
+        const gazebo::components::ParentEntity *_parent) -> bool
+    {
+      std::string slot_name;
+      auto parent = _ecm.Component<gazebo::components::ParentEntity>(
+          _parent->Data());
+      auto model = parent;
+
+      // find top level model
+      while (parent && _ecm.Component<gazebo::components::Model>(
+             parent->Data()))
+      {
+        auto name = _ecm.Component<gazebo::components::Name>(parent->Data());
+        if (name->Data().find("sensor_") != std::string::npos)
+        {
+          slot_name = name->Data();
+        }
+
+        model = parent;
+        parent = _ecm.Component<gazebo::components::ParentEntity>(
+            parent->Data());
+      }
+
+      // Don't count sensors not in slots
+      if (model && !slot_name.empty())
+      {
+        gazebo::Entity modelEntity = model->Data();
+
+        // The sensor belongs to this platform
+        if (modelEntity == _entity)
+        {
+          auto sensorInfo = SensorInfo();
+          sensorInfo.sensorEntity = _sensorEntity;
+          sensorInfo.slotName = slot_name;
+
+          if (auto camera = _ecm.Component<gazebo::components::Camera>(_sensorEntity))
+          {
+            sensorInfo.sensorType = "camera";
+          }
+          else if (_ecm.Component<gazebo::components::RgbdCamera>(_sensorEntity))
+          {
+            sensorInfo.sensorType = "rgbd_camera";
+          }
+          else if (_ecm.Component<gazebo::components::GpuLidar>(_sensorEntity))
+          {
+            sensorInfo.sensorType = "gpu_lidar";
+          }
+          info.sensors.push_back(sensorInfo);
+        }
+      }
+      return true;
+    });
+}
+
+/////////////////////////////////////////////////
+bool GameLogicPluginPrivate::AuditCompetitorConfiguration(const EntityComponentManager &_ecm)
+{
+  bool valid = true;
+  int total_usvs = 0;
+  int total_sensors = 0;
+
+  std::stringstream ss;
+
+  // All initial positions need to be in the starting area
+  for (const auto &[robotEnt, robot]: this->robots)
+  {
+    if (!this->startingBoundary.Contains(robot.initialPos))
+    {
+      valid = false;
+      ss << "[" << robot.robotName << "]";
+      ss << " Initial Position (" << robot.initialPos << ") is not in the starting area " << this->startingBoundary.Min() << " " << this->startingBoundary.Max() << "\n";
+    }
+    total_sensors += robot.sensors.size();
+    if (_ecm.EntityHasComponentType(robotEnt, mbzirc::components::Usv().TypeId()))
+    {
+      total_usvs++;
+    }
+  }
+
+  if (total_sensors > this->maximumSensors)
+  {
+    ss << "Total sensors (" << total_sensors << ") exceeds maximum allowed (" << this->maximumSensors << ")\n";
+    valid = false;
+  }
+
+  if (total_usvs > this->maximumUsvs)
+  {
+    ss << "Total usvs (" << total_usvs << ") exceeds maximum allowed (" << this->maximumUsvs<< ")\n";
+    valid = false;
+  }
+
+  if (!valid)
+  {
+    ignerr << "Invalid configuration detected: \n" << ss.str();
+  }
+
+  return valid;
 }
 
 /////////////////////////////////////////////////
@@ -1997,16 +2098,17 @@ std::chrono::steady_clock::time_point GameLogicPluginPrivate::UpdateScoreFiles(
   summary << "was_started: " << this->started << std::endl;
   summary << "sim_time_duration_sec: " << simElapsed << std::endl;
   summary << "real_time_duration_sec: " << realElapsed << std::endl;
-  summary << "model_count: " << this->robotNames.size() << std::endl;
+  summary << "model_count: " << this->robots.size() << std::endl;
   summary << "time_penalty: " << this->timePenalty << std::endl;
+  summary << "phase: " << this->Phase() << std::endl;
   summary.flush();
 
   // Output a score file with just the final score
   std::ofstream scoreFile(this->logPath + "/score.yml", std::ios::out);
   {
     std::lock_guard<std::mutex> lock(this->scoreMutex);
-    this->totalScore = (math::equal(this->timePenalty, IGN_INT32_MAX)) ?
-        IGN_INT32_MAX : simElapsed + this->timePenalty;
+    this->totalScore = (math::equal(this->timePenalty, ignition::math::MAX_I32)) ?
+        ignition::math::MAX_I32: simElapsed + this->timePenalty;
 
     scoreFile << this->totalScore << std::endl;
   }
@@ -2270,7 +2372,8 @@ bool GameLogicPluginPrivate::FindTargetVisual(
     math::Vector2i pos;
     if (this->VisualInView(_targetVis, pos))
     {
-      ignmsg << "Target is in view: " << _targetVis->Name() << std::endl;
+      ignmsg << "Target is in view: " << _targetVis->Name() << " at "
+             << pos << std::endl;
       // check image pos of target is within tolernace
       auto diff = pos - _imagePos;
 

@@ -25,6 +25,7 @@
 #include "ignition/gazebo/Link.hh"
 #include "ignition/gazebo/Model.hh"
 
+#include "Components.hh"
 #include "SimpleHydrodynamics.hh"
 
 using namespace ignition;
@@ -112,6 +113,8 @@ void SimpleHydrodynamics::Configure(const Entity &_entity,
     EventManager &/*_eventMgr*/)
 {
   this->dataPtr->model = Model(_entity);
+
+  _ecm.CreateComponent(_entity, mbzirc::components::Usv());
 
   // Parse required elements.
   if (!_sdf->HasElement("link_name"))
