@@ -5,9 +5,9 @@
 
 mkdir -p /tmp/ign/logs
 
-# Optionally stall simulation start to allow configuration files to be populated.
+# Optionally stall this bridge from starting to allow configuration files to be populated.
 # MBZIRC_STALL_START_PATH contains a path to a file.
-# If MBZIRC_STALL_START_PATH is set, stall the simulation start until the file exists.
+# If MBZIRC_STALL_START_PATH is set, stall the bridge from starting until the file exists.
 if [ -n "${MBZIRC_STALL_START_PATH}" ]; then
   echo "Waiting for configuration files to be ready."
   echo "Stalling until ${MBZIRC_STALL_START_PATH} exists."
