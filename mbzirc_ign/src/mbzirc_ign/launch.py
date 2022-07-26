@@ -20,6 +20,9 @@ from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
+from launch.actions import ExecuteProcess, EmitEvent
+from launch.events import Shutdown
+
 from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 
@@ -39,7 +42,28 @@ def simulation(world_name, headless=False):
             get_package_share_directory('ros_ign_gazebo'), 'launch'),
             '/ign_gazebo.launch.py']),
         launch_arguments={'ign_args': ' '.join(ign_args)}.items())
-    return [ign_gazebo]
+
+    # Register handler for shutting down ros launch when ign gazebo process exits
+    # monitor_sim.py will run until it can not find the ign gazebo process.
+    # Once monitor_sim.py exits, a process exit event is triggered which causes the
+    # handler to emit a Shutdown event
+    p = os.path.join(get_package_share_directory('mbzirc_ign'), 'launch',
+                     'monitor_sim.py')
+    monitor_sim_proc = ExecuteProcess(
+        cmd=['python3', p],
+        name='monitor_sim',
+        output='screen',
+    )
+    sim_exit_event_handler = RegisterEventHandler(
+        OnProcessExit(
+            target_action=monitor_sim_proc,
+            on_exit=[
+                EmitEvent(event=Shutdown(reason='Simulation ended'))
+            ]
+        )
+    )
+
+    return [ign_gazebo, monitor_sim_proc, sim_exit_event_handler]
 
 
 def competition_bridges():
