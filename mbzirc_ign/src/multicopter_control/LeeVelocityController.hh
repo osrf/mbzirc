@@ -68,6 +68,7 @@ namespace multicopter_control
     /// \param[out] _rotorVelocities Computed rotor velocities.
     public: void CalculateRotorVelocities(
                  const FrameData &_frameData,
+                 double _payloadMass,
                  const EigenTwist &_cmdVel,
                  Eigen::VectorXd &_rotorVelocities) const;
 

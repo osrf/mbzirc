@@ -33,6 +33,7 @@
 #include <sdf/sdf.hh>
 
 #include "ignition/gazebo/components/Actuators.hh"
+#include "ignition/gazebo/components/DetachableJoint.hh"
 #include "ignition/gazebo/components/Gravity.hh"
 #include "ignition/gazebo/components/Inertial.hh"
 #include "ignition/gazebo/components/Link.hh"
@@ -405,7 +406,29 @@ void MulticopterVelocityControl::PreUpdate(
     return;
   }
 
-  this->velocityController->CalculateRotorVelocities(*frameData, cmdVel,
+  // Accumulator for the total payload mass
+  double payloadMass = 0.;
+
+  // Check all DetachableJoint components to find connection to the payload
+  _ecm.Each<components::DetachableJoint>([&](const Entity &_entity,
+                                             const components::DetachableJoint* connection) {
+    // Filter those whose parent is our descendant
+    if (_ecm.Descendants(this->model.Entity()).count(connection->Data().parentLink)) {
+      // Get parent model of the attached joint's childLink, which is our payload
+      const auto maybeModel(Link(connection->Data().childLink).ParentModel(_ecm));
+      if (maybeModel) {
+        // Calculate mass of the whole payload model
+        double mass = this->VehicleInertial(_ecm, maybeModel->Entity()).MassMatrix().Mass();
+        // Add current mass to the accumulator
+        payloadMass += mass;
+      }
+    }
+    return true;
+  });
+
+  this->velocityController->CalculateRotorVelocities(*frameData,
+                                                     payloadMass,
+                                                     cmdVel,
                                                      this->rotorVelocities);
 
   this->PublishRotorVelocities(_ecm, this->rotorVelocities);
