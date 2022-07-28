@@ -86,7 +86,7 @@ bool LeeVelocityController::InitializeParameters()
 
 //////////////////////////////////////////////////
 void LeeVelocityController::CalculateRotorVelocities(
-    const FrameData &_frameData, const EigenTwist &_cmdVel,
+    const FrameData &_frameData, double _payloadMass, const EigenTwist &_cmdVel,
     Eigen::VectorXd &_rotorVelocities) const
 {
   Eigen::Vector3d acceleration =
@@ -96,8 +96,9 @@ void LeeVelocityController::CalculateRotorVelocities(
       this->ComputeDesiredAngularAcc(_frameData, _cmdVel, acceleration);
 
   // Project thrust onto body z axis.
-  double thrust = -this->vehicleParameters.mass *
-                  acceleration.dot(_frameData.pose.linear().col(2));
+  double massWithPayload = this->vehicleParameters.mass + _payloadMass;
+  double thrust = -massWithPayload *
+      acceleration.dot(_frameData.pose.linear().col(2));
 
   Eigen::Vector4d angularAccelerationThrust;
   angularAccelerationThrust.block<3, 1>(0, 0) = angularAcceleration;
