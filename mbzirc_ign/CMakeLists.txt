@@ -80,7 +80,6 @@ target_link_libraries(MulticopterControl PUBLIC
   ignition-math${IGN_MATH_VER}::ignition-math${IGN_MATH_VER}
 )
 
-
 install(
   TARGETS ${MBZIRC_IGN_PLUGINS} MulticopterControl
   DESTINATION lib)

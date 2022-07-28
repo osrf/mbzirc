@@ -51,7 +51,6 @@ ARMS = [
 GRIPPERS = [
     'mbzirc_oberon7_gripper',
     'mbzirc_suction_gripper',
-    'mbzirc_oberon7_gripper_light',
     'mbzirc_suction_gripper_light',
 ]
 

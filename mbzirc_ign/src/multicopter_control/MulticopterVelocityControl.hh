@@ -235,6 +235,9 @@ namespace systems
     /// \brief Maximum commanded angular velocity
     private: math::Vector3d maximumAngularVelocity;
 
+    /// \brief Compute thrust by taking into account payload mass
+    private: bool thrustWithPayloadMass = false;
+
     /// \brief Mutex for cmdVelMsg
     private: std::mutex cmdVelMsgMutex;
 
