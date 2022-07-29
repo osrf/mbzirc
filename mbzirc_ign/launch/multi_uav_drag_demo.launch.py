@@ -32,7 +32,7 @@ def generate_launch_description():
                 'z': '2.2',
                 'P': '0',
                 'R': '0',
-                'gripper': 'mbzirc_suction_gripper'
+                'gripper': 'mbzirc_suction_gripper_light'
             }.items(),
         ),
         IncludeLaunchDescription(
@@ -47,7 +47,7 @@ def generate_launch_description():
                 'z': '2.2',
                 'P': '0',
                 'R': '0',
-                'gripper': 'mbzirc_suction_gripper'
+                'gripper': 'mbzirc_suction_gripper_light'
             }.items(),
         ),
     ])

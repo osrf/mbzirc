@@ -348,9 +348,9 @@
     </model>
     <include>
       <name>small_blue_box_a_test</name>
-      <pose>0 1.93 1.71 -1.57079 0 0</pose>
+      <pose>0 1.93 2.01 -1.57079 0 0</pose>
       <uri>
-        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Small Blue Box
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Large Crate
       </uri>
     </include>
 
