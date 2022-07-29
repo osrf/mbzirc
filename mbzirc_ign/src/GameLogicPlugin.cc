@@ -479,6 +479,10 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Sensor entity on vehicle currently streaming video of target
   public: Entity targetStreamSensorEntity;
 
+  /// \brief Keeps track of whether the sensor providing the target stream
+  /// has changed or not.
+  public: bool targetStreamSensorEntityChanged = false;
+
   /// \brief Name of topic that contains the video stream of target
   public: std::string targetStreamTopic;
 
@@ -903,6 +907,7 @@ void GameLogicPlugin::PostUpdate(
         if (this->dataPtr->targetStreamTopic.find(topic) != std::string::npos)
         {
           this->dataPtr->targetStreamSensorEntity = sensorEntity;
+          this->dataPtr->targetStreamSensorEntityChanged = true;
         }
       }
     }
@@ -2244,7 +2249,7 @@ void GameLogicPluginPrivate::OnPostRender()
 
   // get camera currently streaming video
   std::lock_guard<std::mutex> lock(this->streamMutex);
-  if (!this->camera && this->targetStreamSensorEntity != kNullEntity)
+  if (this->targetStreamSensorEntityChanged)
   {
     for (unsigned int i = 0; i < this->scene->SensorCount(); ++i)
     {
@@ -2262,6 +2267,7 @@ void GameLogicPluginPrivate::OnPostRender()
         if (value && *value == static_cast<int>(this->targetStreamSensorEntity))
         {
           this->camera = std::dynamic_pointer_cast<rendering::Camera>(sensor);
+          this->targetStreamSensorEntityChanged = false;
           break;
         }
       }

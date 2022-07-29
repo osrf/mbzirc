@@ -114,9 +114,9 @@ void BaseStation::OnVideo(const ignition::msgs::Dataframe &_msg)
     double avgT = this->simTimeSum / this->kVideoStreamWindowSize;
     if ((1 / avgT) < this->kminStreamRate)
     {
-      std::cerr << "video stream is lower than "
-                << std::to_string(this->kminStreamRate)
-                << " Hz" << std::endl;
+      // std::cerr << "video stream is lower than "
+      //           << std::to_string(this->kminStreamRate)
+      //           << " Hz" << std::endl;
     }
 
     auto front = this->simTimes.front();
