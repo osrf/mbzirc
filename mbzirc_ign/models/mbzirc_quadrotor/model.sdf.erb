@@ -11,6 +11,7 @@ end
 
 $attitude_gain = '2 3 0.15'
 $motor_constant = '8.54858e-06'
+$thrust_with_payload_mass = '0'
 if defined?($gripper_model)
   if $gripper_model.include?('mbzirc_oberon7_gripper')
     $attitude_gain = '10 10 0.15'
@@ -18,6 +19,9 @@ if defined?($gripper_model)
   elsif $gripper_model.include?('mbzirc_suction_gripper')
     $attitude_gain = '10 10 0.15'
     $motor_constant = '2.52e-05'
+  end
+  if $gripper_model.include?('_light')
+    $thrust_with_payload_mass = '1'
   end
 end
 
@@ -377,6 +381,7 @@ end
           <direction>-1</direction>
         </rotor>
       </rotorConfiguration>
+      <thrustWithPayloadMass><%= $thrust_with_payload_mass %></thrustWithPayloadMass>
     </plugin>
     <!-- Battery plugin -->
     <!-- Since we are interested in using time as the limiting factor -->
