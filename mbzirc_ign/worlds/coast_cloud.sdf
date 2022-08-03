@@ -1441,6 +1441,20 @@
       </vertical>
     </plugin>
 
+    <!-- trigger dust storm 10 mins into sim -->
+    <plugin filename="ignition-gazebo-triggered-publisher-system"
+      name="ignition::gazebo::systems::TriggeredPublisher">
+      <input type="ignition.msgs.Clock" topic="/mbzirc/run_clock">
+        <match field="sim">
+          {sec: 3000}
+        </match>
+      </input>
+      <output type="ignition.msgs.ParticleEmitter" topic="/model/dust_storm/link/link/particle_emitter/dust_storm/cmd">
+         emitting:{data: 1}
+      </output>
+    </plugin>
+
+
     <!-- The MBZIRC competition logic plugin -->
     <plugin filename="libGameLogicPlugin.so"
             name="mbzirc::GameLogicPlugin">
