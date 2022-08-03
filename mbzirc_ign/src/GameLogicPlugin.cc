@@ -29,6 +29,7 @@
 #include <ignition/math/AxisAlignedBox.hh>
 
 #include <ignition/rendering/Camera.hh>
+#include <ignition/rendering/Image.hh>
 #include <ignition/rendering/RenderEngine.hh>
 #include <ignition/rendering/RenderingIface.hh>
 #include <ignition/rendering/Scene.hh>
@@ -54,6 +55,7 @@
 #include <ignition/gazebo/Util.hh>
 
 #include <ignition/common/Console.hh>
+#include <ignition/common/Image.hh>
 #include <ignition/common/Util.hh>
 #include <ignition/transport/Node.hh>
 
@@ -264,6 +266,10 @@ class mbzirc::GameLogicPluginPrivate
   /// \brief Callback invoked in the rendering thread after a render update
   public: void OnPostRender();
 
+  /// \brief Save image of target report
+  /// \param[in] _type Type of target
+  public: void SaveImage(const std::string &_type);
+
   /// \brief Find the visual of potential target at the specified image pos
   /// \param[in] _visual Target visual
   /// \param[in] _imagePos Image position to check for target
@@ -379,6 +385,9 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Logpath.
   public: std::string logPath{"/dev/null"};
+
+  /// \brief target images path.
+  public: std::string targetImagesPath{"/dev/null"};
 
   /// \brief Names of the spawned robots.
   public: std::unordered_map<Entity, PlatformInfo> robots;
@@ -596,6 +605,10 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
   ignmsg << "MBZIRC log path: " << this->dataPtr->logPath << std::endl;
   common::removeAll(this->dataPtr->logPath);
   common::createDirectories(this->dataPtr->logPath);
+
+  this->dataPtr->targetImagesPath =
+      common::joinPaths(this->dataPtr->logPath, "target_images");
+  common::createDirectories(this->dataPtr->targetImagesPath);
 
   // Open the log file.
   std::string filenamePrefix = "mbzirc";
@@ -2283,6 +2296,9 @@ void GameLogicPluginPrivate::OnPostRender()
   // validate target
   if (this->camera && !this->targetInStreamReport.type.empty())
   {
+    // save image of target report to log dir
+    this->SaveImage(this->targetInStreamReport.type);
+
     // check if the specified img pos contains the target visual
     // using the FindTargetVisual function below
     // It uses a 2 phase process for identifying target
@@ -2369,6 +2385,28 @@ void GameLogicPluginPrivate::OnPostRender()
     this->targetInStreamReport.type.clear();
   }
 }
+
+/////////////////////////////////////////////////
+void GameLogicPluginPrivate::SaveImage(const std::string &_type)
+{
+  // save an image
+  rendering::Image image = this->camera->CreateImage();
+  this->camera->Copy(image);
+  common::Image img;
+  unsigned char *data = image.Data<unsigned char>();
+  img.SetFromData(data, image.Width(), image.Height(),
+      common::Image::RGB_INT8);
+
+  std::string filename;
+  int t = 0;
+  while (filename.empty() || common::exists(filename))
+  {
+    filename = ignition::common::joinPaths(this->targetImagesPath,
+        _type + "_" + std::to_string(t++) + ".png");
+  }
+  img.SavePNG(filename);
+}
+
 
 /////////////////////////////////////////////////
 bool GameLogicPluginPrivate::FindTargetVisual(
