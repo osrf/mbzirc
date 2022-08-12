@@ -30,7 +30,6 @@
 #include <ignition/rendering/Scene.hh>
 #include <ignition/rendering/ShaderParams.hh>
 #include <ignition/rendering/Visual.hh>
-#include <ignition/transport/Node.hh>
 
 #include <sdf/Element.hh>
 
@@ -106,9 +105,6 @@ class ignition::gazebo::systems::WaveVisualPrivate
   /// \brief Shader param. Color of deep water.
   public: math::Color deepColor = math::Color(0.0f, 0.05f, 0.2f, 1.0f);
 
-  /// \brief The transport node
-  public: transport::Node node;
-
   /// \brief All rendering operations must happen within this call
   public: void OnUpdate();
 };
@@ -147,30 +143,6 @@ void WaveVisual::Configure(const Entity &_entity,
   }
 
   this->dataPtr->wavefield.Load(_sdf);
-
-  std::vector<std::string> services;
-  this->dataPtr->node.ServiceList(services);
-  if (std::find(services.begin(), services.end(), "/mbzirc/wavefield")
-      != services.end())
-  {
-    bool result{false};
-    unsigned int timeout{5000};
-    msgs::Float_V res;
-    this->dataPtr->node.Request("/mbzirc/wavefield", timeout, res, result);
-    if (result && res.data_size() >= 2)
-    {
-      double gain = res.data(0);
-      double period = res.data(1);
-      if (gain >= 0.0 && period >= 0.0)
-      {
-        this->dataPtr->wavefield.SetGain(gain);
-        this->dataPtr->wavefield.SetPeriod(period);
-        ignmsg << "Global wave params retrieved. Updating parameters to:\n"
-               << "  gain: " << gain << "\n"
-               << "  period: " << period << std::endl;
-      }
-    }
-  }
 
   if (this->dataPtr->modelPath.empty())
   {
