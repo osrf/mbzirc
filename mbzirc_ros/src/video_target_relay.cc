@@ -18,10 +18,15 @@
 #include <memory>
 #include <string>
 
+#include <opencv2/highgui/highgui.hpp>
+#include <cv_bridge/cv_bridge.h>
+
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <ros_ign_interfaces/msg/string_vec.hpp>
 
+#include <ignition/common/Filesystem.hh>
+#include <ignition/common/Util.hh>
 #include <ignition/msgs/stringmsg_v.pb.h>
 #include <ignition/transport/Node.hh>
 
@@ -42,6 +47,11 @@ class VideoTargetRelay : public rclcpp::Node
   /// [<target_type>, <image_x_pos>, <image_y_pos>]
   public: void OnTarget(
       const std::shared_ptr<ros_ign_interfaces::msg::StringVec> _msg);
+
+  /// \brief Save image to file
+  /// \param[in] _msg Image to save
+  public: void SaveImage(
+      const std::shared_ptr<sensor_msgs::msg::Image> _msg);
 
   /// \brief Callback when a video stream is received
   /// \param[in] _msg Image message
@@ -64,6 +74,15 @@ class VideoTargetRelay : public rclcpp::Node
 
   /// \brief Name of robot that this relay node is for
   public: std::string robotName;
+
+  /// \brief Mutex to protect saving images
+  public: std::mutex mutex;
+
+  /// \brief True to save image
+  public: bool saveImage = false;
+
+  /// \brief String prefix of image filename to save
+  public: std::string saveImagePrefix;
 };
 
 //////////////////////////////////////////////////
@@ -111,7 +130,65 @@ void VideoTargetRelay::OnVideo(
   // send msg without image content as this is only for validating video
   // streaming rate
   this->brokerPub.Publish(msg);
+
+  // save image
+  {
+    std::lock_guard<std::mutex> lock(this->mutex);
+    if (this->saveImage)
+    {
+      this->SaveImage(_msg);
+      this->saveImage = false;
+    }
+  }
 }
+
+//////////////////////////////////////////////////
+void VideoTargetRelay::SaveImage(
+    const std::shared_ptr<sensor_msgs::msg::Image> _msg)
+{
+  cv::Mat image;
+  std::string encoding = "bgr8";
+  std::string path;
+  ignition::common::env(IGN_HOMEDIR, path);
+
+  std::string dir = ignition::common::joinPaths(
+    path, ".ros", "mbzirc");
+  if (!ignition::common::exists(dir))
+  {
+    ignition::common::createDirectories(dir);
+  }
+
+  std::string filename = ignition::common::joinPaths(dir,
+      this->saveImagePrefix + ".png");
+  RCLCPP_INFO(this->get_logger(), "Save target report image to %s.",
+      filename.c_str());
+  try
+  {
+    image = cv_bridge::toCvShare(_msg, encoding)->image;
+  }
+  catch (const cv_bridge::Exception &)
+  {
+    RCLCPP_ERROR(
+      this->get_logger(), "Unable to convert %s image to %s",
+      _msg->encoding.c_str(), encoding.c_str());
+    return;
+  }
+  if (!image.empty())
+  {
+    try
+    {
+      cv::imwrite(filename, image);
+    }
+    catch (...)
+    {
+      RCLCPP_ERROR(
+        this->get_logger(), "Unable to save image %s",
+        filename.c_str());
+      return;
+    }
+  }
+}
+
 //////////////////////////////////////////////////
 void VideoTargetRelay::OnTarget(
     const std::shared_ptr<ros_ign_interfaces::msg::StringVec> _msg)
@@ -127,6 +204,14 @@ void VideoTargetRelay::OnTarget(
   for (const auto &elem : _msg->data)
   {
     strVMsg.add_data(elem);
+  }
+
+  if (!_msg->data.empty())
+  {
+    std::lock_guard<std::mutex> lock(this->mutex);
+    this->saveImagePrefix.clear();
+    this->saveImagePrefix += _msg->data[0];
+    this->saveImage = true;
   }
   std::string data;
   strVMsg.SerializeToString(&data);
