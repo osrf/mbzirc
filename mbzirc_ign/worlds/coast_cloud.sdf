@@ -1471,6 +1471,10 @@
         <large_object>large_grey_box_b_duplicate</large_object>
       </target>
       <exit_on_finish>true</exit_on_finish>
+      <wavefield>
+        <gain>0.32</gain>
+        <period>4.5</period>
+      </wavefield>
     </plugin>
 
     <!-- uncomment to see visualization of the start area -->

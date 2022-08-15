@@ -24,6 +24,7 @@
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector2.hh>
 #include <ignition/math/Vector3.hh>
+#include <ignition/transport/Node.hh>
 
 #include "Wavefield.hh"
 
@@ -129,6 +130,9 @@ class ignition::gazebo::WavefieldPrivate
 
   /// \brief The component wave dirctions (derived).
   public: std::vector<ignition::math::Vector2d> directions;
+
+  /// \brief The transport node
+  public: ignition::transport::Node node;
 
   /// \brief Recalculate for constant wavelength-amplitude ratio
   public: void RecalculateCwr()
@@ -336,6 +340,28 @@ void Wavefield::Load(const std::shared_ptr<const sdf::Element> &_sdf)
 
     this->data->Recalculate();
   }
+
+  std::vector<std::string> services;
+  this->data->node.ServiceList(services);
+  if (std::find(services.begin(), services.end(), "/mbzirc/wavefield")
+      != services.end())
+  {
+    bool result{false};
+    unsigned int timeout{5000};
+    msgs::Float_V res;
+    this->data->node.Request("/mbzirc/wavefield", timeout, res, result);
+    if (result && res.data_size() >= 2)
+    {
+      double gain = res.data(0);
+      double period = res.data(1);
+      if (gain >= 0.0 && period >= 0.0)
+      {
+        this->data->gain = gain;
+        this->data->period = period;
+      }
+    }
+  }
+
   this->DebugPrint();
 }
 

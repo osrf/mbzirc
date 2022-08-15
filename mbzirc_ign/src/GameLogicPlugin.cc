@@ -213,6 +213,12 @@ class mbzirc::GameLogicPluginPrivate
                                      Entity _entity,
                                      const math::AxisAlignedBox &_boundary);
 
+  /// \brief Ignition service callback triggered when the wavefield service.
+  /// is called
+  /// \param[in] _req Empty message.
+  /// \param[out] _res The response message.
+  public: bool OnWavefieldRequest(const ignition::msgs::Empty &_req,
+                                  ignition::msgs::Float_V &_res);
 
   /// \brief Pause trajectory following for the specified vessel
   /// \param[in] _vessel Name of vessel
@@ -539,6 +545,12 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Exit simulation process when run has finished.
   public: bool exitOnFinish{false};
+
+  /// \brief Wave gain param
+  public: double waveGain{-1.0};
+
+  /// \brief Wave period param
+  public: double wavePeriod{-1.0};
 };
 
 //////////////////////////////////////////////////
@@ -748,6 +760,17 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
     this->dataPtr->exitOnFinish = sdf->Get<bool>("exit_on_finish");
   }
 
+  // Get wavefield params
+  if (_sdf->HasElement("wavefield"))
+  {
+    auto waveElem = sdf->GetElement("wavefield");
+    if (waveElem->HasElement("gain") && waveElem->HasElement("period"))
+    {
+      this->dataPtr->waveGain = waveElem->Get<double>("gain");
+      this->dataPtr->wavePeriod = waveElem->Get<double>("period");
+    }
+  }
+
   this->dataPtr->node.Advertise("/mbzirc/start",
       &GameLogicPluginPrivate::OnStartCall, this->dataPtr.get());
 
@@ -788,6 +811,11 @@ void GameLogicPlugin::Configure(const ignition::gazebo::Entity & /*_entity*/,
   this->dataPtr->node.Subscribe("/mbzirc/target_object_detector/dropped",
       &GameLogicPluginPrivate::OnDetectObjectDropped, this->dataPtr.get());
 
+  if (this->dataPtr->waveGain >= 0 && this->dataPtr->wavePeriod >= 0)
+  {
+    this->dataPtr->node.Advertise("/mbzirc/wavefield",
+        &GameLogicPluginPrivate::OnWavefieldRequest, this->dataPtr.get());
+  }
 
   ignmsg << "Starting MBZIRC" << std::endl;
 
@@ -1493,6 +1521,15 @@ bool GameLogicPluginPrivate::OnSkipToPhase(
   ignmsg << "Skipping to phase: " << p << std::endl;
 
   _res.set_data(true);
+  return true;
+}
+
+/////////////////////////////////////////////////
+bool GameLogicPluginPrivate::OnWavefieldRequest(const ignition::msgs::Empty &_req,
+  ignition::msgs::Float_V &_res)
+{
+  _res.add_data(this->waveGain);
+  _res.add_data(this->wavePeriod);
   return true;
 }
 
@@ -2590,3 +2627,4 @@ std::string GameLogicPluginPrivate::Phase()
   std::lock_guard<std::mutex> lock(this->phaseMutex);
   return this->phase;
 }
+
