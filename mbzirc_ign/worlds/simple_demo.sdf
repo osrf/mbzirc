@@ -90,6 +90,7 @@
       filename="ignition-gazebo-log-system"
       name="ignition::gazebo::systems::LogRecord">
       <record_path>/tmp/ign/mbzirc/playback</record_path>
+      <record_period>0.008</record_period>
     </plugin>
 
     <scene>
