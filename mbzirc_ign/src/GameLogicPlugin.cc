@@ -2334,7 +2334,7 @@ void GameLogicPluginPrivate::OnPostRender()
   if (this->camera && !this->targetInStreamReport.type.empty())
   {
     // save image of target report to log dir
-    this->SaveImage(this->targetInStreamReport.type);
+    // this->SaveImage(this->targetInStreamReport.type);
 
     // check if the specified img pos contains the target visual
     // using the FindTargetVisual function below
