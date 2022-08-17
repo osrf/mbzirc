@@ -358,6 +358,7 @@ void Wavefield::Load(const std::shared_ptr<const sdf::Element> &_sdf)
       {
         this->data->gain = gain;
         this->data->period = period;
+        this->data->Recalculate();
       }
     }
   }
