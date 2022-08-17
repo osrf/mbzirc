@@ -551,6 +551,19 @@ class mbzirc::GameLogicPluginPrivate
 
   /// \brief Wave period param
   public: double wavePeriod{-1.0};
+
+  /// \brief A list of rgbd cameras in the world
+  public: std::set<gazebo::Entity> rgbdCameraSensors;
+
+  /// \brief Regular camera used for ray tracing during inspection task when
+  /// rgbd camera is the sensor streaming the images.
+  public: rendering::CameraPtr rayCamera{nullptr};
+
+  /// \brief rgbd camera streaming the images.
+  public: rendering::CameraPtr rgbdCamera{nullptr};
+
+  /// \brief rgbd camera sesnor sdf
+  public: sdf::Sensor rgbdSdf;
 };
 
 //////////////////////////////////////////////////
@@ -1995,6 +2008,8 @@ void GameLogicPluginPrivate::EnumerateCompetitorPlatforms(
         if (rgbdComp)
         {
           this->cameraSensors.insert(_entity);
+          this->rgbdCameraSensors.insert(_entity);
+          this->rgbdSdf = rgbdComp->Data();
         }
       }
       return true;
@@ -2316,7 +2331,33 @@ void GameLogicPluginPrivate::OnPostRender()
 
         if (value && *value == static_cast<int>(this->targetStreamSensorEntity))
         {
-          this->camera = std::dynamic_pointer_cast<rendering::Camera>(sensor);
+          bool isRgbd = false;
+          for (auto rgbd : this->rgbdCameraSensors)
+          {
+            if (rgbd == this->targetStreamSensorEntity)
+            {
+              // create ray camera with rgbd resolution and fov
+              // the camera is used for identifying target since an rgbd
+              // rgbd camera's VisualAt function is not supported yet
+              if (!this->rayCamera)
+              {
+                this->rayCamera = this->scene->CreateCamera("rgbd_ray");
+                auto camSdf = this->rgbdSdf.CameraSensor();
+                this->rayCamera->SetImageWidth(camSdf->ImageWidth());
+                this->rayCamera->SetImageHeight(camSdf->ImageHeight());
+                this->rayCamera->SetHFOV(camSdf->HorizontalFov().Radian());
+                this->scene->RootVisual()->AddChild(this->rayCamera);
+              }
+              this->camera = this->rayCamera;
+              this->rgbdCamera = std::dynamic_pointer_cast<rendering::Camera>(sensor);
+              isRgbd = true;
+              break;
+            }
+          }
+          if (!isRgbd)
+          {
+            this->camera = std::dynamic_pointer_cast<rendering::Camera>(sensor);
+          }
           this->targetStreamSensorEntityChanged = false;
           break;
         }
@@ -2328,11 +2369,20 @@ void GameLogicPluginPrivate::OnPostRender()
   else if (this->camera && this->targetStreamSensorEntity == kNullEntity)
   {
     this->camera.reset();
+    this->rgbdCamera.reset();
   }
 
   // validate target
   if (this->camera && !this->targetInStreamReport.type.empty())
   {
+    if (this->camera == this->rayCamera)
+    {
+      // using dummy ray camera so need to set world pose to match actual
+      // position of rgbd camera.
+      this->camera->SetWorldPose(this->rgbdCamera->WorldPose());
+      this->camera->Update();
+    }
+
     // save image of target report to log dir
     this->SaveImage(this->targetInStreamReport.type);
 
