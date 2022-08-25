@@ -535,10 +535,10 @@ class mbzirc::GameLogicPluginPrivate
       targetLargeObjectVisuals;
 
   /// \brief Max allowed error (%) for reported target vessel image position
-  public: const double kTargetVesselInImageTol = 0.03;
+  public: const double kTargetVesselInImageTol = 0.2;
 
   /// \brief Max allowed error (%) for reported target object image position
-  public: const double kTargetObjInImageTol = 0.008;
+  public: const double kTargetObjInImageTol = 0.2;
 
   /// \brief Compeition phase.
   public: std::string phase{kPhaseSetup};
