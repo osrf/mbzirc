@@ -76,7 +76,6 @@ def run_main():
           - XAUTHORITY=/tmp/.docker.xauth
           - IGN_PARTITION=sim
           - IGN_IP=172.28.1.1
-          - ROS_LOCALHOST_ONLY=1
           - ROS_DOMAIN_ID=99
         privileged: true
         runtime: nvidia
